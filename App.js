@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {
   Animated,
+  useWindowDimensions,
   Easing,
   Image,
   Platform,
@@ -15,8 +16,16 @@ import {
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
-const COOKIE_LEFT_IMAGE = require('./assets/cookie-left.png');
-const COOKIE_RIGHT_IMAGE = require('./assets/cookie-right.png');
+const COOKIE_LEFT_IMAGE = require('./assets/cookie-left-4.png');
+const COOKIE_RIGHT_IMAGE = require('./assets/cookie-right-4.png');
+const COOKIE_SINGLE_IMAGE = require('./assets/single-cookie-3.png');
+// Drop in a transparent animated WebP/APNG here later and switch the render mode to "animated".
+const COOKIE_SHELL_RENDER_MODE = 'hybrid';
+const COOKIE_ANIMATED_SHELL_SOURCE = null;
+const COOKIE_SHELL_FRAME = {
+  width: 236,
+  height: 192,
+};
 const FORTUNE_FONT_FAMILY = Platform.select({
   ios: 'Georgia',
   android: 'serif',
@@ -220,6 +229,20 @@ const FORTUNE_LIBRARY = {
     'Even a confused little walk forward still counts as forward.',
     'Today does not require perfect clarity, only decent instincts.',
   ],
+  mysterious: [
+    'A feeling without a name may be carrying a message that prefers dim lighting.',
+    'Today\'s mood arrives in smoke and symbols; let it keep a little of its privacy.',
+    'What refuses a label may still know exactly where it is leading you.',
+    'The unreadable feeling is not empty. It is simply not explaining itself yet.',
+    'Something quiet and strange is moving under the surface, and it may be wiser than it looks.',
+    'The unnamed mood has chosen intrigue over clarity, which is admittedly powerful.',
+    'Not every feeling wants to be translated before it is trusted.',
+    'A little mystery around the heart can still point toward truth.',
+    'What feels inscrutable now may reveal itself only after you stop interrogating it.',
+    'Some moods arrive like riddles because direct language would be too easy.',
+    'Your inner weather appears to be written in moonlight and subtext today.',
+    'The unclassifiable feeling may be less lost than it is quietly unfolding.',
+  ],
   unknown: [
     'Your mood may be a mystery, but luckily you are still allowed snacks and tenderness.',
     'Not everything needs a perfect label to be handled wisely.',
@@ -300,6 +323,10 @@ const MOOD_TAXONOMY = {
     'confused', 'unsure', 'uncertain', 'lost', 'torn', 'mixed up', 'puzzled', 'unclear',
     'conflicted', 'disoriented',
   ],
+  unknown: [
+    'bored', 'blah', 'meh', 'whatever', 'indifferent', 'blank', 'so so', 'mixed',
+    'neutral', 'fine i guess',
+  ],
 };
 
 const MOOD_FALLBACKS = {
@@ -310,6 +337,66 @@ const MOOD_FALLBACKS = {
   confident: 'focused',
   confused: 'unknown',
 };
+
+const BLOCKED_HATE_TERMS = [
+  'kike',
+  'chink',
+  'spic',
+  'wetback',
+  'faggot',
+  'dyke',
+  'tranny',
+  'nigger',
+  'nigga',
+  'raghead',
+  'hitler',
+  'nazi',
+  'nazis',
+  'neo-nazi',
+  'neonazi',
+  'kkk',
+  'whitepower',
+  'white supremacist',
+  'supremacist',
+  'gypsy',
+  'gypsies',
+];
+
+const PROTECTED_GROUP_TERMS = [
+  'jews',
+  'jewish',
+  'muslims',
+  'muslim',
+  'christians',
+  'christian',
+  'black people',
+  'black',
+  'white people',
+  'asian people',
+  'asians',
+  'latinos',
+  'latinas',
+  'mexicans',
+  'immigrants',
+  'gay people',
+  'gays',
+  'lesbians',
+  'trans people',
+  'transgender',
+  'women',
+  'disabled people',
+  'roma',
+  'romani',
+  'gypsy',
+  'gypsies',
+];
+
+const HATE_PATTERNS = [
+  /\bi hate\s+([a-z]+\s+)?(people|jews|jewish|muslims|muslim|christians|christian|gays|lesbians|women|immigrants|mexicans|asians|latinos|latinas|roma|romani|gypsy|gypsies)\b/,
+  /\b([a-z]+\s+)?(people|jews|jewish|muslims|muslim|christians|christian|gays|lesbians|women|immigrants|mexicans|asians|latinos|latinas|roma|romani|gypsy|gypsies)\s+(are|is)\s+(evil|bad|gross|disgusting|inferior|vermin|animals)\b/,
+  /\bkill\s+(all\s+)?([a-z]+\s+)?(jews|muslims|gays|lesbians|women|immigrants|mexicans|asians|latinos|latinas|roma|romani|gypsy|gypsies)\b/,
+  /\b(jews|jewish|muslims|muslim|christians|christian|gays|lesbians|women|immigrants|mexicans|asians|latinos|latinas|roma|romani|gypsy|gypsies)\s+(suck|stink|are awful|are horrible|are trash)\b/,
+];
 
 const MOOD_PROFILES = {
   calm: { tone: 'grounding', valence: 'positive', energy: 'low' },
@@ -393,6 +480,160 @@ const TONE_FORTUNES = {
   general: FORTUNE_LIBRARY.unknown,
 };
 
+const BLOCKED_INPUT_FORTUNE =
+  'A kinder fortune waits when the mood is named without turning anyone into a target.';
+
+function moderateMoodInput(input) {
+  const normalized = input.trim().toLowerCase();
+  const tokens = normalized.split(/[^a-z]+/).filter(Boolean);
+
+  const hasBlockedHateTerm = BLOCKED_HATE_TERMS.some((term) => (
+    term.includes(' ') ? normalized.includes(term) : tokens.includes(term)
+  ));
+  const hasBlockedPattern = HATE_PATTERNS.some((pattern) => pattern.test(normalized));
+  const hasTargetedGroupPhrase = PROTECTED_GROUP_TERMS.some((term) => normalized.includes(term))
+    && /\b(hate|against|inferior|disgusting|gross|evil|vermin|animals|suck|stink|trash|awful|horrible)\b/.test(normalized);
+
+  if (hasBlockedHateTerm || hasBlockedPattern || hasTargetedGroupPhrase) {
+    return {
+      moderation: 'blocked-hate',
+      sanitizedInput: '',
+    };
+  }
+
+  return {
+    moderation: 'clean',
+    sanitizedInput: normalized,
+  };
+}
+
+const BASE_SCENE = {
+  textPrimary: '#3d2c20',
+  textSecondary: '#6a5544',
+  accent: '#8d5f3d',
+  accentSoft: '#b07b55',
+  panel: 'rgba(255, 248, 240, 0.78)',
+  panelBorder: 'rgba(148, 110, 83, 0.14)',
+  input: 'rgba(255, 252, 247, 0.82)',
+  inputBorder: 'rgba(150, 111, 82, 0.16)',
+  paper: '#fffaf0',
+  paperBorder: '#e5d7bc',
+  paperTint: 'rgba(213, 194, 160, 0.18)',
+  paperEdge: '#ecdfbc',
+  stageAura: 'rgba(255, 235, 197, 0.42)',
+  stageLine: 'rgba(255, 241, 218, 0.72)',
+  cookieGlow: 'rgba(255, 225, 184, 0.34)',
+  cue: '#6a503a',
+  statusBar: 'dark',
+  stars: [],
+};
+
+const SCENE_LIBRARY = {
+  apricotMorning: {
+    ...BASE_SCENE,
+    sky: '#f5e6d5',
+    wash: 'rgba(255, 244, 227, 0.82)',
+    celestial: '#f8d79f',
+    celestialHalo: 'rgba(255, 223, 168, 0.55)',
+    cloud: 'rgba(255, 251, 243, 0.64)',
+    cloudAlt: 'rgba(255, 244, 231, 0.58)',
+    mist: 'rgba(255, 249, 241, 0.72)',
+    ridgeBack: '#e1ba94',
+    ridgeMid: '#c98e73',
+    ridgeFront: '#8f6358',
+    ridgeHighlight: 'rgba(255, 242, 214, 0.26)',
+  },
+  seashellCove: {
+    ...BASE_SCENE,
+    sky: '#ede3d8',
+    wash: 'rgba(250, 244, 238, 0.82)',
+    celestial: '#f4d3b1',
+    celestialHalo: 'rgba(244, 211, 177, 0.52)',
+    cloud: 'rgba(252, 250, 247, 0.62)',
+    cloudAlt: 'rgba(247, 239, 228, 0.56)',
+    mist: 'rgba(248, 242, 234, 0.72)',
+    ridgeBack: '#cfc1b1',
+    ridgeMid: '#b49582',
+    ridgeFront: '#756059',
+    ridgeHighlight: 'rgba(255, 245, 229, 0.22)',
+  },
+  goldenFields: {
+    ...BASE_SCENE,
+    sky: '#fae1be',
+    wash: 'rgba(255, 238, 207, 0.8)',
+    celestial: '#ffc56e',
+    celestialHalo: 'rgba(255, 201, 123, 0.55)',
+    cloud: 'rgba(255, 247, 228, 0.58)',
+    cloudAlt: 'rgba(255, 238, 214, 0.52)',
+    mist: 'rgba(255, 248, 232, 0.68)',
+    ridgeBack: '#efbe7f',
+    ridgeMid: '#cf855c',
+    ridgeFront: '#92564a',
+    ridgeHighlight: 'rgba(255, 239, 190, 0.24)',
+    stageAura: 'rgba(255, 220, 163, 0.44)',
+    cookieGlow: 'rgba(255, 208, 148, 0.38)',
+  },
+  roseLagoon: {
+    ...BASE_SCENE,
+    sky: '#f6ddd5',
+    wash: 'rgba(255, 243, 237, 0.84)',
+    celestial: '#f5bea7',
+    celestialHalo: 'rgba(245, 190, 167, 0.5)',
+    cloud: 'rgba(255, 248, 243, 0.62)',
+    cloudAlt: 'rgba(252, 236, 231, 0.58)',
+    mist: 'rgba(255, 245, 240, 0.72)',
+    ridgeBack: '#dfb0a2',
+    ridgeMid: '#b77971',
+    ridgeFront: '#7d5552',
+    ridgeHighlight: 'rgba(255, 234, 225, 0.22)',
+  },
+  lilacDusk: {
+    ...BASE_SCENE,
+    sky: '#ebe0e5',
+    wash: 'rgba(247, 240, 245, 0.74)',
+    celestial: '#f2d2bc',
+    celestialHalo: 'rgba(242, 210, 188, 0.42)',
+    cloud: 'rgba(252, 247, 250, 0.48)',
+    cloudAlt: 'rgba(242, 232, 238, 0.42)',
+    mist: 'rgba(246, 240, 244, 0.56)',
+    ridgeBack: '#c8b5c1',
+    ridgeMid: '#95738b',
+    ridgeFront: '#59475a',
+    ridgeHighlight: 'rgba(250, 240, 246, 0.18)',
+    stageAura: 'rgba(234, 215, 226, 0.36)',
+    cookieGlow: 'rgba(238, 210, 205, 0.24)',
+  },
+  moonlitDunes: {
+    ...BASE_SCENE,
+    sky: '#e8e1df',
+    wash: 'rgba(244, 239, 236, 0.7)',
+    celestial: '#f4efe6',
+    celestialHalo: 'rgba(244, 239, 230, 0.34)',
+    cloud: 'rgba(248, 245, 242, 0.46)',
+    cloudAlt: 'rgba(240, 235, 233, 0.4)',
+    mist: 'rgba(242, 238, 235, 0.52)',
+    ridgeBack: '#c6bbb7',
+    ridgeMid: '#96857f',
+    ridgeFront: '#655554',
+    ridgeHighlight: 'rgba(249, 242, 238, 0.16)',
+    stageAura: 'rgba(233, 224, 214, 0.32)',
+    cookieGlow: 'rgba(225, 210, 192, 0.22)',
+    stars: [
+      { top: 86, left: '16%', size: 5, opacity: 0.7 },
+      { top: 124, left: '24%', size: 3, opacity: 0.56 },
+      { top: 112, right: '18%', size: 4, opacity: 0.62 },
+      { top: 168, right: '24%', size: 3, opacity: 0.44 },
+      { top: 154, left: '12%', size: 2, opacity: 0.54 },
+    ],
+  },
+};
+
+const SCENE_GROUPS = {
+  negative: ['lilacDusk', 'moonlitDunes'],
+  neutral: ['apricotMorning', 'seashellCove'],
+  positive: ['goldenFields', 'roseLagoon'],
+};
+
 function analyzeMoodInput(input) {
   const normalized = input.trim().toLowerCase();
   if (!normalized) {
@@ -472,6 +713,7 @@ function guessMoodFromTone(tokens) {
   const brightWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
   const sharpWords = ['fraught', 'combative', 'heated'];
   const foggyWords = ['murky', 'foggy', 'unclear', 'jumbled'];
+  const flatWords = ['bored', 'meh', 'blah', 'neutral', 'whatever'];
 
   if (tokens.some((token) => softWords.includes(token))) {
     return 'calm';
@@ -487,6 +729,10 @@ function guessMoodFromTone(tokens) {
 
   if (tokens.some((token) => foggyWords.includes(token))) {
     return 'confused';
+  }
+
+  if (tokens.some((token) => flatWords.includes(token))) {
+    return 'unknown';
   }
 
   if (tokens.some((token) => positiveEndings.some((ending) => token.endsWith(ending)))) {
@@ -522,13 +768,11 @@ function levenshteinDistance(a, b) {
   return matrix[a.length][b.length];
 }
 
-function pickFortune(mood) {
-  const resolvedMood = FORTUNE_LIBRARY[mood] ? mood : (MOOD_FALLBACKS[mood] || 'unknown');
-  const fortunes = FORTUNE_LIBRARY[resolvedMood] || FORTUNE_LIBRARY.unknown;
-  return fortunes[Math.floor(Math.random() * fortunes.length)];
-}
-
 function buildFortunePool(analysis) {
+  if (analysis.source === 'fallback-unknown') {
+    return FORTUNE_LIBRARY.mysterious;
+  }
+
   const { primaryMood, secondaryMood } = analysis;
   const moodPair = [primaryMood, secondaryMood].filter(Boolean).sort().join('|');
 
@@ -556,27 +800,82 @@ function pickFortuneForAnalysis(analysis, recentFortunes) {
   return candidatePool[Math.floor(Math.random() * candidatePool.length)];
 }
 
-function FortuneCookieButton({
-  disabled,
-  fortuneText,
-  isAnimating,
-  onPress,
-  shellProgress,
-  paperProgress,
-  sparkleProgress,
-}) {
-  const cookieImageStyle = {
+function resolveSceneGroup(valence) {
+  if (valence === 'negative') {
+    return SCENE_GROUPS.negative;
+  }
+
+  if (valence === 'positive') {
+    return SCENE_GROUPS.positive;
+  }
+
+  return SCENE_GROUPS.neutral;
+}
+
+function pickNextSceneKey(analysis, currentSceneKey, turnCount) {
+  const profile = MOOD_PROFILES[analysis.primaryMood] || MOOD_PROFILES.unknown;
+  const sceneGroup = resolveSceneGroup(profile.valence);
+  const currentIndex = sceneGroup.indexOf(currentSceneKey);
+
+  if (currentIndex >= 0) {
+    return sceneGroup[(currentIndex + 1) % sceneGroup.length];
+  }
+
+  return sceneGroup[turnCount % sceneGroup.length];
+}
+
+function SceneBackdrop({ scene }) {
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View style={[styles.sceneWash, { backgroundColor: scene.wash }]} />
+      <View style={[styles.celestialHalo, { backgroundColor: scene.celestialHalo }]} />
+      <View style={[styles.celestialDisc, { backgroundColor: scene.celestial }]} />
+      <View style={[styles.cloud, styles.cloudOne, { backgroundColor: scene.cloud }]} />
+      <View style={[styles.cloud, styles.cloudTwo, { backgroundColor: scene.cloudAlt }]} />
+      {scene.stars.map((star, index) => (
+        <View
+          key={`${star.top}-${index}`}
+          style={[
+            styles.star,
+            {
+              top: star.top,
+              left: star.left,
+              right: star.right,
+              width: star.size,
+              height: star.size,
+              opacity: star.opacity,
+            },
+          ]}
+        />
+      ))}
+      <View style={[styles.ridgeBack, { backgroundColor: scene.ridgeBack }]} />
+      <View style={[styles.ridgeMid, { backgroundColor: scene.ridgeMid }]} />
+      <View style={[styles.ridgeFront, { backgroundColor: scene.ridgeFront }]} />
+      <View style={[styles.ridgeHighlight, { backgroundColor: scene.ridgeHighlight }]} />
+      <View style={[styles.sceneMist, { backgroundColor: scene.mist }]} />
+    </View>
+  );
+}
+
+function CookieShell({ shellProgress }) {
+  const closedShellOpacity = shellProgress.interpolate({
+    inputRange: [0, 0.08, 0.18, 1],
+    outputRange: [1, 1, 0, 0],
+  });
+
+  const closedCookieStyle = {
+    opacity: closedShellOpacity,
     transform: [
       {
         scale: shellProgress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1, 0.98],
+          inputRange: [0, 0.12, 1],
+          outputRange: [1, 0.985, 0.96],
         }),
       },
       {
-        rotate: shellProgress.interpolate({
+        translateY: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['0deg', '-2deg'],
+          outputRange: [0, 6],
         }),
       },
     ],
@@ -587,19 +886,19 @@ function FortuneCookieButton({
       {
         translateX: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0, -28],
+          outputRange: [0, -30],
         }),
       },
       {
         translateY: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0, -14],
+          outputRange: [0, -18],
         }),
       },
       {
         rotate: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['0deg', '-22deg'],
+          outputRange: ['0deg', '-24deg'],
         }),
       },
     ],
@@ -610,43 +909,174 @@ function FortuneCookieButton({
       {
         translateX: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0, 22],
+          outputRange: [0, 26],
         }),
       },
       {
         translateY: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0, -6],
+          outputRange: [0, -10],
         }),
       },
       {
         rotate: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['0deg', '15deg'],
+          outputRange: ['0deg', '18deg'],
         }),
       },
     ],
   };
 
+  if (COOKIE_SHELL_RENDER_MODE === 'animated' && COOKIE_ANIMATED_SHELL_SOURCE) {
+    const animatedShellStyle = {
+      opacity: shellProgress.interpolate({
+        inputRange: [0, 0.08, 1],
+        outputRange: [1, 1, 0],
+      }),
+      transform: [
+        {
+          scale: shellProgress.interpolate({
+            inputRange: [0, 0.2, 1],
+            outputRange: [1, 0.985, 1],
+          }),
+        },
+      ],
+    };
+
+    return (
+      <Animated.Image
+        resizeMode="contain"
+        source={COOKIE_ANIMATED_SHELL_SOURCE}
+        style={[
+          styles.cookieAnimatedShell,
+          animatedShellStyle,
+        ]}
+      />
+    );
+  }
+
+  if (COOKIE_SHELL_RENDER_MODE === 'hybrid') {
+    const splitShellStyle = {
+      opacity: shellProgress.interpolate({
+        inputRange: [0, 0.08, 0.18, 1],
+        outputRange: [0, 0, 1, 1],
+      }),
+    };
+
+    return (
+      <View style={styles.cookieHybridShell}>
+        <Animated.Image
+          resizeMode="contain"
+          source={COOKIE_SINGLE_IMAGE}
+          style={[styles.cookieClosedShell, closedCookieStyle]}
+        />
+
+        <Animated.View style={[styles.cookieSplitShell, splitShellStyle]}>
+          <Animated.View style={[styles.cookieHalfFrame, styles.cookieLeftFrame, leftCookieStyle]}>
+            <Image source={COOKIE_LEFT_IMAGE} style={styles.cookieLeftImage} resizeMode="contain" />
+          </Animated.View>
+          <Animated.View style={[styles.cookieHalfFrame, styles.cookieRightFrame, rightCookieStyle]}>
+            <Image source={COOKIE_RIGHT_IMAGE} style={styles.cookieRightImage} resizeMode="contain" />
+          </Animated.View>
+        </Animated.View>
+      </View>
+    );
+  }
+
+  if (COOKIE_SHELL_RENDER_MODE === 'illustrated') {
+    const centerFoldStyle = {
+      opacity: shellProgress.interpolate({
+        inputRange: [0, 0.22, 1],
+        outputRange: [0.92, 0.66, 0],
+      }),
+      transform: [
+        {
+          translateY: shellProgress.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 10],
+          }),
+        },
+        {
+          scaleY: shellProgress.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 0.72],
+          }),
+        },
+      ],
+    };
+
+    return (
+      <View style={styles.cookieIllustratedShell}>
+        <Animated.View style={[styles.cookieCenterFold, centerFoldStyle]} />
+
+        <Animated.View style={[styles.cookieHalfFrame, styles.cookieLeftFrame, leftCookieStyle]}>
+          <View style={[styles.cookieHalfIllustration, styles.cookieHalfIllustrationLeft]}>
+            <View style={styles.cookieHalfBody} />
+            <View style={styles.cookieHalfRim} />
+            <View style={[styles.cookieHalfHighlight, styles.cookieHalfHighlightLeft]} />
+            <View style={[styles.cookieHalfShadow, styles.cookieHalfShadowLeft]} />
+            <View style={[styles.cookieHalfPocket, styles.cookieHalfPocketLeft]} />
+            <View style={[styles.cookieHalfCrease, styles.cookieHalfCreaseLeft]} />
+            <View style={[styles.cookieHalfBase, styles.cookieHalfBaseLeft]} />
+          </View>
+        </Animated.View>
+
+        <Animated.View style={[styles.cookieHalfFrame, styles.cookieRightFrame, rightCookieStyle]}>
+          <View style={[styles.cookieHalfIllustration, styles.cookieHalfIllustrationRight]}>
+            <View style={styles.cookieHalfBody} />
+            <View style={styles.cookieHalfRim} />
+            <View style={[styles.cookieHalfHighlight, styles.cookieHalfHighlightRight]} />
+            <View style={[styles.cookieHalfShadow, styles.cookieHalfShadowRight]} />
+            <View style={[styles.cookieHalfPocket, styles.cookieHalfPocketRight]} />
+            <View style={[styles.cookieHalfCrease, styles.cookieHalfCreaseRight]} />
+            <View style={[styles.cookieHalfBase, styles.cookieHalfBaseRight]} />
+          </View>
+        </Animated.View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.cookieSplitShell}>
+      <Animated.View style={[styles.cookieHalfFrame, styles.cookieLeftFrame, leftCookieStyle]}>
+        <Image source={COOKIE_LEFT_IMAGE} style={styles.cookieLeftImage} resizeMode="contain" />
+      </Animated.View>
+      <Animated.View style={[styles.cookieHalfFrame, styles.cookieRightFrame, rightCookieStyle]}>
+        <Image source={COOKIE_RIGHT_IMAGE} style={styles.cookieRightImage} resizeMode="contain" />
+      </Animated.View>
+    </View>
+  );
+}
+
+function FortuneCookieButton({
+  disabled,
+  fortuneText,
+  isAnimating,
+  onPress,
+  paperProgress,
+  scene,
+  shellProgress,
+  sparkleProgress,
+}) {
   const paperStyle = {
     opacity: paperProgress,
     transform: [
       {
         translateY: paperProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [28, -146],
+          outputRange: [32, -168],
         }),
       },
       {
         scale: paperProgress.interpolate({
-          inputRange: [0, 0.75, 1],
-          outputRange: [0.74, 0.9, 1],
+          inputRange: [0, 0.74, 1],
+          outputRange: [0.74, 0.92, 1],
         }),
       },
       {
         rotate: paperProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['3deg', '-2deg'],
+          outputRange: ['3deg', '-1.6deg'],
         }),
       },
     ],
@@ -667,21 +1097,55 @@ function FortuneCookieButton({
   const cookieGlowStyle = {
     opacity: shellProgress.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 0.24],
+      outputRange: [0.16, 0.32],
     }),
     transform: [
       {
         scale: shellProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0.9, 1.08],
+          outputRange: [0.94, 1.06],
+        }),
+      },
+    ],
+  };
+
+  const paperGlowStyle = {
+    opacity: paperProgress.interpolate({
+      inputRange: [0, 0.3, 1],
+      outputRange: [0, 0.18, 0.08],
+    }),
+    transform: [
+      {
+        translateY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -92],
+        }),
+      },
+      {
+        scaleY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.4, 1.18],
         }),
       },
     ],
   };
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.95} disabled={disabled} style={styles.cookieTapArea}>
+    <TouchableOpacity
+      activeOpacity={0.94}
+      disabled={disabled}
+      onPress={onPress}
+      style={styles.cookieTapArea}
+    >
       <View style={styles.cookieStage}>
+        <Animated.View
+          style={[
+            styles.paperGlow,
+            paperGlowStyle,
+            { backgroundColor: scene.stageAura },
+          ]}
+        />
+
         <Animated.View style={[styles.sparkleBurst, burstStyle]}>
           <View style={[styles.sparkleDot, styles.sparkleTop]} />
           <View style={[styles.sparkleDot, styles.sparkleLeft]} />
@@ -689,50 +1153,81 @@ function FortuneCookieButton({
           <View style={[styles.sparkleDot, styles.sparkleBottom]} />
         </Animated.View>
 
-        <Animated.View style={[styles.fortuneSlip, paperStyle]}>
-          <View style={styles.fortunePaperCurlLeft} />
-          <View style={styles.fortunePaperCurlRight} />
-          <View style={styles.fortuneSlipEdge} />
-          <View style={styles.fortunePaperCrease} />
-          <Text style={styles.fortuneSlipText}>{fortuneText || 'Tap the cookie to reveal a saying.'}</Text>
+        <Animated.View
+          style={[
+            styles.fortuneSlip,
+            paperStyle,
+            {
+              backgroundColor: scene.paper,
+              borderColor: scene.paperBorder,
+              shadowColor: scene.ridgeFront,
+            },
+          ]}
+        >
+          <View style={[styles.fortuneSlipTopRule, { backgroundColor: scene.paperEdge }]} />
+          <View style={[styles.fortuneSlipBottomRule, { backgroundColor: scene.paperTint }]} />
+          <View style={[styles.fortuneSlipInnerGlow, { backgroundColor: scene.paperTint }]} />
+          <View style={[styles.fortunePaperCurlLeft, { backgroundColor: scene.paperTint }]} />
+          <View style={[styles.fortunePaperCurlRight, { backgroundColor: scene.paperTint }]} />
+          <View style={[styles.fortuneSlipEdge, { backgroundColor: scene.paperEdge }]} />
+          <View style={[styles.fortunePaperCrease, { backgroundColor: scene.paperTint }]} />
+          <Text style={[styles.fortuneSlipText, { color: scene.textPrimary }]}>
+            {fortuneText || 'Tap the cookie to reveal a fortune.'}
+          </Text>
         </Animated.View>
 
-        <Animated.View style={[styles.cookieGlow, cookieGlowStyle]} />
+        <Animated.View
+          style={[
+            styles.cookieGlow,
+            cookieGlowStyle,
+            { backgroundColor: scene.cookieGlow },
+          ]}
+        />
 
-        <Animated.View style={[styles.cookieImageFrame, cookieImageStyle]}>
-          <Animated.View style={[styles.cookieHalfFrame, styles.cookieLeftFrame, leftCookieStyle]}>
-            <Image source={COOKIE_LEFT_IMAGE} style={styles.cookieLeftImage} resizeMode="contain" />
-          </Animated.View>
-          <Animated.View style={[styles.cookieHalfFrame, styles.cookieRightFrame, rightCookieStyle]}>
-            <Image source={COOKIE_RIGHT_IMAGE} style={styles.cookieRightImage} resizeMode="contain" />
-          </Animated.View>
-        </Animated.View>
+        <View style={[styles.cookieNest, { backgroundColor: scene.stageLine }]} />
+
+        <View style={styles.cookieImageFrame}>
+          <CookieShell shellProgress={shellProgress} />
+        </View>
 
         <View style={styles.cookieShadow} />
       </View>
 
-      <Text style={styles.cookieLabel}>
-        {isAnimating ? 'Breaking the cookie open...' : 'Tap the fortune cookie'}
-      </Text>
+      <View style={styles.cookieCuePill}>
+        <Text style={[styles.cookieCueText, { color: scene.cue }]}>
+          {isAnimating ? 'Opening...' : 'Ready for your fortune?'}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 }
 
 export default function App() {
+  const { height: viewportHeight } = useWindowDimensions();
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
   const [analysisSummary, setAnalysisSummary] = useState(null);
   const [recentFortunes, setRecentFortunes] = useState([]);
-  const [statusMessage, setStatusMessage] = useState('Development mode: every tap gives you a new fortune.');
+  const [sceneKey, setSceneKey] = useState('apricotMorning');
+  const [statusMessage, setStatusMessage] = useState(
+    'Development mode: new fortune every tap.'
+  );
   const [isAnimating, setIsAnimating] = useState(false);
 
   const shellProgress = useRef(new Animated.Value(0)).current;
   const paperProgress = useRef(new Animated.Value(0)).current;
   const sparkleProgress = useRef(new Animated.Value(0)).current;
 
-  function runCookieAnimation(nextFortune, analysis) {
+  const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
+  const stageMinHeight = Math.max(Math.round(viewportHeight * 0.74), 540);
+  const stageTopPadding = Math.max(Math.round(viewportHeight * 0.18), 110);
+  const stageBottomPadding = Math.max(Math.round(viewportHeight * 0.08), 48);
+  const inputBottomGap = Math.max(Math.round(viewportHeight * 0.08), 34);
+
+  function runCookieAnimation(nextFortune, analysis, nextSceneKey) {
     setFortuneText(nextFortune);
     setAnalysisSummary(analysis);
+    setSceneKey(nextSceneKey);
     setIsAnimating(true);
     shellProgress.setValue(0);
     paperProgress.setValue(0);
@@ -742,26 +1237,26 @@ export default function App() {
       Animated.parallel([
         Animated.timing(shellProgress, {
           toValue: 1,
-          duration: 300,
+          duration: 280,
           easing: Easing.out(Easing.exp),
           useNativeDriver: true,
         }),
         Animated.timing(sparkleProgress, {
           toValue: 1,
-          duration: 240,
+          duration: 230,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
       ]),
       Animated.timing(paperProgress, {
         toValue: 1,
-        duration: 430,
-        easing: Easing.out(Easing.back(1.05)),
+        duration: 420,
+        easing: Easing.out(Easing.back(0.8)),
         useNativeDriver: true,
       }),
     ]).start(() => {
       setIsAnimating(false);
-      setStatusMessage('Development mode is on, so you can keep tapping for new fortunes.');
+      setStatusMessage('Development mode: tap again for another fortune.');
     });
   }
 
@@ -770,65 +1265,118 @@ export default function App() {
       return;
     }
 
-    const analysis = analyzeMoodInput(moodInput);
+    const moderationResult = moderateMoodInput(moodInput);
+
+    if (moderationResult.moderation === 'blocked-hate') {
+      const blockedAnalysis = {
+        primaryMood: 'unknown',
+        secondaryMood: null,
+        scores: {},
+        source: 'blocked-hate',
+      };
+      setStatusMessage(
+        'Try naming your mood without targeting a group of people.'
+      );
+      runCookieAnimation(BLOCKED_INPUT_FORTUNE, blockedAnalysis, 'moonlitDunes');
+      return;
+    }
+
+    const analysis = analyzeMoodInput(moderationResult.sanitizedInput);
     const fortune = pickFortuneForAnalysis(analysis, recentFortunes);
+    const nextSceneKey = pickNextSceneKey(analysis, sceneKey, recentFortunes.length);
     setRecentFortunes((current) => [fortune, ...current].slice(0, 8));
-    runCookieAnimation(fortune, analysis);
+    runCookieAnimation(fortune, analysis, nextSceneKey);
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ExpoStatusBar style="dark" />
-      <StatusBar barStyle="dark-content" />
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.backgroundGlowOne} />
-        <View style={styles.backgroundGlowTwo} />
-        <View style={styles.backgroundGlowThree} />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: scene.sky }]}>
+      <ExpoStatusBar style={scene.statusBar} />
+      <StatusBar barStyle={scene.statusBar === 'light' ? 'light-content' : 'dark-content'} />
 
-        <View style={styles.heroCard}>
-          <Text style={styles.eyebrow}>Daily Fortune</Text>
-          <Text style={styles.title}>A small ritual for whatever mood you brought today.</Text>
-          <Text style={styles.subtitle}>
-            Name the feeling, tap the cookie, and let the message rise out. We kept development mode on, so every tap gives you a fresh reveal.
-          </Text>
-        </View>
+      <View style={[styles.screen, { backgroundColor: scene.sky }]}>
+        <SceneBackdrop scene={scene} />
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>How are you feeling right now?</Text>
-          <Text style={styles.sectionCaption}>A single word or short phrase is enough.</Text>
-          <TextInput
-            value={moodInput}
-            onChangeText={setMoodInput}
-            placeholder="Try: hopeful, stressed, sleepy, excited"
-            placeholderTextColor="#9a7650"
-            style={styles.input}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            style={[
+              styles.landscapeStage,
+              {
+                minHeight: stageMinHeight,
+                paddingTop: stageTopPadding,
+                paddingBottom: stageBottomPadding,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.inputFloat,
+                {
+                  backgroundColor: scene.panel,
+                  borderColor: scene.panelBorder,
+                  marginBottom: inputBottomGap,
+                },
+              ]}
+            >
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setMoodInput}
+                placeholder="How are you feeling?"
+                placeholderTextColor={scene.accentSoft}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: scene.input,
+                    borderColor: scene.inputBorder,
+                    color: scene.textPrimary,
+                  },
+                ]}
+                value={moodInput}
+              />
+            </View>
 
-          <View style={styles.stageCard}>
-            <Text style={styles.stageTitle}>Open today&apos;s cookie</Text>
+            <View style={[styles.stageAuraPool, { backgroundColor: scene.stageAura }]} />
+            <View style={[styles.stageHaze, { backgroundColor: scene.mist }]} />
             <FortuneCookieButton
               disabled={isAnimating}
               fortuneText={fortuneText}
               isAnimating={isAnimating}
               onPress={openFortune}
-              shellProgress={shellProgress}
               paperProgress={paperProgress}
+              scene={scene}
+              shellProgress={shellProgress}
               sparkleProgress={sparkleProgress}
             />
           </View>
 
-          <Text style={styles.helperText}>{statusMessage}</Text>
-          {analysisSummary ? (
-            <Text style={styles.devMoodText}>
-              Detected: {analysisSummary.primaryMood}
-              {analysisSummary.secondaryMood ? ` + ${analysisSummary.secondaryMood}` : ''}
-              {` (${analysisSummary.source})`}
+          <View style={styles.footerStack}>
+            {analysisSummary ? (
+              <View
+                style={[
+                  styles.devChip,
+                  {
+                    backgroundColor: scene.input,
+                    borderColor: scene.inputBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.devMoodText, { color: scene.cue }]}>
+                  Detected: {analysisSummary.primaryMood}
+                  {analysisSummary.secondaryMood ? ` + ${analysisSummary.secondaryMood}` : ''}
+                  {` (${analysisSummary.source})`}
+                </Text>
+              </View>
+            ) : null}
+
+            <Text style={[styles.devFooterText, { color: scene.textSecondary }]}>
+              {statusMessage}
             </Text>
-          ) : null}
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -836,303 +1384,523 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f7ead2',
   },
-  container: {
+  screen: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
-    padding: 20,
-    gap: 20,
-    backgroundColor: '#f7ead2',
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 28,
   },
-  backgroundGlowOne: {
+  sceneWash: {
     position: 'absolute',
-    top: 24,
-    left: -36,
-    width: 240,
+    top: -110,
+    left: -70,
+    right: -70,
+    height: 390,
+    borderBottomLeftRadius: 210,
+    borderBottomRightRadius: 210,
+  },
+  celestialHalo: {
+    position: 'absolute',
+    top: 64,
+    right: 32,
+    width: 168,
+    height: 168,
+    borderRadius: 999,
+    opacity: 0.7,
+  },
+  celestialDisc: {
+    position: 'absolute',
+    top: 104,
+    right: 76,
+    width: 78,
+    height: 78,
+    borderRadius: 999,
+    opacity: 0.9,
+  },
+  cloud: {
+    position: 'absolute',
+    borderRadius: 999,
+  },
+  cloudOne: {
+    top: 170,
+    left: 34,
+    width: 124,
+    height: 42,
+    opacity: 0.82,
+  },
+  cloudTwo: {
+    top: 150,
+    right: 132,
+    width: 112,
+    height: 36,
+    opacity: 0.74,
+  },
+  star: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#fff8ef',
+  },
+  ridgeBack: {
+    position: 'absolute',
+    left: -90,
+    right: -90,
+    bottom: 250,
     height: 240,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255, 247, 232, 0.85)',
+    borderTopLeftRadius: 180,
+    borderTopRightRadius: 180,
   },
-  backgroundGlowTwo: {
+  ridgeMid: {
     position: 'absolute',
+    left: -60,
+    right: -50,
+    bottom: 162,
+    height: 240,
+    borderTopLeftRadius: 180,
+    borderTopRightRadius: 180,
+  },
+  ridgeFront: {
+    position: 'absolute',
+    left: -40,
+    right: -40,
+    bottom: 78,
+    height: 230,
+    borderTopLeftRadius: 180,
+    borderTopRightRadius: 180,
+  },
+  ridgeHighlight: {
+    position: 'absolute',
+    left: 42,
+    right: 42,
+    bottom: 230,
+    height: 48,
+    borderRadius: 999,
+  },
+  sceneMist: {
+    position: 'absolute',
+    left: -30,
     right: -30,
-    top: 250,
-    width: 250,
-    height: 250,
+    bottom: 110,
+    height: 150,
     borderRadius: 999,
-    backgroundColor: 'rgba(226, 189, 126, 0.26)',
   },
-  backgroundGlowThree: {
+  landscapeStage: {
+    marginTop: 0,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    justifyContent: 'flex-end',
+  },
+  inputFloat: {
+    width: '88%',
+    maxWidth: 430,
+    alignSelf: 'center',
+    borderRadius: 24,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 10,
+    shadowColor: '#70523d',
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 0,
+  },
+  stageAuraPool: {
     position: 'absolute',
-    left: 60,
-    top: 420,
-    width: 180,
-    height: 180,
+    bottom: 100,
+    left: 28,
+    right: 28,
+    height: 188,
     borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.32)',
   },
-  heroCard: {
-    backgroundColor: 'rgba(255, 252, 246, 0.94)',
-    borderRadius: 34,
-    paddingHorizontal: 26,
-    paddingTop: 28,
-    paddingBottom: 26,
-    borderWidth: 1,
-    borderColor: 'rgba(181, 144, 88, 0.14)',
-    shadowColor: '#9b7a45',
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 5,
+  stageHaze: {
+    position: 'absolute',
+    bottom: 72,
+    left: -10,
+    right: -10,
+    height: 116,
+    borderRadius: 999,
+    opacity: 0.42,
   },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 2.2,
-    textTransform: 'uppercase',
-    color: '#b28a56',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 36,
-    lineHeight: 42,
-    fontWeight: '900',
-    color: '#3b2a18',
-    marginBottom: 12,
-    letterSpacing: -0.4,
-  },
-  subtitle: {
-    fontSize: 16,
-    lineHeight: 26,
-    color: '#6b5844',
-  },
-  card: {
-    backgroundColor: 'rgba(255, 252, 246, 0.9)',
-    borderRadius: 30,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(181, 144, 88, 0.14)',
-    shadowColor: '#9b7a45',
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#3f2e1d',
-    marginBottom: 6,
-  },
-  sectionCaption: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#7d6a54',
-    marginBottom: 14,
+  footerStack: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    marginTop: 12,
+    paddingBottom: 6,
   },
   input: {
-    backgroundColor: '#fffdf8',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 15,
-    fontSize: 16,
-    color: '#3f2500',
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#ead8ba',
-  },
-  stageCard: {
-    marginTop: 18,
-    backgroundColor: 'rgba(250, 242, 226, 0.82)',
-    borderRadius: 28,
-    paddingHorizontal: 14,
-    paddingTop: 16,
-    paddingBottom: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(204, 175, 129, 0.22)',
-  },
-  stageTitle: {
-    textAlign: 'center',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-    color: '#a68454',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    fontSize: 19,
   },
   cookieTapArea: {
-    marginTop: 10,
     alignItems: 'center',
+    paddingBottom: 8,
   },
   cookieStage: {
     width: '100%',
     minHeight: 330,
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingTop: 24,
+    paddingTop: 18,
+  },
+  paperGlow: {
+    position: 'absolute',
+    bottom: 162,
+    width: 176,
+    height: 148,
+    borderRadius: 999,
   },
   sparkleBurst: {
     position: 'absolute',
-    top: 48,
-    width: 160,
-    height: 160,
+    top: 76,
+    width: 124,
+    height: 124,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sparkleDot: {
     position: 'absolute',
-    width: 10,
-    height: 10,
+    width: 6,
+    height: 6,
     borderRadius: 999,
-    backgroundColor: '#f8e8b7',
-    shadowColor: '#fff5d8',
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
+    backgroundColor: 'rgba(255, 241, 200, 0.72)',
+    shadowColor: '#fff8e0',
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
   },
   sparkleTop: {
     top: 0,
   },
   sparkleBottom: {
-    bottom: 10,
+    bottom: 6,
   },
   sparkleLeft: {
-    left: 16,
-    top: 52,
+    left: 12,
+    top: 42,
   },
   sparkleRight: {
-    right: 16,
-    top: 52,
+    right: 12,
+    top: 42,
   },
   fortuneSlip: {
     position: 'absolute',
-    bottom: 108,
-    width: 256,
-    minHeight: 42,
-    backgroundColor: '#fffbf1',
-    borderRadius: 6,
+    bottom: 132,
+    width: 304,
+    minHeight: 40,
+    borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#e7dcc3',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
     justifyContent: 'center',
-    shadowColor: '#6c4415',
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
+  },
+  fortuneSlipTopRule: {
+    position: 'absolute',
+    top: 5,
+    left: 12,
+    right: 12,
+    height: 1,
+    opacity: 0.85,
+  },
+  fortuneSlipBottomRule: {
+    position: 'absolute',
+    bottom: 5,
+    left: 12,
+    right: 12,
+    height: 1,
+    opacity: 0.35,
+  },
+  fortuneSlipInnerGlow: {
+    position: 'absolute',
+    top: 8,
+    left: 10,
+    right: 10,
+    height: 12,
+    borderRadius: 8,
+    opacity: 0.32,
   },
   fortuneSlipEdge: {
     position: 'absolute',
-    top: 6,
-    bottom: 6,
+    top: 8,
+    bottom: 8,
     left: 6,
-    width: 2,
+    width: 1.5,
     borderRadius: 2,
-    backgroundColor: '#efe2bb',
+    opacity: 0.75,
   },
   fortunePaperCurlLeft: {
     position: 'absolute',
+    top: 8,
+    bottom: 8,
     left: -1,
-    top: 7,
-    bottom: 7,
-    width: 12,
+    width: 9,
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
-    backgroundColor: 'rgba(214, 198, 165, 0.18)',
+    opacity: 0.52,
   },
   fortunePaperCurlRight: {
     position: 'absolute',
+    top: 8,
+    bottom: 8,
     right: -1,
-    top: 7,
-    bottom: 7,
-    width: 12,
+    width: 9,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
-    backgroundColor: 'rgba(214, 198, 165, 0.18)',
+    opacity: 0.52,
   },
   fortunePaperCrease: {
     position: 'absolute',
-    top: 7,
-    bottom: 7,
+    top: 8,
+    bottom: 8,
     right: 10,
-    width: 2,
+    width: 1.5,
     borderRadius: 2,
-    backgroundColor: 'rgba(198, 176, 134, 0.32)',
+    opacity: 0.54,
   },
   fortuneSlipText: {
-    paddingLeft: 8,
-    paddingRight: 12,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '600',
-    color: '#53402d',
+    paddingLeft: 10,
+    paddingRight: 14,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '500',
     textAlign: 'center',
-    letterSpacing: 0.15,
+    letterSpacing: 0.05,
     fontFamily: FORTUNE_FONT_FAMILY,
   },
   cookieGlow: {
     position: 'absolute',
-    bottom: 34,
-    width: 236,
-    height: 148,
+    bottom: 44,
+    width: 256,
+    height: 164,
     borderRadius: 999,
-    backgroundColor: 'rgba(247, 223, 171, 0.45)',
+  },
+  cookieNest: {
+    position: 'absolute',
+    bottom: 40,
+    width: 248,
+    height: 32,
+    borderRadius: 999,
+    opacity: 0.7,
   },
   cookieImageFrame: {
     position: 'absolute',
-    bottom: 26,
-    width: 220,
-    height: 176,
+    bottom: 34,
+    width: COOKIE_SHELL_FRAME.width,
+    height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cookieHybridShell: {
+    width: COOKIE_SHELL_FRAME.width,
+    height: COOKIE_SHELL_FRAME.height,
+  },
+  cookieClosedShell: {
+    position: 'absolute',
+    bottom: 8,
+    width: 180,
+    height: 180,
+    alignSelf: 'center',
+  },
+  cookieIllustratedShell: {
+    width: COOKIE_SHELL_FRAME.width,
+    height: COOKIE_SHELL_FRAME.height,
+  },
+  cookieCenterFold: {
+    position: 'absolute',
+    left: '50%',
+    marginLeft: -13,
+    bottom: 32,
+    width: 26,
+    height: 112,
+    borderRadius: 18,
+    backgroundColor: '#d6a565',
+    borderWidth: 1,
+    borderColor: 'rgba(152, 103, 48, 0.2)',
+  },
+  cookieSplitShell: {
+    width: COOKIE_SHELL_FRAME.width,
+    height: COOKIE_SHELL_FRAME.height,
+  },
+  cookieAnimatedShell: {
+    width: COOKIE_SHELL_FRAME.width,
+    height: COOKIE_SHELL_FRAME.height,
   },
   cookieHalfFrame: {
     position: 'absolute',
     bottom: 0,
   },
   cookieLeftFrame: {
-    left: 18,
+    left: 34,
   },
   cookieRightFrame: {
-    right: 8,
+    right: 28,
+  },
+  cookieHalfIllustration: {
+    width: 104,
+    height: 164,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  cookieHalfIllustrationLeft: {
+    transform: [{ rotate: '-16deg' }],
+  },
+  cookieHalfIllustrationRight: {
+    transform: [{ rotate: '16deg' }],
+  },
+  cookieHalfBody: {
+    position: 'absolute',
+    bottom: 14,
+    width: 88,
+    height: 134,
+    borderRadius: 48,
+    backgroundColor: '#e5b976',
+    borderWidth: 1.5,
+    borderColor: '#c7924f',
+  },
+  cookieHalfRim: {
+    position: 'absolute',
+    bottom: 18,
+    width: 80,
+    height: 124,
+    borderRadius: 42,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 243, 217, 0.22)',
+  },
+  cookieHalfHighlight: {
+    position: 'absolute',
+    top: 26,
+    width: 16,
+    height: 68,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 244, 217, 0.38)',
+  },
+  cookieHalfHighlightLeft: {
+    left: 26,
+    transform: [{ rotate: '-8deg' }],
+  },
+  cookieHalfHighlightRight: {
+    right: 26,
+    transform: [{ rotate: '8deg' }],
+  },
+  cookieHalfShadow: {
+    position: 'absolute',
+    bottom: 28,
+    width: 28,
+    height: 92,
+    borderRadius: 24,
+    backgroundColor: 'rgba(159, 104, 44, 0.16)',
+  },
+  cookieHalfShadowLeft: {
+    right: 16,
+  },
+  cookieHalfShadowRight: {
+    left: 16,
+  },
+  cookieHalfPocket: {
+    position: 'absolute',
+    bottom: 26,
+    width: 20,
+    height: 84,
+    borderRadius: 18,
+    backgroundColor: 'rgba(120, 72, 28, 0.18)',
+  },
+  cookieHalfPocketLeft: {
+    right: 18,
+    transform: [{ rotate: '6deg' }],
+  },
+  cookieHalfPocketRight: {
+    left: 18,
+    transform: [{ rotate: '-6deg' }],
+  },
+  cookieHalfCrease: {
+    position: 'absolute',
+    bottom: 22,
+    width: 12,
+    height: 92,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 234, 191, 0.18)',
+  },
+  cookieHalfCreaseLeft: {
+    right: 28,
+  },
+  cookieHalfCreaseRight: {
+    left: 28,
+  },
+  cookieHalfBase: {
+    position: 'absolute',
+    bottom: 0,
+    width: 54,
+    height: 30,
+    borderRadius: 18,
+    backgroundColor: '#d09a58',
+    borderWidth: 1,
+    borderColor: 'rgba(154, 102, 49, 0.22)',
+  },
+  cookieHalfBaseLeft: {
+    left: 24,
+    transform: [{ rotate: '-10deg' }],
+  },
+  cookieHalfBaseRight: {
+    right: 24,
+    transform: [{ rotate: '10deg' }],
   },
   cookieLeftImage: {
-    width: 104,
-    height: 176,
+    width: 92,
+    height: 154,
   },
   cookieRightImage: {
-    width: 128,
-    height: 176,
+    width: 96,
+    height: 154,
   },
   cookieShadow: {
     position: 'absolute',
-    bottom: 12,
-    width: 186,
-    height: 28,
+    bottom: 16,
+    width: 176,
+    height: 24,
     borderRadius: 999,
-    backgroundColor: 'rgba(118, 88, 42, 0.14)',
+    backgroundColor: 'rgba(66, 46, 35, 0.12)',
   },
-  cookieLabel: {
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    color: '#6c563a',
+  cookieCuePill: {
+    marginTop: 10,
   },
-  helperText: {
-    marginTop: 16,
-    color: '#8a7458',
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: 'center',
+  cookieCueText: {
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: 0.08,
+  },
+  devChip: {
+    alignSelf: 'center',
+    marginTop: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
   },
   devMoodText: {
-    marginTop: 8,
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 9,
+    fontWeight: '600',
+    letterSpacing: 0.14,
+  },
+  devFooterText: {
+    width: '100%',
+    maxWidth: 360,
+    alignSelf: 'center',
+    marginTop: 10,
+    fontSize: 10,
+    lineHeight: 14,
     textAlign: 'center',
-    color: '#ab926f',
-    letterSpacing: 0.3,
-    textTransform: 'lowercase',
+    opacity: 0.58,
   },
 });
