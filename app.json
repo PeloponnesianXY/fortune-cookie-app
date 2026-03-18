@@ -10,11 +10,11 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.fortunecookiedaily"
+      "bundleIdentifier": "com.peloponnesianxy.fortunecookiedaily"
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.example.fortunecookiedaily"
+      "package": "com.peloponnesianxy.fortunecookiedaily"
     }
   }
 }
