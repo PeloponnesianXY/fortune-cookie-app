@@ -7,7 +7,11 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "cookie:validate": "node creative-pipeline/scripts/validate-cookie-manifest.mjs assets/cookie/manifests/classic-cookie.json",
+    "cookie:frame-index": "node creative-pipeline/scripts/generate-frame-index.mjs assets/cookie/frames/classic",
+    "cookie:normalize": "node creative-pipeline/scripts/normalize-cookie-assets.mjs creative-pipeline/comfyui/exported classic-cookie",
+    "cookie:contact-sheet": "node creative-pipeline/scripts/make-contact-sheet.mjs assets/cookie/frames/classic"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.5",

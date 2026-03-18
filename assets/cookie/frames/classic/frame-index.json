@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-03-18T20:21:21.055Z",
+  "fps": 12,
+  "frames": [
+    {
+      "index": 0,
+      "file": "classic-cookie-0001.png",
+      "durationMs": 83
+    },
+    {
+      "index": 1,
+      "file": "classic-cookie-0002.png",
+      "durationMs": 83
+    },
+    {
+      "index": 2,
+      "file": "classic-cookie-0003.png",
+      "durationMs": 83
+    },
+    {
+      "index": 3,
+      "file": "classic-cookie-0004.png",
+      "durationMs": 83
+    },
+    {
+      "index": 4,
+      "file": "classic-cookie-0005.png",
+      "durationMs": 83
+    },
+    {
+      "index": 5,
+      "file": "classic-cookie-0006.png",
+      "durationMs": 83
+    },
+    {
+      "index": 6,
+      "file": "classic-cookie-0007.png",
+      "durationMs": 83
+    },
+    {
+      "index": 7,
+      "file": "classic-cookie-0008.png",
+      "durationMs": 83
+    }
+  ]
+}
