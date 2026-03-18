@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Animated,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,7 +11,13 @@ import {
   View,
 } from 'react-native';
 
-import FortuneCookieAnimation from '../src/components/FortuneCookie/FortuneCookieAnimation';
+import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
+
+const FORTUNE_FONT_FAMILY = Platform.select({
+  ios: 'Georgia',
+  android: 'serif',
+  default: 'Georgia',
+});
 
 function SceneBackdrop({ scene }) {
   return (
@@ -45,16 +53,73 @@ function SceneBackdrop({ scene }) {
 }
 
 function CookieStage({
-  animationKey,
   fortuneText,
   isAnimating,
-  isOpened,
-  onAnimationComplete,
   onPress,
-  packId,
-  reducedMotion,
+  paperProgress,
   scene,
+  shellProgress,
 }) {
+  const paperStyle = {
+    opacity: paperProgress,
+    transform: [
+      {
+        translateY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [10, -112],
+        }),
+      },
+      {
+        scale: paperProgress.interpolate({
+          inputRange: [0, 0.74, 1],
+          outputRange: [0.8, 0.94, 1],
+        }),
+      },
+      {
+        rotate: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['7deg', '11deg'],
+        }),
+      },
+    ],
+  };
+
+  const cookieGlowStyle = {
+    opacity: shellProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.16, 0.32],
+    }),
+    transform: [
+      {
+        scale: shellProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.94, 1.06],
+        }),
+      },
+    ],
+  };
+
+  const paperGlowStyle = {
+    opacity: paperProgress.interpolate({
+      inputRange: [0, 0.3, 1],
+      outputRange: [0, 0.18, 0.08],
+    }),
+    transform: [
+      {
+        translateY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -92],
+        }),
+      },
+      {
+        scaleY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.4, 1.18],
+        }),
+      },
+    ],
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={0.94}
@@ -63,20 +128,43 @@ function CookieStage({
       style={styles.cookieTapArea}
     >
       <View style={styles.cookieStage}>
-        <View style={[styles.paperGlow, { backgroundColor: scene.stageAura, opacity: isOpened ? 0.12 : 0.04 }]} />
-        <View style={[styles.cookieGlow, { backgroundColor: scene.cookieGlow, opacity: isOpened ? 0.28 : 0.16 }]} />
+        <Animated.View
+          style={[
+            styles.paperGlow,
+            paperGlowStyle,
+            { backgroundColor: scene.stageAura },
+          ]}
+        />
+
+        <Animated.View
+          style={[
+            styles.cookieGlow,
+            cookieGlowStyle,
+            { backgroundColor: scene.cookieGlow },
+          ]}
+        />
+
         <View style={[styles.cookieNest, { backgroundColor: scene.stageLine }]} />
 
         <View style={styles.cookieImageFrame}>
-          <FortuneCookieAnimation
-            animationKey={animationKey}
-            fortuneText={fortuneText}
-            isOpened={isOpened}
-            onAnimationComplete={onAnimationComplete}
-            packId={packId}
-            reducedMotion={reducedMotion}
-            scene={scene}
-          />
+          <CookieShell shellProgress={shellProgress} />
+
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.brokenFortuneOverlay,
+              paperStyle,
+              {
+                backgroundColor: scene.paper,
+                borderColor: scene.paperBorder,
+                shadowColor: scene.ridgeFront,
+              },
+            ]}
+          >
+            <Text style={[styles.brokenFortuneText, { color: scene.textPrimary }]}>
+              {fortuneText || 'Tap the cookie to reveal a fortune.'}
+            </Text>
+          </Animated.View>
         </View>
 
         <View style={styles.cookieShadow} />
@@ -93,17 +181,14 @@ function CookieStage({
 
 export default function FortuneCard({
   analysisSummary,
-  animationKey,
   fortuneText,
   isAnimating,
-  isOpened,
   moodInput,
-  onAnimationComplete,
   onMoodChange,
   onOpenFortune,
-  packId,
-  reducedMotion,
+  paperProgress,
   scene,
+  shellProgress,
   statusMessage,
 }) {
   const { height: viewportHeight } = useWindowDimensions();
@@ -162,15 +247,12 @@ export default function FortuneCard({
           <View style={[styles.stageHaze, { backgroundColor: scene.mist }]} />
 
           <CookieStage
-            animationKey={animationKey}
             fortuneText={fortuneText}
             isAnimating={isAnimating}
-            isOpened={isOpened}
-            onAnimationComplete={onAnimationComplete}
             onPress={onOpenFortune}
-            packId={packId}
-            reducedMotion={reducedMotion}
+            paperProgress={paperProgress}
             scene={scene}
+            shellProgress={shellProgress}
           />
         </View>
 
@@ -386,10 +468,35 @@ const styles = StyleSheet.create({
   cookieImageFrame: {
     position: 'absolute',
     bottom: 28,
-    width: 248,
-    height: 198,
+    width: COOKIE_SHELL_FRAME.width,
+    height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  brokenFortuneOverlay: {
+    position: 'absolute',
+    left: 134,
+    bottom: 94,
+    width: 112,
+    minHeight: 36,
+    borderRadius: 1,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    justifyContent: 'center',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+    opacity: 0.88,
+  },
+  brokenFortuneText: {
+    fontSize: 8.5,
+    lineHeight: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: -0.1,
+    fontFamily: FORTUNE_FONT_FAMILY,
   },
   cookieShadow: {
     position: 'absolute',

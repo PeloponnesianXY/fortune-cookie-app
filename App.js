@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -19,8 +21,9 @@ export default function App() {
     'Daily mode: the same mood gets the same fortune for the rest of the day.'
   );
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isCookieOpened, setIsCookieOpened] = useState(false);
-  const [animationKey, setAnimationKey] = useState(0);
+
+  const shellProgress = useRef(new Animated.Value(0)).current;
+  const paperProgress = useRef(new Animated.Value(0)).current;
 
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
 
@@ -29,23 +32,36 @@ export default function App() {
     setAnalysisSummary(selection.analysis);
     setSceneKey(selection.sceneKey);
     setIsAnimating(true);
-    setIsCookieOpened(true);
-    setAnimationKey((current) => current + 1);
-  }
+    shellProgress.setValue(0);
+    paperProgress.setValue(0);
 
-  function handleAnimationComplete() {
-    setIsAnimating(false);
+    Animated.sequence([
+      Animated.timing(shellProgress, {
+        toValue: 1,
+        duration: 280,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: true,
+      }),
+      Animated.timing(paperProgress, {
+        toValue: 1,
+        duration: 420,
+        easing: Easing.out(Easing.back(0.8)),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsAnimating(false);
 
-    if (analysisSummary?.source === 'blocked-hate') {
-      setStatusMessage('Try naming your mood without targeting a group of people.');
-      return;
-    }
+      if (selection.moderation === 'blocked-hate') {
+        setStatusMessage('Try naming your mood without targeting a group of people.');
+        return;
+      }
 
-    setStatusMessage((currentMessage) => (
-      currentMessage.includes('Saved for today') || currentMessage.includes('Same day')
-        ? currentMessage
-        : 'Saved for today. That mood will pull this fortune until tomorrow.'
-    ));
+      setStatusMessage(
+        selection.fromCache
+          ? 'Same day, same mood, same fortune.'
+          : 'Saved for today. That mood will pull this fortune until tomorrow.'
+      );
+    });
   }
 
   async function openFortune() {
@@ -54,13 +70,6 @@ export default function App() {
     }
 
     const selection = await getDailyFortuneSelection(moodInput);
-    if (selection.moderation === 'blocked-hate') {
-      setStatusMessage('Try naming your mood without targeting a group of people.');
-    } else if (selection.fromCache) {
-      setStatusMessage('Same day, same mood, same fortune.');
-    } else {
-      setStatusMessage('Saved for today. That mood will pull this fortune until tomorrow.');
-    }
     runCookieAnimation(selection);
   }
 
@@ -73,15 +82,12 @@ export default function App() {
         analysisSummary={analysisSummary}
         fortuneText={fortuneText}
         isAnimating={isAnimating}
-        isOpened={isCookieOpened}
-        animationKey={animationKey}
         moodInput={moodInput}
         onMoodChange={setMoodInput}
         onOpenFortune={openFortune}
-        onAnimationComplete={handleAnimationComplete}
-        packId="classic-cookie"
-        reducedMotion={false}
+        paperProgress={paperProgress}
         scene={scene}
+        shellProgress={shellProgress}
         statusMessage={statusMessage}
       />
     </SafeAreaView>
