@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Animated,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,12 +11,6 @@ import {
 } from 'react-native';
 
 import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
-
-const FORTUNE_FONT_FAMILY = Platform.select({
-  ios: 'Georgia',
-  android: 'serif',
-  default: 'Georgia',
-});
 
 function SceneBackdrop({ scene }) {
   return (
@@ -60,30 +53,6 @@ function CookieStage({
   scene,
   shellProgress,
 }) {
-  const paperStyle = {
-    opacity: paperProgress,
-    transform: [
-      {
-        translateY: paperProgress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [10, -112],
-        }),
-      },
-      {
-        scale: paperProgress.interpolate({
-          inputRange: [0, 0.74, 1],
-          outputRange: [0.8, 0.94, 1],
-        }),
-      },
-      {
-        rotate: paperProgress.interpolate({
-          inputRange: [0, 1],
-          outputRange: ['7deg', '11deg'],
-        }),
-      },
-    ],
-  };
-
   const cookieGlowStyle = {
     opacity: shellProgress.interpolate({
       inputRange: [0, 1],
@@ -147,24 +116,12 @@ function CookieStage({
         <View style={[styles.cookieNest, { backgroundColor: scene.stageLine }]} />
 
         <View style={styles.cookieImageFrame}>
-          <CookieShell shellProgress={shellProgress} />
-
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.brokenFortuneOverlay,
-              paperStyle,
-              {
-                backgroundColor: scene.paper,
-                borderColor: scene.paperBorder,
-                shadowColor: scene.ridgeFront,
-              },
-            ]}
-          >
-            <Text style={[styles.brokenFortuneText, { color: scene.textPrimary }]}>
-              {fortuneText || 'Tap the cookie to reveal a fortune.'}
-            </Text>
-          </Animated.View>
+          <CookieShell
+            fortuneText={fortuneText}
+            paperProgress={paperProgress}
+            scene={scene}
+            shellProgress={shellProgress}
+          />
         </View>
 
         <View style={styles.cookieShadow} />
@@ -438,7 +395,7 @@ const styles = StyleSheet.create({
   },
   cookieStage: {
     width: '100%',
-    minHeight: 330,
+    minHeight: 376,
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingTop: 18,
@@ -459,44 +416,19 @@ const styles = StyleSheet.create({
   },
   cookieNest: {
     position: 'absolute',
-    bottom: 40,
-    width: 248,
+    bottom: 44,
+    width: 266,
     height: 32,
     borderRadius: 999,
     opacity: 0.7,
   },
   cookieImageFrame: {
     position: 'absolute',
-    bottom: 28,
+    bottom: 8,
     width: COOKIE_SHELL_FRAME.width,
     height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  brokenFortuneOverlay: {
-    position: 'absolute',
-    left: 134,
-    bottom: 94,
-    width: 112,
-    minHeight: 36,
-    borderRadius: 1,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    justifyContent: 'center',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-    opacity: 0.88,
-  },
-  brokenFortuneText: {
-    fontSize: 8.5,
-    lineHeight: 10,
-    fontWeight: '600',
-    textAlign: 'center',
-    letterSpacing: -0.1,
-    fontFamily: FORTUNE_FONT_FAMILY,
   },
   cookieShadow: {
     position: 'absolute',

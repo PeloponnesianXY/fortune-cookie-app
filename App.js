@@ -36,18 +36,23 @@ export default function App() {
     paperProgress.setValue(0);
 
     Animated.sequence([
-      Animated.timing(shellProgress, {
-        toValue: 1,
-        duration: 280,
-        easing: Easing.out(Easing.exp),
-        useNativeDriver: true,
-      }),
-      Animated.timing(paperProgress, {
-        toValue: 1,
-        duration: 420,
-        easing: Easing.out(Easing.back(0.8)),
-        useNativeDriver: true,
-      }),
+      Animated.parallel([
+        Animated.timing(shellProgress, {
+          toValue: 1,
+          duration: 1260,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.sequence([
+          Animated.delay(620),
+          Animated.timing(paperProgress, {
+            toValue: 1,
+            duration: 360,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
     ]).start(() => {
       setIsAnimating(false);
 
