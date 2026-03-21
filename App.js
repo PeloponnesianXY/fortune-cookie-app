@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -12,6 +12,19 @@ import FortuneCard from './components/FortuneCard';
 import { SCENE_LIBRARY } from './data/scenes';
 import { getDailyFortuneSelection, getDefaultSceneKey } from './utils/fortuneLogic';
 
+const COOKIE_TIMINGS = {
+  shell: 1000,
+  paperDelay: 140,
+  paperStart: 140,
+  paperDuration: 280,
+};
+
+const REVEAL_PHASE = {
+  IDLE: 'idle',
+  OPENING: 'opening',
+  OPENED: 'opened',
+};
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
@@ -20,52 +33,75 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState(
     'Daily mode: the same mood gets the same fortune for the rest of the day.'
   );
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [revealPhase, setRevealPhase] = useState(REVEAL_PHASE.IDLE);
 
   const shellProgress = useRef(new Animated.Value(0)).current;
   const paperProgress = useRef(new Animated.Value(0)).current;
+  const paperRevealTimer = useRef(null);
 
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
+  const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
+  const isCookieOpened = revealPhase !== REVEAL_PHASE.IDLE;
+  const isPaperVisible = revealPhase === REVEAL_PHASE.OPENED;
+
+  function clearPaperRevealTimer() {
+    if (paperRevealTimer.current) {
+      clearTimeout(paperRevealTimer.current);
+      paperRevealTimer.current = null;
+    }
+  }
+
+  useEffect(() => () => {
+    clearPaperRevealTimer();
+  }, []);
+
+  function updateStatusMessage(selection) {
+    if (selection.moderation === 'blocked-hate') {
+      setStatusMessage('Try naming your mood without targeting a group of people.');
+      return;
+    }
+
+    setStatusMessage(
+      selection.fromCache
+        ? 'Same day, same mood, same fortune.'
+        : 'Saved for today. That mood will pull this fortune until tomorrow.'
+    );
+  }
 
   function runCookieAnimation(selection) {
     setFortuneText(selection.fortuneText);
     setAnalysisSummary(selection.analysis);
     setSceneKey(selection.sceneKey);
-    setIsAnimating(true);
+    setRevealPhase(REVEAL_PHASE.IDLE);
     shellProgress.setValue(0);
     paperProgress.setValue(0);
+    clearPaperRevealTimer();
 
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(shellProgress, {
+    setRevealPhase(REVEAL_PHASE.OPENING);
+    paperRevealTimer.current = setTimeout(() => {
+      setRevealPhase(REVEAL_PHASE.OPENED);
+      paperRevealTimer.current = null;
+    }, COOKIE_TIMINGS.paperDelay);
+
+    Animated.parallel([
+      Animated.timing(shellProgress, {
+        toValue: 1,
+        duration: COOKIE_TIMINGS.shell,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.delay(COOKIE_TIMINGS.paperStart),
+        Animated.timing(paperProgress, {
           toValue: 1,
-          duration: 1260,
-          easing: Easing.linear,
+          duration: COOKIE_TIMINGS.paperDuration,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.sequence([
-          Animated.delay(620),
-          Animated.timing(paperProgress, {
-            toValue: 1,
-            duration: 360,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-        ]),
       ]),
     ]).start(() => {
-      setIsAnimating(false);
-
-      if (selection.moderation === 'blocked-hate') {
-        setStatusMessage('Try naming your mood without targeting a group of people.');
-        return;
-      }
-
-      setStatusMessage(
-        selection.fromCache
-          ? 'Same day, same mood, same fortune.'
-          : 'Saved for today. That mood will pull this fortune until tomorrow.'
-      );
+      setRevealPhase(REVEAL_PHASE.OPENED);
+      updateStatusMessage(selection);
     });
   }
 
@@ -87,6 +123,8 @@ export default function App() {
         analysisSummary={analysisSummary}
         fortuneText={fortuneText}
         isAnimating={isAnimating}
+        isCookieOpened={isCookieOpened}
+        isPaperVisible={isPaperVisible}
         moodInput={moodInput}
         onMoodChange={setMoodInput}
         onOpenFortune={openFortune}

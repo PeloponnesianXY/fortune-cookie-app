@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Animated,
   ScrollView,
@@ -12,12 +12,24 @@ import {
 
 import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
 
-function SceneBackdrop({ scene }) {
+const ALTAR_FRAME = {
+  width: 500,
+  height: 294,
+};
+
+const ALTAR_GRID = {
+  col: ALTAR_FRAME.width / 3,
+  row: ALTAR_FRAME.height / 3,
+};
+
+const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View style={[styles.skyBloom, { backgroundColor: scene.wash }]} />
       <View style={[styles.sceneWash, { backgroundColor: scene.wash }]} />
       <View style={[styles.celestialHalo, { backgroundColor: scene.celestialHalo }]} />
       <View style={[styles.celestialDisc, { backgroundColor: scene.celestial }]} />
+      <View style={[styles.horizonBloom, { backgroundColor: scene.stageAura }]} />
       <View style={[styles.cloud, styles.cloudOne, { backgroundColor: scene.cloud }]} />
       <View style={[styles.cloud, styles.cloudTwo, { backgroundColor: scene.cloudAlt }]} />
       {scene.stars.map((star, index) => (
@@ -41,13 +53,16 @@ function SceneBackdrop({ scene }) {
       <View style={[styles.ridgeFront, { backgroundColor: scene.ridgeFront }]} />
       <View style={[styles.ridgeHighlight, { backgroundColor: scene.ridgeHighlight }]} />
       <View style={[styles.sceneMist, { backgroundColor: scene.mist }]} />
+      <View style={[styles.lowerVeil, { backgroundColor: scene.mist }]} />
     </View>
   );
-}
+});
 
-function CookieStage({
+const CookieStage = memo(function CookieStage({
   fortuneText,
   isAnimating,
+  isCookieOpened,
+  isPaperVisible,
   onPress,
   paperProgress,
   scene,
@@ -97,6 +112,16 @@ function CookieStage({
       style={styles.cookieTapArea}
     >
       <View style={styles.cookieStage}>
+        <View
+          style={[
+            styles.stagePanel,
+            {
+              backgroundColor: scene.panel,
+              borderColor: scene.panelBorder,
+            },
+          ]}
+        />
+
         <Animated.View
           style={[
             styles.paperGlow,
@@ -114,13 +139,15 @@ function CookieStage({
         />
 
         <View style={[styles.cookieNest, { backgroundColor: scene.stageLine }]} />
+        <View style={[styles.cookieNestHighlight, { backgroundColor: scene.paper }]} />
 
         <View style={styles.cookieImageFrame}>
           <CookieShell
             fortuneText={fortuneText}
+            isOpened={isCookieOpened}
+            isPaperVisible={isPaperVisible}
             paperProgress={paperProgress}
             scene={scene}
-            shellProgress={shellProgress}
           />
         </View>
 
@@ -134,12 +161,14 @@ function CookieStage({
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 export default function FortuneCard({
   analysisSummary,
   fortuneText,
   isAnimating,
+  isCookieOpened,
+  isPaperVisible,
   moodInput,
   onMoodChange,
   onOpenFortune,
@@ -160,6 +189,7 @@ export default function FortuneCard({
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View
@@ -206,6 +236,8 @@ export default function FortuneCard({
           <CookieStage
             fortuneText={fortuneText}
             isAnimating={isAnimating}
+            isCookieOpened={isCookieOpened}
+            isPaperVisible={isPaperVisible}
             onPress={onOpenFortune}
             paperProgress={paperProgress}
             scene={scene}
@@ -248,53 +280,73 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 22,
-    paddingTop: 24,
-    paddingBottom: 28,
+    paddingTop: 18,
+    paddingBottom: 30,
+  },
+  skyBloom: {
+    position: 'absolute',
+    top: -170,
+    left: -120,
+    right: -120,
+    height: 420,
+    borderBottomLeftRadius: 260,
+    borderBottomRightRadius: 260,
+    opacity: 0.72,
   },
   sceneWash: {
     position: 'absolute',
-    top: -110,
-    left: -70,
-    right: -70,
-    height: 390,
-    borderBottomLeftRadius: 210,
-    borderBottomRightRadius: 210,
+    top: -80,
+    left: -40,
+    right: -40,
+    height: 360,
+    borderBottomLeftRadius: 200,
+    borderBottomRightRadius: 200,
+    opacity: 0.66,
   },
   celestialHalo: {
     position: 'absolute',
-    top: 64,
-    right: 32,
-    width: 168,
-    height: 168,
+    top: 56,
+    right: 24,
+    width: 198,
+    height: 198,
     borderRadius: 999,
-    opacity: 0.7,
+    opacity: 0.62,
   },
   celestialDisc: {
     position: 'absolute',
-    top: 104,
-    right: 76,
-    width: 78,
-    height: 78,
+    top: 102,
+    right: 86,
+    width: 72,
+    height: 72,
     borderRadius: 999,
-    opacity: 0.9,
+    opacity: 0.88,
+  },
+  horizonBloom: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    bottom: 170,
+    height: 220,
+    borderRadius: 999,
+    opacity: 0.52,
   },
   cloud: {
     position: 'absolute',
     borderRadius: 999,
   },
   cloudOne: {
-    top: 170,
-    left: 34,
-    width: 124,
-    height: 42,
-    opacity: 0.82,
+    top: 178,
+    left: 26,
+    width: 156,
+    height: 48,
+    opacity: 0.56,
   },
   cloudTwo: {
-    top: 150,
-    right: 132,
-    width: 112,
-    height: 36,
-    opacity: 0.74,
+    top: 142,
+    right: 112,
+    width: 136,
+    height: 40,
+    opacity: 0.48,
   },
   star: {
     position: 'absolute',
@@ -306,125 +358,162 @@ const styles = StyleSheet.create({
     left: -90,
     right: -90,
     bottom: 250,
-    height: 240,
-    borderTopLeftRadius: 180,
-    borderTopRightRadius: 180,
+    height: 244,
+    borderTopLeftRadius: 220,
+    borderTopRightRadius: 220,
+    opacity: 0.72,
   },
   ridgeMid: {
     position: 'absolute',
-    left: -60,
-    right: -50,
-    bottom: 162,
+    left: -62,
+    right: -56,
+    bottom: 164,
     height: 240,
-    borderTopLeftRadius: 180,
-    borderTopRightRadius: 180,
+    borderTopLeftRadius: 220,
+    borderTopRightRadius: 220,
+    opacity: 0.88,
   },
   ridgeFront: {
     position: 'absolute',
-    left: -40,
-    right: -40,
-    bottom: 78,
-    height: 230,
-    borderTopLeftRadius: 180,
-    borderTopRightRadius: 180,
+    left: -42,
+    right: -42,
+    bottom: 76,
+    height: 236,
+    borderTopLeftRadius: 240,
+    borderTopRightRadius: 240,
   },
   ridgeHighlight: {
     position: 'absolute',
-    left: 42,
-    right: 42,
-    bottom: 230,
-    height: 48,
+    left: 56,
+    right: 70,
+    bottom: 240,
+    height: 56,
     borderRadius: 999,
+    opacity: 0.44,
   },
   sceneMist: {
     position: 'absolute',
-    left: -30,
-    right: -30,
-    bottom: 110,
-    height: 150,
+    left: -40,
+    right: -40,
+    bottom: 102,
+    height: 172,
     borderRadius: 999,
+    opacity: 0.6,
+  },
+  lowerVeil: {
+    position: 'absolute',
+    left: -20,
+    right: -20,
+    bottom: -20,
+    height: 170,
+    opacity: 0.35,
   },
   landscapeStage: {
     width: '100%',
-    maxWidth: 560,
+    maxWidth: 540,
     alignSelf: 'center',
     justifyContent: 'flex-end',
   },
   inputFloat: {
-    width: '88%',
-    maxWidth: 430,
+    width: '84%',
+    maxWidth: 412,
     alignSelf: 'center',
-    borderRadius: 24,
+    borderRadius: 26,
     borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 12,
     shadowColor: '#70523d',
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 0,
+    shadowOpacity: 0.05,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 1,
   },
   input: {
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 1,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    fontSize: 19,
+    paddingHorizontal: 20,
+    paddingVertical: 17,
+    fontSize: 20,
   },
   stageAuraPool: {
     position: 'absolute',
-    bottom: 100,
-    left: 28,
-    right: 28,
-    height: 188,
+    bottom: 106,
+    left: 8,
+    right: 8,
+    height: 248,
     borderRadius: 999,
+    opacity: 0.52,
   },
   stageHaze: {
     position: 'absolute',
-    bottom: 72,
-    left: -10,
-    right: -10,
-    height: 116,
+    bottom: 82,
+    left: -24,
+    right: -24,
+    height: 154,
     borderRadius: 999,
-    opacity: 0.42,
+    opacity: 0.46,
   },
   cookieTapArea: {
     alignItems: 'center',
-    paddingBottom: 8,
+    paddingBottom: 14,
   },
   cookieStage: {
     width: '100%',
-    minHeight: 376,
+    minHeight: 390,
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingTop: 18,
+    paddingTop: 10,
+  },
+  stagePanel: {
+    position: 'absolute',
+    bottom: 20,
+    width: '94%',
+    maxWidth: ALTAR_FRAME.width,
+    height: ALTAR_FRAME.height,
+    borderRadius: 44,
+    borderWidth: 1,
+    opacity: 0.72,
+    shadowColor: '#6a4b38',
+    shadowOpacity: 0.06,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 16 },
   },
   paperGlow: {
     position: 'absolute',
-    bottom: 146,
-    width: 190,
-    height: 136,
+    bottom: ALTAR_GRID.row * 1.78,
+    width: ALTAR_GRID.col * 1.58,
+    height: ALTAR_GRID.row * 1.7,
     borderRadius: 999,
+    opacity: 0.84,
   },
   cookieGlow: {
     position: 'absolute',
-    bottom: 44,
-    width: 256,
-    height: 164,
+    bottom: ALTAR_GRID.row * 0.57,
+    width: ALTAR_GRID.col * 2.32,
+    height: ALTAR_GRID.row * 2.2,
     borderRadius: 999,
+    opacity: 0.92,
   },
   cookieNest: {
     position: 'absolute',
-    bottom: 44,
-    width: 266,
-    height: 32,
+    bottom: ALTAR_GRID.row * 0.57,
+    width: ALTAR_GRID.col * 2.24,
+    height: ALTAR_GRID.row * 0.42,
     borderRadius: 999,
-    opacity: 0.7,
+    opacity: 0.78,
+  },
+  cookieNestHighlight: {
+    position: 'absolute',
+    bottom: ALTAR_GRID.row * 0.82,
+    width: ALTAR_GRID.col * 1.56,
+    height: ALTAR_GRID.row * 0.14,
+    borderRadius: 999,
+    opacity: 0.28,
   },
   cookieImageFrame: {
     position: 'absolute',
-    bottom: 8,
+    bottom: ALTAR_GRID.row * 0.1,
     width: COOKIE_SHELL_FRAME.width,
     height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
@@ -432,34 +521,39 @@ const styles = StyleSheet.create({
   },
   cookieShadow: {
     position: 'absolute',
-    bottom: 16,
-    width: 176,
-    height: 24,
+    bottom: ALTAR_GRID.row * 0.08,
+    width: ALTAR_GRID.col * 1.62,
+    height: ALTAR_GRID.row * 0.3,
     borderRadius: 999,
-    backgroundColor: 'rgba(66, 46, 35, 0.12)',
+    backgroundColor: 'rgba(66, 46, 35, 0.14)',
   },
   cookieCuePill: {
-    marginTop: 10,
+    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 249, 240, 0.28)',
   },
   cookieCueText: {
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: 0.08,
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   footerStack: {
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 360,
     alignSelf: 'center',
-    marginTop: 12,
-    paddingBottom: 6,
+    marginTop: 6,
+    paddingBottom: 4,
   },
   devChip: {
     alignSelf: 'center',
     marginTop: 2,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 999,
     borderWidth: 1,
+    opacity: 0.88,
   },
   devMoodText: {
     fontSize: 9,
@@ -468,12 +562,12 @@ const styles = StyleSheet.create({
   },
   devFooterText: {
     width: '100%',
-    maxWidth: 360,
+    maxWidth: 330,
     alignSelf: 'center',
-    marginTop: 10,
-    fontSize: 10,
-    lineHeight: 14,
+    marginTop: 8,
+    fontSize: 9,
+    lineHeight: 13,
     textAlign: 'center',
-    opacity: 0.58,
+    opacity: 0.5,
   },
 });

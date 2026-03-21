@@ -3,6 +3,11 @@ node_modules/
 .eas/
 dist/
 .vscode/
+REMINDERS.txt
+DbP-fortune-cookie.html
+sora-video.mp4
+video-contact-sheet*.png
+whole-cookie.jpg
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

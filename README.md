@@ -1,48 +1,60 @@
 # Fortune Cookie Daily
 
-`Fortune Cookie Daily` is an Expo/React Native app that gives the user one fortune-cookie-style saying per day based on their mood.
+Small Expo app that:
 
-This stack is aimed at the cheapest and easiest App Store path from a Windows PC:
+- takes a mood input
+- maps it to a mood/tone locally
+- reveals one saved fortune per day
 
-- Build the app on Windows
-- Test with Expo tooling
-- Use Expo cloud builds for iOS
-- Submit to the App Store without needing a personal Mac in the normal case
+## Project structure
 
-## Current status
+```text
+App.js
+components/
+  CookieShell.js
+  FortuneCard.js
+data/
+  fortunes.js
+  scenes.js
+utils/
+  fortuneLogic.js
+assets/
+  cookie/
+    closed.png
+    open.png
+```
 
-The repo contains the app source and Expo configuration, but this machine does not currently have `Node.js` or `npm` installed, so dependencies were not installed here.
+## What is live now
 
-## Install prerequisites on Windows
+- `assets/cookie/closed.png`: closed cookie image
+- `assets/cookie/open.png`: broken/open cookie image
+- `components/CookieShell.js`: cookie image swap + paper overlay
+- `utils/fortuneLogic.js`: mood analysis, moderation, daily persistence
 
-1. Install Node.js LTS:
-   - https://nodejs.org/
-2. Open a new terminal in this folder.
-3. Install dependencies:
+Old visual experiments and export artifacts were removed so the repo reflects the current app instead of abandoned approaches.
+
+## Run locally
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-4. Install Expo CLI tools if needed:
+Start Expo web:
 
 ```bash
-npm install -g eas-cli
+npm run web
 ```
 
-## Run locally
+If PowerShell does not see `npm`, use:
 
-```bash
-npx expo start
+```powershell
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+cmd /c npm run web
 ```
 
-You can then test with:
-
-- Expo Go on an iPhone for quick checks
-- an Android emulator if you have one
-- a development build later when needed
-
-## iOS release path without using a Mac
+## iOS release path
 
 1. Create an Expo account.
 2. Enroll in the Apple Developer Program.
@@ -52,30 +64,19 @@ You can then test with:
 eas login
 ```
 
-4. Configure the project:
-
-```bash
-eas build:configure
-```
-
-5. Build for iOS in the cloud:
+4. Build for iOS in the cloud:
 
 ```bash
 eas build --platform ios
 ```
 
-6. Submit to App Store Connect:
+5. Submit to App Store Connect:
 
 ```bash
 eas submit --platform ios
 ```
 
-Expo can handle a lot of the signing flow, but Apple account setup is still required.
+## Notes
 
-## Suggested next steps
-
-- Install Node.js and run `npm install`
-- Set your bundle identifier in `app.json`
-- Replace the placeholder app icon and splash assets
-- Test the daily fortune behavior on a real phone
-- Create App Store listing assets and copy
+- The app currently uses local persistence via `AsyncStorage` to keep one fortune per day for the same mood.
+- The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.
