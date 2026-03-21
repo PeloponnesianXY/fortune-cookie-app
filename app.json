@@ -15,6 +15,9 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "package": "com.peloponnesianxy.fortunecookiedaily"
-    }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }

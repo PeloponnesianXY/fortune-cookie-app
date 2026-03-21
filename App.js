@@ -5,12 +5,17 @@ import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
+  View,
 } from 'react-native';
+import { Asset } from 'expo-asset';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
 import FortuneCard from './components/FortuneCard';
 import { SCENE_LIBRARY } from './data/scenes';
 import { getDailyFortuneSelection, getDefaultSceneKey } from './utils/fortuneLogic';
+
+const COOKIE_CLOSED_IMAGE = require('./assets/cookie/closed.png');
+const COOKIE_OPEN_IMAGE = require('./assets/cookie/open.png');
 
 const COOKIE_TIMINGS = {
   shell: 1000,
@@ -30,10 +35,8 @@ export default function App() {
   const [fortuneText, setFortuneText] = useState('');
   const [analysisSummary, setAnalysisSummary] = useState(null);
   const [sceneKey, setSceneKey] = useState(getDefaultSceneKey());
-  const [statusMessage, setStatusMessage] = useState(
-    'Daily mode: the same mood gets the same fortune for the rest of the day.'
-  );
   const [revealPhase, setRevealPhase] = useState(REVEAL_PHASE.IDLE);
+  const [assetsReady, setAssetsReady] = useState(false);
 
   const shellProgress = useRef(new Animated.Value(0)).current;
   const paperProgress = useRef(new Animated.Value(0)).current;
@@ -55,17 +58,28 @@ export default function App() {
     clearPaperRevealTimer();
   }, []);
 
-  function updateStatusMessage(selection) {
-    if (selection.moderation === 'blocked-hate') {
-      setStatusMessage('Try naming your mood without targeting a group of people.');
-      return;
+  useEffect(() => {
+    let isMounted = true;
+
+    async function preloadAssets() {
+      try {
+        await Asset.loadAsync([COOKIE_CLOSED_IMAGE, COOKIE_OPEN_IMAGE]);
+      } finally {
+        if (isMounted) {
+          setAssetsReady(true);
+        }
+      }
     }
 
-    setStatusMessage(
-      selection.fromCache
-        ? 'Same day, same mood, same fortune.'
-        : 'Saved for today. That mood will pull this fortune until tomorrow.'
-    );
+    preloadAssets();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  function updateStatusMessage(selection) {
+    void selection;
   }
 
   function runCookieAnimation(selection) {
@@ -115,30 +129,43 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: scene.sky }]}>
+    <View style={[styles.appRoot, { backgroundColor: scene.sky }]}>
+      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: scene.sky }]} />
       <ExpoStatusBar style={scene.statusBar} />
       <StatusBar barStyle={scene.statusBar === 'light' ? 'light-content' : 'dark-content'} />
 
-      <FortuneCard
-        analysisSummary={analysisSummary}
-        fortuneText={fortuneText}
-        isAnimating={isAnimating}
-        isCookieOpened={isCookieOpened}
-        isPaperVisible={isPaperVisible}
-        moodInput={moodInput}
-        onMoodChange={setMoodInput}
-        onOpenFortune={openFortune}
-        paperProgress={paperProgress}
-        scene={scene}
-        shellProgress={shellProgress}
-        statusMessage={statusMessage}
-      />
-    </SafeAreaView>
+      <SafeAreaView style={styles.safeArea}>
+        {assetsReady ? (
+          <FortuneCard
+            analysisSummary={analysisSummary}
+            fortuneText={fortuneText}
+            isAnimating={isAnimating}
+            isCookieOpened={isCookieOpened}
+            isPaperVisible={isPaperVisible}
+            moodInput={moodInput}
+            onMoodChange={setMoodInput}
+            onOpenFortune={openFortune}
+            paperProgress={paperProgress}
+            scene={scene}
+            shellProgress={shellProgress}
+          />
+        ) : (
+          <View style={styles.loadingScreen} />
+        )}
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  appRoot: {
+    flex: 1,
+  },
   safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  loadingScreen: {
     flex: 1,
   },
 });

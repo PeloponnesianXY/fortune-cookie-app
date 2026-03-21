@@ -23,8 +23,8 @@ const COOKIE_IMAGE_FRAME = {
 const CLOSED_COOKIE_FIT = {
   width: 330,
   height: 220,
-  translateX: -4,
-  translateY: 8,
+  translateX: -10,
+  translateY: 38,
 };
 
 const OPEN_COOKIE_FIT = {
@@ -35,8 +35,8 @@ const OPEN_COOKIE_FIT = {
 };
 
 const PAPER_SIZE = {
-  width: 208,
-  minHeight: 48,
+  width: 248,
+  minHeight: 60,
 };
 
 function CookieShell({
@@ -97,10 +97,20 @@ function CookieShell({
       <View style={styles.frameWrap}>
         <Image
           resizeMode="contain"
-          source={isOpened ? COOKIE_OPEN_IMAGE : COOKIE_CLOSED_IMAGE}
+          source={COOKIE_CLOSED_IMAGE}
           style={[
             styles.frameImage,
-            isOpened ? styles.openImageFit : styles.closedImageFit,
+            styles.closedImageFit,
+            isOpened ? styles.inactiveImage : styles.activeImage,
+          ]}
+        />
+        <Image
+          resizeMode="contain"
+          source={COOKIE_OPEN_IMAGE}
+          style={[
+            styles.frameImage,
+            styles.openImageFit,
+            isOpened ? styles.activeImage : styles.inactiveImage,
           ]}
         />
       </View>
@@ -150,6 +160,14 @@ const styles = StyleSheet.create({
   frameImage: {
     position: 'absolute',
   },
+  activeImage: {
+    opacity: 1,
+    zIndex: 2,
+  },
+  inactiveImage: {
+    opacity: 0,
+    zIndex: 1,
+  },
   closedImageFit: {
     width: CLOSED_COOKIE_FIT.width,
     height: CLOSED_COOKIE_FIT.height,
@@ -168,26 +186,28 @@ const styles = StyleSheet.create({
   },
   paperShadow: {
     position: 'absolute',
-    top: 64,
-    width: 196,
-    height: 28,
-    borderRadius: 18,
+    top: 58,
+    width: 228,
+    height: 34,
+    borderRadius: 22,
     backgroundColor: 'rgba(48, 32, 20, 0.16)',
+    zIndex: 4,
   },
   paperWrap: {
     position: 'absolute',
-    top: 52,
+    top: 42,
     width: PAPER_SIZE.width,
     minHeight: PAPER_SIZE.minHeight,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     justifyContent: 'center',
     shadowColor: '#6e4d36',
     shadowOpacity: 0.08,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
+    zIndex: 5,
   },
   paperTopSheen: {
     position: 'absolute',
@@ -242,8 +262,8 @@ const styles = StyleSheet.create({
   },
   paperText: {
     fontFamily: FORTUNE_FONT_FAMILY,
-    fontSize: 11,
-    lineHeight: 13,
+    fontSize: 13,
+    lineHeight: 15,
     fontWeight: '700',
     textAlign: 'center',
     letterSpacing: -0.06,

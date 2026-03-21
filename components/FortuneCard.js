@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import {
   Animated,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -164,7 +163,6 @@ const CookieStage = memo(function CookieStage({
 });
 
 export default function FortuneCard({
-  analysisSummary,
   fortuneText,
   isAnimating,
   isCookieOpened,
@@ -175,23 +173,18 @@ export default function FortuneCard({
   paperProgress,
   scene,
   shellProgress,
-  statusMessage,
 }) {
   const { height: viewportHeight } = useWindowDimensions();
-  const stageMinHeight = Math.max(Math.round(viewportHeight * 0.74), 540);
-  const stageTopPadding = Math.max(Math.round(viewportHeight * 0.18), 110);
-  const stageBottomPadding = Math.max(Math.round(viewportHeight * 0.08), 48);
-  const inputBottomGap = Math.max(Math.round(viewportHeight * 0.08), 34);
+  const stageMinHeight = Math.max(Math.round(viewportHeight * 0.66), 480);
+  const stageTopPadding = Math.max(Math.round(viewportHeight * 0.14), 96);
+  const stageBottomPadding = Math.max(Math.round(viewportHeight * 0.015), 6);
+  const inputBottomGap = Math.max(Math.round(viewportHeight * 0.045), 18);
 
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop scene={scene} />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.contentFrame}>
         <View
           style={[
             styles.landscapeStage,
@@ -212,22 +205,29 @@ export default function FortuneCard({
               },
             ]}
           >
-            <TextInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              onChangeText={onMoodChange}
-              placeholder="How are you feeling?"
-              placeholderTextColor={scene.accentSoft}
+            <Text style={[styles.inputLabel, { color: scene.accent }]}>
+              How are you feeling?
+            </Text>
+            <View
               style={[
-                styles.input,
+                styles.inputRow,
                 {
                   backgroundColor: scene.input,
                   borderColor: scene.inputBorder,
-                  color: scene.textPrimary,
                 },
               ]}
-              value={moodInput}
-            />
+            >
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={onMoodChange}
+                placeholder=""
+                placeholderTextColor={scene.accentSoft}
+                selectionColor={scene.accent}
+                style={[styles.input, { color: scene.textPrimary }]}
+                value={moodInput}
+              />
+            </View>
           </View>
 
           <View style={[styles.stageAuraPool, { backgroundColor: scene.stageAura }]} />
@@ -245,30 +245,7 @@ export default function FortuneCard({
           />
         </View>
 
-        <View style={styles.footerStack}>
-          {analysisSummary ? (
-            <View
-              style={[
-                styles.devChip,
-                {
-                  backgroundColor: scene.input,
-                  borderColor: scene.inputBorder,
-                },
-              ]}
-            >
-              <Text style={[styles.devMoodText, { color: scene.cue }]}>
-                Detected: {analysisSummary.primaryMood}
-                {analysisSummary.secondaryMood ? ` + ${analysisSummary.secondaryMood}` : ''}
-                {` (${analysisSummary.source})`}
-              </Text>
-            </View>
-          ) : null}
-
-          <Text style={[styles.devFooterText, { color: scene.textSecondary }]}>
-            {statusMessage}
-          </Text>
-        </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -277,11 +254,12 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
+  contentFrame: {
+    flex: 1,
+    justifyContent: 'flex-start',
     paddingHorizontal: 22,
     paddingTop: 18,
-    paddingBottom: 30,
+    paddingBottom: 0,
   },
   skyBloom: {
     position: 'absolute',
@@ -305,21 +283,21 @@ const styles = StyleSheet.create({
   },
   celestialHalo: {
     position: 'absolute',
-    top: 56,
-    right: 24,
-    width: 198,
-    height: 198,
+    top: 24,
+    right: 8,
+    width: 176,
+    height: 176,
     borderRadius: 999,
-    opacity: 0.62,
+    opacity: 0.54,
   },
   celestialDisc: {
     position: 'absolute',
-    top: 102,
-    right: 86,
-    width: 72,
-    height: 72,
+    top: 68,
+    right: 60,
+    width: 64,
+    height: 64,
     borderRadius: 999,
-    opacity: 0.88,
+    opacity: 0.82,
   },
   horizonBloom: {
     position: 'absolute',
@@ -375,12 +353,12 @@ const styles = StyleSheet.create({
   },
   ridgeFront: {
     position: 'absolute',
-    left: -42,
-    right: -42,
-    bottom: 76,
-    height: 236,
-    borderTopLeftRadius: 240,
-    borderTopRightRadius: 240,
+    left: -70,
+    right: -70,
+    bottom: -46,
+    height: 410,
+    borderTopLeftRadius: 280,
+    borderTopRightRadius: 280,
   },
   ridgeHighlight: {
     position: 'absolute',
@@ -402,17 +380,18 @@ const styles = StyleSheet.create({
   },
   lowerVeil: {
     position: 'absolute',
-    left: -20,
-    right: -20,
-    bottom: -20,
-    height: 170,
-    opacity: 0.35,
+    left: -40,
+    right: -40,
+    bottom: -110,
+    height: 320,
+    opacity: 0.42,
   },
   landscapeStage: {
     width: '100%',
     maxWidth: 540,
     alignSelf: 'center',
     justifyContent: 'flex-end',
+    flex: 1,
   },
   inputFloat: {
     width: '84%',
@@ -421,20 +400,34 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     borderWidth: 1,
     paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 9,
+    paddingBottom: 9,
     shadowColor: '#70523d',
     shadowOpacity: 0.05,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
     elevation: 1,
+    zIndex: 8,
   },
-  input: {
+  inputRow: {
     borderRadius: 24,
     borderWidth: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 17,
-    fontSize: 20,
+    minHeight: 50,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+  },
+  inputLabel: {
+    marginLeft: 8,
+    marginBottom: 8,
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+  },
+  input: {
+    flex: 1,
+    paddingHorizontal: 4,
+    fontSize: 18,
+    paddingVertical: 11,
   },
   stageAuraPool: {
     position: 'absolute',
@@ -528,7 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(66, 46, 35, 0.14)',
   },
   cookieCuePill: {
-    marginTop: 4,
+    marginTop: -2,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 999,
@@ -538,36 +531,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.2,
-  },
-  footerStack: {
-    width: '100%',
-    maxWidth: 360,
-    alignSelf: 'center',
-    marginTop: 6,
-    paddingBottom: 4,
-  },
-  devChip: {
-    alignSelf: 'center',
-    marginTop: 2,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 999,
-    borderWidth: 1,
-    opacity: 0.88,
-  },
-  devMoodText: {
-    fontSize: 9,
-    fontWeight: '600',
-    letterSpacing: 0.14,
-  },
-  devFooterText: {
-    width: '100%',
-    maxWidth: 330,
-    alignSelf: 'center',
-    marginTop: 8,
-    fontSize: 9,
-    lineHeight: 13,
-    textAlign: 'center',
-    opacity: 0.5,
   },
 });
