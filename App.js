@@ -80,6 +80,23 @@ function isResetFortuneCommand(input) {
   return /^\s*resetfortune\s*$/i.test(input);
 }
 
+function normalizeMoodInput(input) {
+  const normalized = input.replace(/\s+/g, ' ').trimStart();
+
+  if (!normalized) {
+    return '';
+  }
+
+  const overrideMatch = normalized.match(/^override(?:\s+([^\s]+)?)?/i);
+  if (overrideMatch) {
+    const overrideMood = overrideMatch[1] || '';
+    return overrideMood ? `override ${overrideMood}` : 'override';
+  }
+
+  const [firstWord = ''] = normalized.split(' ');
+  return firstWord;
+}
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
@@ -105,6 +122,7 @@ export default function App() {
   const overrideCommand = parseOverrideCommand(moodInput);
   const isResetCommandActive = isResetFortuneCommand(moodInput);
   const isOverrideInputActive = overrideCommand.isOverride;
+  const hasActionableInput = Boolean(moodInput.trim());
   const hasOpenedToday = Boolean(storedTodaySelection);
   const isLockedForToday = (
     hasOpenedToday
@@ -116,12 +134,18 @@ export default function App() {
   const isPaperVisible = revealPhase === REVEAL_PHASE.OPENED;
   const cookieCueText = isOverrideLoopActive || isShowingOverrideFortune
     ? 'Ready for another fortune?'
+    : !hasActionableInput
+      ? 'Enter one word first'
     : isResetCommandActive
       ? 'Tap the cookie to reset today'
     : isLockedForToday
       ? lockedTomorrowMessage
       : 'Ready for your fortune?';
-  const isCookieInteractionDisabled = isHydratingSelection || isLockedForToday;
+  const isCookieInteractionDisabled = (
+    isHydratingSelection
+    || isLockedForToday
+    || (!hasActionableInput && !isShowingOverrideFortune && !isOverrideLoopActive)
+  );
 
   function clearPaperRevealTimer() {
     if (paperRevealTimer.current) {
@@ -298,6 +322,10 @@ export default function App() {
       return;
     }
 
+    if (!hasActionableInput) {
+      return;
+    }
+
     isOpeningRef.current = true;
 
     try {
@@ -337,7 +365,7 @@ export default function App() {
             isPaperVisible={isPaperVisible}
             isTapDisabled={isCookieInteractionDisabled}
             moodInput={moodInput}
-            onMoodChange={setMoodInput}
+            onMoodChange={(nextValue) => setMoodInput(normalizeMoodInput(nextValue))}
             onOpenFortune={openFortune}
             paperProgress={paperProgress}
             scene={scene}

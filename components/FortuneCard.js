@@ -211,7 +211,7 @@ export default function FortuneCard({
             ]}
           >
             <Text style={[styles.inputLabel, { color: scene.accent }]}>
-              How are you feeling?
+              Which <Text style={styles.underlinedWord}>one</Text> word best describes your mood?
             </Text>
             <View
               style={[
@@ -223,7 +223,7 @@ export default function FortuneCard({
               ]}
             >
               <TextInput
-                autoCapitalize="none"
+                autoCapitalize="words"
                 autoCorrect={false}
                 editable={!isHydratingSelection}
                 onChangeText={onMoodChange}
@@ -401,14 +401,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputFloat: {
-    width: '84%',
-    maxWidth: 412,
+    width: '99%',
+    maxWidth: 540,
     alignSelf: 'center',
     borderRadius: 26,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingTop: 9,
-    paddingBottom: 9,
+    paddingBottom: 7,
     shadowColor: '#70523d',
     shadowOpacity: 0.05,
     shadowRadius: 18,
@@ -419,22 +419,25 @@ const styles = StyleSheet.create({
   inputRow: {
     borderRadius: 24,
     borderWidth: 1,
-    minHeight: 50,
+    minHeight: 46,
     paddingHorizontal: 16,
     justifyContent: 'center',
   },
   inputLabel: {
     marginLeft: 8,
     marginBottom: 8,
-    fontSize: 17,
+    fontSize: 13,
     fontWeight: '600',
     letterSpacing: -0.2,
+  },
+  underlinedWord: {
+    textDecorationLine: 'underline',
   },
   input: {
     flex: 1,
     paddingHorizontal: 4,
     fontSize: 18,
-    paddingVertical: 11,
+    paddingVertical: 9,
   },
   stageAuraPool: {
     position: 'absolute',

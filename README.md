@@ -2,8 +2,8 @@
 
 Small Expo app that:
 
-- takes a mood input
-- maps it to a mood/tone locally
+- takes a one-word mood input
+- maps it to one detected emotion locally
 - reveals one saved fortune per day
 
 ## Project structure
@@ -29,7 +29,7 @@ assets/
 - `assets/cookie/closed.png`: closed cookie image
 - `assets/cookie/open.png`: broken/open cookie image
 - `components/CookieShell.js`: cookie image swap + paper overlay
-- `utils/fortuneLogic.js`: mood analysis, moderation, daily persistence
+- `utils/fortuneLogic.js`: emotion analysis, moderation, daily persistence
 
 Old visual experiments and export artifacts were removed so the repo reflects the current app instead of abandoned approaches.
 
@@ -58,9 +58,9 @@ cmd /c npm run web
 
 These are development shortcuts for testing the app without waiting for the next calendar day:
 
-- `override <mood>`
+- `override <word>`
   - Bypasses the once-per-day lock.
-  - Uses the text after `override` as the actual mood input.
+  - Uses the text after `override` as the actual one-word input.
   - Examples: `override happy`, `override stressed`
   - After an override fortune is shown, the bottom cue becomes `Ready for another fortune?`, and tapping the cookie resets the UI for another immediate test run.
 
@@ -93,4 +93,7 @@ eas submit --platform ios
 ## Notes
 
 - The app uses local persistence via `AsyncStorage` to keep exactly one normal fortune per calendar day on the device.
+- The emotion classifier now uses an NRC-derived 8-emotion lexicon bundled locally for runtime lookup: `joy`, `sadness`, `fear`, `anger`, `trust`, `anticipation`, `surprise`, and `disgust`.
+- The app now runs on a single-emotion path: one word in, one detected emotion out, then one mapped fortune pool.
+- The app still maps those detected emotions into the existing custom fortune voice, so vocabulary coverage is broader without flattening the writing style.
 - The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.

@@ -2,6 +2,7 @@ node_modules/
 .expo/
 .eas/
 dist/
+.runtime/
 .vscode/
 REMINDERS.txt
 DbP-fortune-cookie.html

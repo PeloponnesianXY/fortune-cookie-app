@@ -3,25 +3,34 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BLOCKED_HATE_TERMS,
   BLOCKED_INPUT_FORTUNE,
-  COMBO_FORTUNES,
+  EMOTION_PROFILES,
   FORTUNE_LIBRARY,
   HATE_PATTERNS,
-  MOOD_FALLBACKS,
-  MOOD_PROFILES,
-  MOOD_TAXONOMY,
   PROTECTED_GROUP_TERMS,
   TONE_FORTUNES,
 } from '../data/fortunes';
+import EMOTION_LEXICON from '../data/nrcEmotionLexicon.json';
 import { SCENE_GROUPS } from '../data/scenes';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAILY_SELECTION_STORAGE_KEY = '@fortune-cookie-daily/daily-selection';
 const DEFAULT_SCENE_KEY = 'apricotMorning';
 
+const EMOTION_KEYS = [
+  'anger',
+  'anticipation',
+  'disgust',
+  'fear',
+  'joy',
+  'sadness',
+  'surprise',
+  'trust',
+];
+const EMOTION_WORDS = Object.keys(EMOTION_LEXICON);
+
 function buildBlockedAnalysis() {
   return {
-    primaryMood: 'unknown',
-    secondaryMood: null,
+    primaryEmotion: 'unknown',
     scores: {},
     source: 'blocked-hate',
   };
@@ -104,59 +113,57 @@ export function analyzeMoodInput(input) {
   const normalized = input.trim().toLowerCase();
   if (!normalized) {
     return {
-      primaryMood: 'unknown',
-      secondaryMood: null,
+      primaryEmotion: 'unknown',
       scores: {},
       source: 'empty',
     };
   }
 
   const tokens = normalized.split(/[^a-z]+/).filter(Boolean);
-  const scores = Object.keys(MOOD_TAXONOMY).reduce((accumulator, mood) => {
-    accumulator[mood] = 0;
+  const scores = EMOTION_KEYS.reduce((accumulator, emotion) => {
+    accumulator[emotion] = 0;
     return accumulator;
   }, {});
 
-  for (const [mood, keywords] of Object.entries(MOOD_TAXONOMY)) {
-    for (const keyword of keywords) {
-      if (normalized.includes(keyword)) {
-        scores[mood] += keyword.includes(' ') ? 5 : 2;
-      }
+  for (const token of tokens) {
+    const exactMatch = EMOTION_LEXICON[token];
 
-      for (const token of tokens) {
-        if (token === keyword) {
-          scores[mood] += 4;
-        } else if (isSimilarWord(token, keyword)) {
-          scores[mood] += 1;
-        }
+    if (exactMatch) {
+      for (const emotion of exactMatch) {
+        scores[emotion] += 4;
       }
+      continue;
+    }
+
+    const similarWord = findSimilarEmotionWord(token);
+    if (!similarWord) {
+      continue;
+    }
+
+    for (const emotion of EMOTION_LEXICON[similarWord]) {
+      scores[emotion] += 1;
     }
   }
 
-  const rankedMoods = Object.entries(scores)
+  const rankedEmotions = Object.entries(scores)
     .filter(([, score]) => score > 0)
     .sort((a, b) => b[1] - a[1]);
 
-  if (rankedMoods.length === 0) {
-    const guessedMood = guessMoodFromTone(tokens);
+  if (rankedEmotions.length === 0) {
+    const guessedEmotion = guessEmotionFromTone(tokens);
     return {
-      primaryMood: guessedMood,
-      secondaryMood: null,
+      primaryEmotion: guessedEmotion,
       scores,
-      source: guessedMood === 'unknown' ? 'fallback-unknown' : 'fallback-tone',
+      source: guessedEmotion === 'unknown' ? 'fallback-unknown' : 'fallback-tone',
     };
   }
 
-  const [primaryMood, primaryScore] = rankedMoods[0];
-  const secondaryEntry = rankedMoods.find(
-    ([mood, score]) => mood !== primaryMood && score >= Math.max(2, primaryScore - 2)
-  );
+  const [primaryEmotion] = rankedEmotions[0];
 
   return {
-    primaryMood,
-    secondaryMood: secondaryEntry ? secondaryEntry[0] : null,
+    primaryEmotion,
     scores,
-    source: 'taxonomy',
+    source: 'emotion-lexicon',
   };
 }
 
@@ -173,36 +180,36 @@ function isSimilarWord(inputWord, keyword) {
   return distance <= 2 && Math.abs(inputWord.length - keyword.length) <= 2;
 }
 
-function guessMoodFromTone(tokens) {
-  const positiveEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
-  const softWords = ['tender', 'gentle', 'soft', 'open'];
-  const brightWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
-  const sharpWords = ['fraught', 'combative', 'heated'];
-  const foggyWords = ['murky', 'foggy', 'unclear', 'jumbled'];
+function guessEmotionFromTone(tokens) {
+  const trustWords = ['tender', 'gentle', 'soft', 'safe', 'settled'];
+  const joyWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
+  const angerWords = ['fraught', 'combative', 'heated'];
+  const surpriseWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange'];
   const flatWords = ['bored', 'meh', 'blah', 'neutral', 'whatever'];
+  const anticipationEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
 
-  if (tokens.some((token) => softWords.includes(token))) {
-    return 'calm';
+  if (tokens.some((token) => trustWords.includes(token))) {
+    return 'trust';
   }
 
-  if (tokens.some((token) => brightWords.includes(token))) {
-    return 'happy';
+  if (tokens.some((token) => joyWords.includes(token))) {
+    return 'joy';
   }
 
-  if (tokens.some((token) => sharpWords.includes(token))) {
-    return 'stressed';
+  if (tokens.some((token) => angerWords.includes(token))) {
+    return 'anger';
   }
 
-  if (tokens.some((token) => foggyWords.includes(token))) {
-    return 'confused';
+  if (tokens.some((token) => surpriseWords.includes(token))) {
+    return 'surprise';
   }
 
   if (tokens.some((token) => flatWords.includes(token))) {
     return 'unknown';
   }
 
-  if (tokens.some((token) => positiveEndings.some((ending) => token.endsWith(ending)))) {
-    return 'hopeful';
+  if (tokens.some((token) => anticipationEndings.some((ending) => token.endsWith(ending)))) {
+    return 'anticipation';
   }
 
   return 'unknown';
@@ -234,28 +241,27 @@ function levenshteinDistance(a, b) {
   return matrix[a.length][b.length];
 }
 
+function findSimilarEmotionWord(token) {
+  for (const keyword of EMOTION_WORDS) {
+    if (isSimilarWord(token, keyword)) {
+      return keyword;
+    }
+  }
+
+  return null;
+}
+
 function buildFortunePool(analysis) {
   if (analysis.source === 'fallback-unknown') {
     return FORTUNE_LIBRARY.mysterious;
   }
 
-  const { primaryMood, secondaryMood } = analysis;
-  const moodPair = [primaryMood, secondaryMood].filter(Boolean).sort().join('|');
-
-  if (moodPair && COMBO_FORTUNES[moodPair]) {
-    return COMBO_FORTUNES[moodPair];
+  const { primaryEmotion } = analysis;
+  const profile = EMOTION_PROFILES[primaryEmotion] || EMOTION_PROFILES.unknown;
+  if (profile.fortuneKey && FORTUNE_LIBRARY[profile.fortuneKey]) {
+    return FORTUNE_LIBRARY[profile.fortuneKey];
   }
 
-  if (FORTUNE_LIBRARY[primaryMood]) {
-    return FORTUNE_LIBRARY[primaryMood];
-  }
-
-  const fallbackMood = MOOD_FALLBACKS[primaryMood];
-  if (fallbackMood && FORTUNE_LIBRARY[fallbackMood]) {
-    return FORTUNE_LIBRARY[fallbackMood];
-  }
-
-  const profile = MOOD_PROFILES[primaryMood] || MOOD_PROFILES.unknown;
   return TONE_FORTUNES[profile.tone] || FORTUNE_LIBRARY.unknown;
 }
 
@@ -272,7 +278,7 @@ function resolveSceneGroup(valence) {
 }
 
 function pickSceneForSelection(analysis, seed) {
-  const profile = MOOD_PROFILES[analysis.primaryMood] || MOOD_PROFILES.unknown;
+  const profile = EMOTION_PROFILES[analysis.primaryEmotion] || EMOTION_PROFILES.unknown;
   const sceneGroup = resolveSceneGroup(profile.valence);
   return sceneGroup[seed % sceneGroup.length];
 }

@@ -26,6 +26,9 @@ const FORTUNE_LIBRARY = {
     'Today favors the person who keeps their center and their humor.',
     'Your peace has excellent instincts. Let it lead for a while.',
     'The fortune of the day belongs to the person who stays steady on purpose.',
+    'Be mindful, be kind, and let that count as real progress today.',
+    'A calmer day becomes more beautiful the moment you look for the good in people.',
+    'Your peace is not passive today; it is how you keep your balance and your clarity.',
   ],
   happy: [
     'Your spark is loud in the best possible way, and it is pulling good things closer.',
@@ -52,6 +55,9 @@ const FORTUNE_LIBRARY = {
     'Something ordinary is about to become much better because you showed up delighted.',
     'Joy is driving today, and honestly it seems qualified.',
     'Good luck is looking unusually responsive to your current energy.',
+    'The day gets brighter when you decide your happiness belongs in the present, not later.',
+    'A grateful mood is making everything around you a little more alive.',
+    'The good in today is easier to find because your heart came ready for it.',
   ],
   stressed: [
     'You are protected from the lie that says everything must be solved at once.',
@@ -78,6 +84,9 @@ const FORTUNE_LIBRARY = {
     'The kindest pace is likely the most effective one right now.',
     'Today will improve the moment you stop arguing with your own limits.',
     'You deserve practical mercy, not another speech about powering through.',
+    'Worry is loud, but your energy belongs with what you can actually create.',
+    'Not every burden needs your full attention today; choose the one that truly matters.',
+    'The strongest move right now may be to drop the grudge and keep your energy.',
   ],
   sad: [
     'Your heart is allowed to be heavy and still be held with care.',
@@ -104,6 +113,9 @@ const FORTUNE_LIBRARY = {
     'A small kindness offered to yourself will echo farther than expected today.',
     'The day does not need you cheerful. It only asks you to stay with yourself gently.',
     'Even now, some part of you is still leaning toward the light.',
+    'The softest version of this day may still hold something healing for you.',
+    'Let go a little at a time; healing does not need to arrive dramatically to be real.',
+    'There is a quiet kind of bravery in being tender with yourself today.',
   ],
   tired: [
     'Your battery icon is not a moral report card.',
@@ -156,6 +168,9 @@ const FORTUNE_LIBRARY = {
     'Not every sensation in your chest is a message from the future.',
     'Come closer to the present; it is kinder than the stories your panic is telling.',
     'You can hold this moment with gentleness and still call that courage.',
+    'The future does not need all of your fear in order to unfold properly.',
+    'You are allowed to stop spiraling and return your energy to what you can do now.',
+    'Courage today may look exactly like trying anyway.',
   ],
   hopeful: [
     'Your hope has excellent taste and strong timing.',
@@ -182,6 +197,9 @@ const FORTUNE_LIBRARY = {
     'Stay open; the day appears willing to meet you halfway.',
     'This light feeling has the posture of a true thing.',
     'Fortune favors the person who leaves room for the good surprise.',
+    'Hope is still doing its job, even if progress feels slow from where you stand.',
+    'Something stronger in you has already survived storms that did not stay forever.',
+    'Begin with what you can do; boldness often arrives after the first step.',
   ],
   focused: [
     'Your focus is hot right now, so point it at something worthy.',
@@ -286,6 +304,9 @@ const FORTUNE_LIBRARY = {
     'There is fortune in not handing your composure to the thing that upset you.',
     'Let your standards speak louder than your temper.',
     'What needs defending will still be there after one steadying breath.',
+    'Your energy is too valuable to spend on anger that leads nowhere useful.',
+    'The cleaner boundary is likely more powerful than the louder reaction.',
+    'Self-respect looks especially strong when it refuses to be dragged into nonsense.',
   ],
   romantic: [
     'Your heart is glowing a little, and it looks fantastic on you.',
@@ -364,6 +385,9 @@ const FORTUNE_LIBRARY = {
     'Not knowing everything is not the same as knowing nothing.',
     'One small certainty will likely appear once you stop demanding ten of them.',
     'Your instincts may be more intact than the confusion is letting on.',
+    'You do not need the whole answer today; one honest direction will do.',
+    'Clarity often appears after motion, not before it.',
+    'If the day feels messy, choose the next kind and useful step anyway.',
   ],
   mysterious: [
     'A feeling without a name may be carrying a message that prefers dim lighting.',
@@ -417,85 +441,6 @@ const FORTUNE_LIBRARY = {
     'Your internal forecast may be unclear, but your next kind choice can still be obvious.',
     'The unlabeled mood is invited to exist without becoming a personal failure.',
   ],
-};
-
-const MOOD_TAXONOMY = {
-  calm: [
-    'calm', 'peaceful', 'steady', 'balanced', 'fine', 'relaxed', 'content', 'centered',
-    'grounded', 'okay', 'at ease', 'peace', 'serene', 'tranquil', 'settled', 'mellow',
-    'soft', 'safe',
-  ],
-  happy: [
-    'happy', 'great', 'good', 'joy', 'excited', 'grateful', 'cheerful', 'delighted',
-    'upbeat', 'amazing', 'thrilled', 'glad', 'effervescent', 'buoyant', 'sunny',
-    'playful', 'lighthearted', 'elated', 'gleeful', 'giddy', 'sparkly',
-  ],
-  stressed: [
-    'stress', 'stressed', 'overwhelmed', 'burned', 'pressure', 'busy', 'frazzled',
-    'swamped', 'tense', 'burnout', 'stretched', 'chaotic', 'strained', 'buried',
-    'underwater', 'under pressure', 'maxed out', 'upset', 'frayed', 'off',
-  ],
-  sad: [
-    'sad', 'down', 'blue', 'lonely', 'hurt', 'grief', 'heartbroken', 'heavy',
-    'empty', 'low', 'depressed', 'melancholy', 'sorrowful', 'gloomy', 'tearful',
-    'wistful', 'fragile', 'raw', 'numb',
-  ],
-  tired: [
-    'tired', 'drained', 'sleepy', 'exhausted', 'fatigue', 'worn out', 'wiped', 'beat',
-    'low energy', 'burnt out', 'drowsy', 'spent', 'weary', 'sluggish', 'running on empty',
-  ],
-  anxious: [
-    'anxious', 'anxiety', 'nervous', 'worried', 'afraid', 'panicked', 'uneasy',
-    'on edge', 'fearful', 'restless', 'spiraling', 'scared', 'fraught', 'jittery',
-    'apprehensive', 'antsy',
-  ],
-  hopeful: [
-    'hopeful', 'optimistic', 'ready', 'motivated', 'open', 'encouraged', 'inspired',
-    'positive', 'looking forward', 'expectant', 'ambitious', 'dreaming', 'aspiring',
-    'promising', 'possibility',
-  ],
-  focused: [
-    'focused', 'productive', 'determined', 'locked in', 'clear', 'dialed in',
-    'intentional', 'driven', 'sharp', 'disciplined', 'in the zone', 'concentrated',
-    'committed', 'resolved',
-  ],
-  grateful: [
-    'grateful', 'thankful', 'appreciative', 'blessed', 'fortunate', 'moved', 'touched',
-    'appreciating',
-  ],
-  lonely: [
-    'lonely', 'isolated', 'alone', 'disconnected', 'left out', 'unseen', 'abandoned',
-    'apart',
-  ],
-  angry: [
-    'angry', 'mad', 'furious', 'annoyed', 'irritated', 'resentful', 'frustrated',
-    'outraged', 'bitter', 'agitated', 'pissed', 'heated',
-  ],
-  romantic: [
-    'romantic', 'loving', 'flirty', 'smitten', 'affectionate', 'in love', 'tender',
-    'adoring', 'infatuated',
-  ],
-  confident: [
-    'confident', 'bold', 'assured', 'capable', 'strong', 'empowered', 'fearless',
-    'self-assured', 'certain',
-  ],
-  confused: [
-    'confused', 'unsure', 'uncertain', 'lost', 'torn', 'mixed up', 'puzzled', 'unclear',
-    'conflicted', 'disoriented',
-  ],
-  unknown: [
-    'bored', 'blah', 'meh', 'whatever', 'indifferent', 'blank', 'so so', 'mixed',
-    'neutral', 'fine i guess',
-  ],
-};
-
-const MOOD_FALLBACKS = {
-  grateful: 'happy',
-  lonely: 'sad',
-  angry: 'stressed',
-  romantic: 'hopeful',
-  confident: 'focused',
-  confused: 'unknown',
 };
 
 const BLOCKED_HATE_TERMS = [
@@ -558,75 +503,6 @@ const HATE_PATTERNS = [
   /\b(jews|jewish|muslims|muslim|christians|christian|gays|lesbians|women|immigrants|mexicans|asians|latinos|latinas|roma|romani|gypsy|gypsies)\s+(suck|stink|are awful|are horrible|are trash)\b/,
 ];
 
-const MOOD_PROFILES = {
-  calm: { tone: 'grounding', valence: 'positive', energy: 'low' },
-  happy: { tone: 'uplifting', valence: 'positive', energy: 'high' },
-  stressed: { tone: 'grounding', valence: 'negative', energy: 'high' },
-  sad: { tone: 'comforting', valence: 'negative', energy: 'low' },
-  tired: { tone: 'restorative', valence: 'neutral', energy: 'low' },
-  anxious: { tone: 'reassuring', valence: 'negative', energy: 'high' },
-  hopeful: { tone: 'encouraging', valence: 'positive', energy: 'medium' },
-  focused: { tone: 'energizing', valence: 'positive', energy: 'medium' },
-  grateful: { tone: 'uplifting', valence: 'positive', energy: 'medium' },
-  lonely: { tone: 'comforting', valence: 'negative', energy: 'low' },
-  angry: { tone: 'grounding', valence: 'negative', energy: 'high' },
-  romantic: { tone: 'gentle', valence: 'positive', energy: 'medium' },
-  confident: { tone: 'energizing', valence: 'positive', energy: 'high' },
-  confused: { tone: 'guiding', valence: 'neutral', energy: 'medium' },
-  unknown: { tone: 'general', valence: 'neutral', energy: 'medium' },
-};
-
-const COMBO_FORTUNES = {
-  'anxious|hopeful': [
-    'Fear and hope can share a room; let hope choose the seat nearest the door.',
-    'You do not need to stop trembling before you keep moving forward.',
-    'A nervous heart can still be pointing toward something worth trusting.',
-    'The future may feel loud, but your hope is already answering back.',
-  ],
-  'sad|hopeful': [
-    'A heavy day can still carry a living spark inside it.',
-    'Grief and hope are not opposites when both are telling the truth.',
-    'Something gentle may grow here even if the ground still feels tender.',
-    'The light ahead does not erase the ache; it simply means the ache is not alone.',
-  ],
-  'stressed|tired': [
-    'Today asks for one honest task and one honest pause.',
-    'You do not need more force; you need a gentler strategy.',
-    'A tired mind under pressure is asking for mercy before brilliance.',
-    'Restoring your energy may be the most productive choice available.',
-  ],
-  'tired|focused': [
-    'Protect your energy and spend it only where it truly matters today.',
-    'A slow, precise effort may outperform a fast, exhausted one.',
-    'Your focus will serve you best when it is paired with restraint.',
-    'Choose the essential task and let that be enough for now.',
-  ],
-  'happy|grateful': [
-    'Joy deepens when it pauses long enough to notice what made it possible.',
-    'What delights you today may become even brighter when you honor it.',
-    'A grateful heart gives happiness somewhere lasting to land.',
-    'Today\'s sweetness may grow simply because you stopped to savor it.',
-  ],
-  'angry|confident': [
-    'Your strongest move today may be a clear boundary delivered without heat.',
-    'Certainty becomes powerful when it does not need to shout.',
-    'What angers you may be pointing toward the standard you are ready to defend.',
-    'Stand firm, then choose the response you can still respect tomorrow.',
-  ],
-  'confused|hopeful': [
-    'You do not need the whole map to trust the next promising turn.',
-    'A hopeful step can clarify what thinking alone cannot.',
-    'The answer may begin as direction before it becomes certainty.',
-    'Stay open; the next useful clue may arrive once you start moving.',
-  ],
-  'lonely|romantic': [
-    'The heart that longs deeply also recognizes warmth more quickly when it comes.',
-    'What feels far away now may answer a quiet invitation sooner than expected.',
-    'Tenderness often arrives first as a small sign worth noticing.',
-    'Leave a little room today for affection to find you honestly.',
-  ],
-};
-
 const TONE_FORTUNES = {
   grounding: FORTUNE_LIBRARY.calm,
   uplifting: FORTUNE_LIBRARY.happy,
@@ -640,19 +516,28 @@ const TONE_FORTUNES = {
   general: FORTUNE_LIBRARY.unknown,
 };
 
+const EMOTION_PROFILES = {
+  joy: { fortuneKey: 'happy', tone: 'uplifting', valence: 'positive', energy: 'high' },
+  sadness: { fortuneKey: 'sad', tone: 'comforting', valence: 'negative', energy: 'low' },
+  fear: { fortuneKey: 'anxious', tone: 'reassuring', valence: 'negative', energy: 'high' },
+  anger: { fortuneKey: 'angry', tone: 'grounding', valence: 'negative', energy: 'high' },
+  trust: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
+  anticipation: { fortuneKey: 'hopeful', tone: 'encouraging', valence: 'positive', energy: 'medium' },
+  surprise: { fortuneKey: 'confused', tone: 'guiding', valence: 'neutral', energy: 'medium' },
+  disgust: { fortuneKey: 'stressed', tone: 'grounding', valence: 'negative', energy: 'medium' },
+  unknown: { fortuneKey: 'unknown', tone: 'general', valence: 'neutral', energy: 'medium' },
+};
+
 const BLOCKED_INPUT_FORTUNE =
   'A kinder fortune waits when the mood is named without turning anyone into a target.';
 
 
 export {
   FORTUNE_LIBRARY,
-  MOOD_TAXONOMY,
-  MOOD_FALLBACKS,
   BLOCKED_HATE_TERMS,
   PROTECTED_GROUP_TERMS,
   HATE_PATTERNS,
-  MOOD_PROFILES,
-  COMBO_FORTUNES,
+  EMOTION_PROFILES,
   TONE_FORTUNES,
   BLOCKED_INPUT_FORTUNE,
 };
