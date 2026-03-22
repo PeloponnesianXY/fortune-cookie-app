@@ -58,10 +58,12 @@ const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
 });
 
 const CookieStage = memo(function CookieStage({
+  cookieCueText,
   fortuneText,
   isAnimating,
   isCookieOpened,
   isPaperVisible,
+  isTapDisabled,
   onPress,
   paperProgress,
   scene,
@@ -106,7 +108,7 @@ const CookieStage = memo(function CookieStage({
   return (
     <TouchableOpacity
       activeOpacity={0.94}
-      disabled={isAnimating}
+      disabled={isAnimating || isTapDisabled}
       onPress={onPress}
       style={styles.cookieTapArea}
     >
@@ -155,7 +157,7 @@ const CookieStage = memo(function CookieStage({
 
       <View style={styles.cookieCuePill}>
         <Text style={[styles.cookieCueText, { color: scene.cue }]}>
-          {isAnimating ? 'Opening...' : 'Ready for your fortune?'}
+          {isAnimating ? 'Opening...' : cookieCueText}
         </Text>
       </View>
     </TouchableOpacity>
@@ -163,10 +165,14 @@ const CookieStage = memo(function CookieStage({
 });
 
 export default function FortuneCard({
+  cookieCueText,
   fortuneText,
+  inputPlaceholder,
   isAnimating,
   isCookieOpened,
+  isHydratingSelection,
   isPaperVisible,
+  isTapDisabled,
   moodInput,
   onMoodChange,
   onOpenFortune,
@@ -220,8 +226,9 @@ export default function FortuneCard({
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!isHydratingSelection}
                 onChangeText={onMoodChange}
-                placeholder=""
+                placeholder={inputPlaceholder}
                 placeholderTextColor={scene.accentSoft}
                 selectionColor={scene.accent}
                 style={[styles.input, { color: scene.textPrimary }]}
@@ -234,17 +241,18 @@ export default function FortuneCard({
           <View style={[styles.stageHaze, { backgroundColor: scene.mist }]} />
 
           <CookieStage
+            cookieCueText={cookieCueText}
             fortuneText={fortuneText}
             isAnimating={isAnimating}
             isCookieOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
+            isTapDisabled={isTapDisabled}
             onPress={onOpenFortune}
             paperProgress={paperProgress}
             scene={scene}
             shellProgress={shellProgress}
           />
         </View>
-
       </View>
     </View>
   );

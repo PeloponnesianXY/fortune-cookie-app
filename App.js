@@ -12,7 +12,12 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
 import FortuneCard from './components/FortuneCard';
 import { SCENE_LIBRARY } from './data/scenes';
-import { getDailyFortuneSelection, getDefaultSceneKey } from './utils/fortuneLogic';
+import {
+  getDailyFortuneSelection,
+  getDefaultSceneKey,
+  getOverrideFortuneSelection,
+  getStoredDailyFortuneSelection,
+} from './utils/fortuneLogic';
 
 const COOKIE_CLOSED_IMAGE = require('./assets/cookie/closed.png');
 const COOKIE_OPEN_IMAGE = require('./assets/cookie/open.png');
@@ -30,28 +35,104 @@ const REVEAL_PHASE = {
   OPENED: 'opened',
 };
 
+const LOCKED_TOMORROW_MESSAGES = [
+  'A new fortune awaits you tomorrow',
+  'Return tomorrow for what\u2019s next',
+  'One day, one fortune. See you tomorrow',
+  'Let today\u2019s words settle. Tomorrow brings more',
+  'This fortune is yours for today. Tomorrow, a new one',
+  'The cookie has spoken. Tomorrow, it speaks again',
+  'The cookie is quiet now. Try again tomorrow',
+  'No peeking into the future. One day, one fortune',
+  'Even fortune cookies need rest. See you tomorrow',
+  'The cookie sleeps now. Tomorrow, it whispers again',
+  'Patience\u2026 tomorrow brings a new fortune',
+  'The cookie keeps its secrets until tomorrow',
+  'All in good time. Your next fortune comes tomorrow',
+  'Come back tomorrow \u2014 the cookie will be ready',
+  'Your next fortune is waiting\u2026 just not yet',
+  'The cookie rests now. Tomorrow, it returns',
+];
+
+function pickRandomLockedTomorrowMessage() {
+  const index = Math.floor(Math.random() * LOCKED_TOMORROW_MESSAGES.length);
+  return LOCKED_TOMORROW_MESSAGES[index];
+}
+
+function parseOverrideCommand(input) {
+  const match = input.match(/^\s*override\b(.*)$/i);
+
+  if (!match) {
+    return {
+      isOverride: false,
+      mood: input,
+    };
+  }
+
+  return {
+    isOverride: true,
+    mood: match[1].trim(),
+  };
+}
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
-  const [analysisSummary, setAnalysisSummary] = useState(null);
+  const [storedTodaySelection, setStoredTodaySelection] = useState(null);
   const [sceneKey, setSceneKey] = useState(getDefaultSceneKey());
   const [revealPhase, setRevealPhase] = useState(REVEAL_PHASE.IDLE);
   const [assetsReady, setAssetsReady] = useState(false);
+  const [isHydratingSelection, setIsHydratingSelection] = useState(true);
+  const [isOverrideLoopActive, setIsOverrideLoopActive] = useState(false);
+  const [isShowingOverrideFortune, setIsShowingOverrideFortune] = useState(false);
+  const [lockedTomorrowMessage, setLockedTomorrowMessage] = useState(() => (
+    pickRandomLockedTomorrowMessage()
+  ));
 
   const shellProgress = useRef(new Animated.Value(0)).current;
   const paperProgress = useRef(new Animated.Value(0)).current;
   const paperRevealTimer = useRef(null);
+  const isOpeningRef = useRef(false);
+  const overrideAttemptRef = useRef(0);
 
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
+  const overrideCommand = parseOverrideCommand(moodInput);
+  const isOverrideInputActive = overrideCommand.isOverride;
+  const hasOpenedToday = Boolean(storedTodaySelection);
+  const isLockedForToday = hasOpenedToday && !isShowingOverrideFortune && !isOverrideInputActive;
   const isCookieOpened = revealPhase !== REVEAL_PHASE.IDLE;
   const isPaperVisible = revealPhase === REVEAL_PHASE.OPENED;
+  const cookieCueText = isOverrideLoopActive || isShowingOverrideFortune
+    ? 'Ready for another fortune?'
+    : isLockedForToday
+      ? lockedTomorrowMessage
+      : 'Ready for your fortune?';
+  const inputPlaceholder = isLockedForToday ? lockedTomorrowMessage : '';
+  const isCookieInteractionDisabled = isHydratingSelection || isLockedForToday;
 
   function clearPaperRevealTimer() {
     if (paperRevealTimer.current) {
       clearTimeout(paperRevealTimer.current);
       paperRevealTimer.current = null;
     }
+  }
+
+  function resetCookiePresentation() {
+    clearPaperRevealTimer();
+    setFortuneText('');
+    setSceneKey(getDefaultSceneKey());
+    setRevealPhase(REVEAL_PHASE.IDLE);
+    shellProgress.setValue(0);
+    paperProgress.setValue(0);
+  }
+
+  function showSelection(selection) {
+    setFortuneText(selection.fortuneText);
+    setSceneKey(selection.sceneKey || getDefaultSceneKey());
+    setRevealPhase(REVEAL_PHASE.OPENED);
+    shellProgress.setValue(1);
+    paperProgress.setValue(1);
   }
 
   useEffect(() => () => {
@@ -78,13 +159,60 @@ export default function App() {
     };
   }, []);
 
-  function updateStatusMessage(selection) {
-    void selection;
-  }
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateTodaySelection() {
+      try {
+        const storedSelection = await getStoredDailyFortuneSelection();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (storedSelection) {
+          setStoredTodaySelection(storedSelection);
+          showSelection(storedSelection);
+        } else {
+          resetCookiePresentation();
+        }
+      } finally {
+        if (isMounted) {
+          setIsHydratingSelection(false);
+        }
+      }
+    }
+
+    hydrateTodaySelection();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isLockedForToday) {
+      setLockedTomorrowMessage((currentMessage) => currentMessage || pickRandomLockedTomorrowMessage());
+      return;
+    }
+
+    setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
+  }, [isLockedForToday]);
+
+  useEffect(() => {
+    if (storedTodaySelection && !isShowingOverrideFortune && !isOverrideInputActive) {
+      showSelection(storedTodaySelection);
+    }
+  }, [isOverrideInputActive, isShowingOverrideFortune]);
+
+  useEffect(() => {
+    if (!isOverrideInputActive && !isShowingOverrideFortune) {
+      setIsOverrideLoopActive(false);
+    }
+  }, [isOverrideInputActive, isShowingOverrideFortune]);
 
   function runCookieAnimation(selection) {
     setFortuneText(selection.fortuneText);
-    setAnalysisSummary(selection.analysis);
     setSceneKey(selection.sceneKey);
     setRevealPhase(REVEAL_PHASE.IDLE);
     shellProgress.setValue(0);
@@ -115,17 +243,51 @@ export default function App() {
       ]),
     ]).start(() => {
       setRevealPhase(REVEAL_PHASE.OPENED);
-      updateStatusMessage(selection);
     });
   }
 
   async function openFortune() {
-    if (isAnimating) {
+    if (isAnimating || isOpeningRef.current || isHydratingSelection) {
       return;
     }
 
-    const selection = await getDailyFortuneSelection(moodInput);
-    runCookieAnimation(selection);
+    if (isShowingOverrideFortune) {
+      setIsShowingOverrideFortune(false);
+      setIsOverrideLoopActive(isOverrideInputActive);
+
+      if (storedTodaySelection && !isOverrideInputActive) {
+        showSelection(storedTodaySelection);
+      } else {
+        resetCookiePresentation();
+      }
+
+      return;
+    }
+
+    if (isLockedForToday) {
+      return;
+    }
+
+    isOpeningRef.current = true;
+
+    try {
+      const selection = isOverrideInputActive
+        ? await getOverrideFortuneSelection(overrideCommand.mood, overrideAttemptRef.current += 1)
+        : await getDailyFortuneSelection(moodInput);
+
+      if (isOverrideInputActive) {
+        setIsOverrideLoopActive(true);
+        setIsShowingOverrideFortune(true);
+      } else {
+        setStoredTodaySelection(selection);
+        setIsOverrideLoopActive(false);
+        setIsShowingOverrideFortune(false);
+      }
+
+      runCookieAnimation(selection);
+    } finally {
+      isOpeningRef.current = false;
+    }
   }
 
   return (
@@ -137,11 +299,14 @@ export default function App() {
       <SafeAreaView style={styles.safeArea}>
         {assetsReady ? (
           <FortuneCard
-            analysisSummary={analysisSummary}
+            cookieCueText={cookieCueText}
             fortuneText={fortuneText}
+            inputPlaceholder={inputPlaceholder}
             isAnimating={isAnimating}
             isCookieOpened={isCookieOpened}
+            isHydratingSelection={isHydratingSelection}
             isPaperVisible={isPaperVisible}
+            isTapDisabled={isCookieInteractionDisabled}
             moodInput={moodInput}
             onMoodChange={setMoodInput}
             onOpenFortune={openFortune}

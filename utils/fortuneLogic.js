@@ -15,7 +15,7 @@ import {
 import { SCENE_GROUPS } from '../data/scenes';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
-const DAILY_SELECTIONS_STORAGE_KEY = '@fortune-cookie-daily/daily-selections';
+const DAILY_SELECTION_STORAGE_KEY = '@fortune-cookie-daily/daily-selection';
 const DEFAULT_SCENE_KEY = 'apricotMorning';
 
 function buildBlockedAnalysis() {
@@ -50,27 +50,21 @@ async function getOrCreateUserId() {
   return nextId;
 }
 
-async function loadSelectionStore() {
-  const raw = await AsyncStorage.getItem(DAILY_SELECTIONS_STORAGE_KEY);
+async function loadDailySelection() {
+  const raw = await AsyncStorage.getItem(DAILY_SELECTION_STORAGE_KEY);
   if (!raw) {
-    return {};
+    return null;
   }
 
   try {
     return JSON.parse(raw);
   } catch {
-    return {};
+    return null;
   }
 }
 
-async function saveSelectionStore(store) {
-  await AsyncStorage.setItem(DAILY_SELECTIONS_STORAGE_KEY, JSON.stringify(store));
-}
-
-function pruneSelectionStore(store, activeDayKey) {
-  return Object.fromEntries(
-    Object.entries(store).filter(([, value]) => value?.dayKey === activeDayKey)
-  );
+async function saveDailySelection(selection) {
+  await AsyncStorage.setItem(DAILY_SELECTION_STORAGE_KEY, JSON.stringify(selection));
 }
 
 function hashString(value) {
@@ -283,40 +277,32 @@ function pickSceneForSelection(analysis, seed) {
   return sceneGroup[seed % sceneGroup.length];
 }
 
-export async function getDailyFortuneSelection(input) {
+async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection }) {
   const moderationResult = moderateMoodInput(input);
 
   if (moderationResult.moderation === 'blocked-hate') {
-    return {
+    const blockedSelection = {
       moderation: 'blocked-hate',
       fortuneText: BLOCKED_INPUT_FORTUNE,
       analysis: buildBlockedAnalysis(),
       sceneKey: 'moonlitDunes',
+      dayKey,
+    };
+
+    if (persistSelection) {
+      await saveDailySelection(blockedSelection);
+    }
+
+    return {
+      ...blockedSelection,
       fromCache: false,
-      dayKey: getLocalDayKey(),
     };
   }
 
   const analysis = analyzeMoodInput(moderationResult.sanitizedInput);
-  const moodKey = [
-    analysis.primaryMood,
-    analysis.secondaryMood || 'none',
-  ].join('|');
-  const dayKey = getLocalDayKey();
-  const selectionKey = `${dayKey}|${moodKey}`;
   const userId = await getOrCreateUserId();
-  const store = pruneSelectionStore(await loadSelectionStore(), dayKey);
-
-  if (store[selectionKey]) {
-    return {
-      ...store[selectionKey],
-      moderation: 'clean',
-      fromCache: true,
-    };
-  }
-
   const pool = buildFortunePool(analysis);
-  const seed = hashString(`${userId}|${selectionKey}`);
+  const seed = hashString(`${userId}|${seedKey}`);
   const fortuneText = pool[seed % pool.length];
   const sceneKey = pickSceneForSelection(analysis, seed);
   const selection = {
@@ -324,19 +310,64 @@ export async function getDailyFortuneSelection(input) {
     dayKey,
     fortuneText,
     sceneKey,
+    moderation: 'clean',
   };
 
-  store[selectionKey] = selection;
-  await saveSelectionStore(store);
+  if (persistSelection) {
+    await saveDailySelection(selection);
+  }
 
   return {
     ...selection,
-    moderation: 'clean',
     fromCache: false,
   };
+}
+
+export async function getDailyFortuneSelection(input) {
+  const dayKey = getLocalDayKey();
+  const existingSelection = await loadDailySelection();
+
+  if (existingSelection?.dayKey === dayKey && existingSelection?.fortuneText) {
+    return {
+      ...existingSelection,
+      moderation: existingSelection.moderation || 'clean',
+      fromCache: true,
+    };
+  }
+
+  return buildFortuneSelection(input, {
+    dayKey,
+    seedKey: dayKey,
+    persistSelection: true,
+  });
+}
+
+export async function getOverrideFortuneSelection(input, overrideKey) {
+  const dayKey = getLocalDayKey();
+
+  return buildFortuneSelection(input, {
+    dayKey,
+    seedKey: `${dayKey}|override|${overrideKey}`,
+    persistSelection: false,
+  });
+}
+
+export async function getStoredDailyFortuneSelection() {
+  const dayKey = getLocalDayKey();
+  const selection = await loadDailySelection();
+
+  if (!selection) {
+    return null;
+  }
+
+  if (selection.dayKey === dayKey && selection.fortuneText) {
+    return selection;
+  }
+
+  await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);
+  return null;
 }
 
 export function getDefaultSceneKey() {
   return DEFAULT_SCENE_KEY;
 }
-
