@@ -368,6 +368,10 @@ export async function getStoredDailyFortuneSelection() {
   return null;
 }
 
+export async function clearStoredDailyFortuneSelection() {
+  await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);
+}
+
 export function getDefaultSceneKey() {
   return DEFAULT_SCENE_KEY;
 }

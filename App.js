@@ -13,6 +13,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import FortuneCard from './components/FortuneCard';
 import { SCENE_LIBRARY } from './data/scenes';
 import {
+  clearStoredDailyFortuneSelection,
   getDailyFortuneSelection,
   getDefaultSceneKey,
   getOverrideFortuneSelection,
@@ -75,6 +76,10 @@ function parseOverrideCommand(input) {
   };
 }
 
+function isResetFortuneCommand(input) {
+  return /^\s*resetfortune\s*$/i.test(input);
+}
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
@@ -98,17 +103,24 @@ export default function App() {
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
   const overrideCommand = parseOverrideCommand(moodInput);
+  const isResetCommandActive = isResetFortuneCommand(moodInput);
   const isOverrideInputActive = overrideCommand.isOverride;
   const hasOpenedToday = Boolean(storedTodaySelection);
-  const isLockedForToday = hasOpenedToday && !isShowingOverrideFortune && !isOverrideInputActive;
+  const isLockedForToday = (
+    hasOpenedToday
+    && !isShowingOverrideFortune
+    && !isOverrideInputActive
+    && !isResetCommandActive
+  );
   const isCookieOpened = revealPhase !== REVEAL_PHASE.IDLE;
   const isPaperVisible = revealPhase === REVEAL_PHASE.OPENED;
   const cookieCueText = isOverrideLoopActive || isShowingOverrideFortune
     ? 'Ready for another fortune?'
+    : isResetCommandActive
+      ? 'Tap the cookie to reset today'
     : isLockedForToday
       ? lockedTomorrowMessage
       : 'Ready for your fortune?';
-  const inputPlaceholder = isLockedForToday ? lockedTomorrowMessage : '';
   const isCookieInteractionDisabled = isHydratingSelection || isLockedForToday;
 
   function clearPaperRevealTimer() {
@@ -251,6 +263,24 @@ export default function App() {
       return;
     }
 
+    if (isResetCommandActive) {
+      isOpeningRef.current = true;
+
+      try {
+        await clearStoredDailyFortuneSelection();
+        setStoredTodaySelection(null);
+        setIsShowingOverrideFortune(false);
+        setIsOverrideLoopActive(false);
+        setMoodInput('');
+        setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
+        resetCookiePresentation();
+      } finally {
+        isOpeningRef.current = false;
+      }
+
+      return;
+    }
+
     if (isShowingOverrideFortune) {
       setIsShowingOverrideFortune(false);
       setIsOverrideLoopActive(isOverrideInputActive);
@@ -301,7 +331,6 @@ export default function App() {
           <FortuneCard
             cookieCueText={cookieCueText}
             fortuneText={fortuneText}
-            inputPlaceholder={inputPlaceholder}
             isAnimating={isAnimating}
             isCookieOpened={isCookieOpened}
             isHydratingSelection={isHydratingSelection}

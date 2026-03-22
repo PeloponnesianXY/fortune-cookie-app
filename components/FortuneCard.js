@@ -167,7 +167,6 @@ const CookieStage = memo(function CookieStage({
 export default function FortuneCard({
   cookieCueText,
   fortuneText,
-  inputPlaceholder,
   isAnimating,
   isCookieOpened,
   isHydratingSelection,
@@ -228,7 +227,7 @@ export default function FortuneCard({
                 autoCorrect={false}
                 editable={!isHydratingSelection}
                 onChangeText={onMoodChange}
-                placeholder={inputPlaceholder}
+                placeholder=""
                 placeholderTextColor={scene.accentSoft}
                 selectionColor={scene.accent}
                 style={[styles.input, { color: scene.textPrimary }]}
