@@ -4,6 +4,7 @@ Small Expo app that:
 
 - takes a one-word mood input
 - maps it to one detected emotion locally
+- routes that emotion into one of 9 runtime fortune buckets
 - reveals one saved fortune per day
 
 ## Project structure
@@ -29,7 +30,9 @@ assets/
 - `assets/cookie/closed.png`: closed cookie image
 - `assets/cookie/open.png`: broken/open cookie image
 - `components/CookieShell.js`: cookie image swap + paper overlay
-- `utils/fortuneLogic.js`: emotion analysis, moderation, daily persistence
+- `data/fortunes.js`: merged 9-bucket runtime fortune library
+- `data/scenes.js`: dedicated scene per detected emotion bucket
+- `utils/fortuneLogic.js`: emotion analysis, moderation, scene selection, daily persistence
 
 Old visual experiments and export artifacts were removed so the repo reflects the current app instead of abandoned approaches.
 
@@ -94,6 +97,18 @@ eas submit --platform ios
 
 - The app uses local persistence via `AsyncStorage` to keep exactly one normal fortune per calendar day on the device.
 - The emotion classifier now uses an NRC-derived 8-emotion lexicon bundled locally for runtime lookup: `joy`, `sadness`, `fear`, `anger`, `trust`, `anticipation`, `surprise`, and `disgust`.
-- The app now runs on a single-emotion path: one word in, one detected emotion out, then one mapped fortune pool.
-- The app still maps those detected emotions into the existing custom fortune voice, so vocabulary coverage is broader without flattening the writing style.
+- The app now runs on a single-emotion path: one word in, one detected emotion out, then one mapped runtime bucket.
+- The runtime fortune system is simplified to 9 buckets:
+  - `calm`
+  - `happy`
+  - `stressed`
+  - `sad`
+  - `anxious`
+  - `hopeful`
+  - `angry`
+  - `confused`
+  - `mysterious`
+- Older bucket writing was merged into those 9 runtime buckets so the content model matches the live taxonomy.
+- Unknown or unmapped inputs fall back to the mystery path instead of generating a separate generic bucket.
+- Each detected emotion now maps to its own dedicated scene instead of drawing from broader positive/negative/neutral scene groups.
 - The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.

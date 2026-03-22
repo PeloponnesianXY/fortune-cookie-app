@@ -10,7 +10,7 @@ import {
   TONE_FORTUNES,
 } from '../data/fortunes';
 import EMOTION_LEXICON from '../data/nrcEmotionLexicon.json';
-import { SCENE_GROUPS } from '../data/scenes';
+import { EMOTION_SCENE_KEYS } from '../data/scenes';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAILY_SELECTION_STORAGE_KEY = '@fortune-cookie-daily/daily-selection';
@@ -265,22 +265,8 @@ function buildFortunePool(analysis) {
   return TONE_FORTUNES[profile.tone] || FORTUNE_LIBRARY.unknown;
 }
 
-function resolveSceneGroup(valence) {
-  if (valence === 'negative') {
-    return SCENE_GROUPS.negative;
-  }
-
-  if (valence === 'positive') {
-    return SCENE_GROUPS.positive;
-  }
-
-  return SCENE_GROUPS.neutral;
-}
-
-function pickSceneForSelection(analysis, seed) {
-  const profile = EMOTION_PROFILES[analysis.primaryEmotion] || EMOTION_PROFILES.unknown;
-  const sceneGroup = resolveSceneGroup(profile.valence);
-  return sceneGroup[seed % sceneGroup.length];
+function pickSceneForSelection(analysis) {
+  return EMOTION_SCENE_KEYS[analysis.primaryEmotion] || EMOTION_SCENE_KEYS.unknown;
 }
 
 async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection }) {
@@ -310,7 +296,7 @@ async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection 
   const pool = buildFortunePool(analysis);
   const seed = hashString(`${userId}|${seedKey}`);
   const fortuneText = pool[seed % pool.length];
-  const sceneKey = pickSceneForSelection(analysis, seed);
+  const sceneKey = pickSceneForSelection(analysis);
   const selection = {
     analysis,
     dayKey,
