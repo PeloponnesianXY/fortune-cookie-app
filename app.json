@@ -10,7 +10,11 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.peloponnesianxy.fortunecookiedaily"
+      "bundleIdentifier": "com.peloponnesianxy.fortunecookiedaily",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,
@@ -18,6 +22,11 @@
     },
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "edfe143a-54d6-43eb-8eb3-a4ca1e1f3df7"
+      }
+    }
   }
 }
