@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, View } from 'react-native';
 
-const COOKIE_CLOSED_IMAGE = require('../assets/cookie/closed.png');
+const COOKIE_CLOSED_IMAGE = require('../assets/cookie/closed-2.png');
 const COOKIE_OPEN_IMAGE = require('../assets/cookie/open.png');
 
 const FORTUNE_FONT_FAMILY = Platform.select({
@@ -23,20 +23,20 @@ const COOKIE_IMAGE_FRAME = {
 const CLOSED_COOKIE_FIT = {
   width: 330,
   height: 220,
-  translateX: -10,
-  translateY: 38,
+  translateX: -14,
+  translateY: 34,
 };
 
 const OPEN_COOKIE_FIT = {
   width: 428,
   height: 282,
   translateX: -2,
-  translateY: 18,
+  translateY: 14,
 };
 
 const PAPER_SIZE = {
-  width: 248,
-  minHeight: 60,
+  width: 250,
+  minHeight: 74,
 };
 
 function CookieShell({
@@ -53,16 +53,16 @@ function CookieShell({
           outputRange: [0, 0.72, 1],
         }),
         transform: [
-          {
-            translateY: paperProgress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [18, 0],
-            }),
-          },
+      {
+        translateY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [32, 18],
+        }),
+      },
           {
             rotate: paperProgress.interpolate({
               inputRange: [0, 1],
-              outputRange: ['-2deg', '-4deg'],
+              outputRange: ['-1deg', '-3deg'],
             }),
           },
         ],
@@ -76,16 +76,16 @@ function CookieShell({
           outputRange: [0, 0.12, 0.22],
         }),
         transform: [
-          {
-            translateY: paperProgress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [20, 2],
-            }),
-          },
+      {
+        translateY: paperProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [34, 22],
+        }),
+      },
           {
             rotate: paperProgress.interpolate({
               inputRange: [0, 1],
-              outputRange: ['-2deg', '-4deg'],
+              outputRange: ['-1deg', '-3deg'],
             }),
           },
         ],
@@ -123,18 +123,17 @@ function CookieShell({
           styles.paperWrap,
           paperWrapStyle,
           {
-            backgroundColor: scene.paper,
-            borderColor: scene.paperBorder,
+            backgroundColor: '#fffefb',
+            borderColor: '#c7ced8',
           },
         ]}
       >
-        <View style={styles.paperTopSheen} />
-        <View style={[styles.paperTab, styles.paperTabLeft]} />
-        <View style={[styles.paperTab, styles.paperTabRight]} />
-        <View style={styles.paperCurlLeft} />
-        <View style={styles.paperCurlRight} />
-        <View style={styles.paperBottomShade} />
-        <Text numberOfLines={3} style={[styles.paperText, { color: scene.textPrimary }]}>
+        <View style={styles.paperGrain} />
+        <View style={[styles.paperCorner, styles.paperCornerTopLeft]} />
+        <View style={[styles.paperCorner, styles.paperCornerTopRight]} />
+        <View style={[styles.paperCorner, styles.paperCornerBottomLeft]} />
+        <View style={[styles.paperCorner, styles.paperCornerBottomRight]} />
+        <Text style={styles.paperText}>
           {fortuneText || ''}
         </Text>
       </Animated.View>
@@ -174,6 +173,7 @@ const styles = StyleSheet.create({
     transform: [
       { translateX: CLOSED_COOKIE_FIT.translateX },
       { translateY: CLOSED_COOKIE_FIT.translateY },
+      { rotate: '-8deg' },
     ],
   },
   openImageFit: {
@@ -182,90 +182,77 @@ const styles = StyleSheet.create({
     transform: [
       { translateX: OPEN_COOKIE_FIT.translateX },
       { translateY: OPEN_COOKIE_FIT.translateY },
+      { rotate: '-2deg' },
     ],
   },
   paperShadow: {
     position: 'absolute',
-    top: 58,
-    width: 228,
-    height: 34,
-    borderRadius: 22,
-    backgroundColor: 'rgba(48, 32, 20, 0.16)',
+    top: 86,
+    width: 214,
+    height: 24,
+    borderRadius: 18,
+    backgroundColor: 'rgba(70, 78, 92, 0.12)',
     zIndex: 4,
   },
   paperWrap: {
     position: 'absolute',
-    top: 42,
+    top: 64,
     width: PAPER_SIZE.width,
     minHeight: PAPER_SIZE.minHeight,
     borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 20,
+    borderRadius: 2,
+    paddingHorizontal: 18,
     paddingVertical: 12,
     justifyContent: 'center',
-    shadowColor: '#6e4d36',
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
+    shadowColor: '#6a7382',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
     zIndex: 5,
   },
-  paperTopSheen: {
+  paperGrain: {
     position: 'absolute',
-    top: 2,
-    left: 18,
-    right: 18,
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+    top: 7,
+    left: 8,
+    right: 8,
+    height: 1,
+    backgroundColor: 'rgba(140, 152, 168, 0.18)',
   },
-  paperTab: {
+  paperCorner: {
     position: 'absolute',
-    top: 10,
-    width: 6,
-    height: 9,
-    backgroundColor: '#284493',
+    backgroundColor: '#1f63b7',
   },
-  paperTabLeft: {
+  paperCornerTopLeft: {
+    top: -1,
     left: -1,
+    width: 26,
+    height: 3,
   },
-  paperTabRight: {
+  paperCornerTopRight: {
+    top: -1,
     right: -1,
+    width: 12,
+    height: 3,
   },
-  paperCurlLeft: {
-    position: 'absolute',
-    top: 5,
-    left: 6,
-    bottom: 5,
-    width: 13,
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.46)',
-  },
-  paperCurlRight: {
-    position: 'absolute',
-    top: 5,
-    right: 6,
-    bottom: 5,
-    width: 11,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    backgroundColor: 'rgba(226, 212, 192, 0.3)',
-  },
-  paperBottomShade: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 3,
+  paperCornerBottomLeft: {
+    bottom: -1,
+    left: -1,
+    width: 32,
     height: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(212, 191, 162, 0.14)',
+  },
+  paperCornerBottomRight: {
+    right: -1,
+    bottom: -1,
+    width: 9,
+    height: 9,
   },
   paperText: {
     fontFamily: FORTUNE_FONT_FAMILY,
-    fontSize: 13,
+    fontSize: 12,
     lineHeight: 15,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: -0.06,
+    letterSpacing: -0.04,
+    color: '#1f4f93',
   },
 });

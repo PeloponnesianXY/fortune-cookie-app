@@ -197,7 +197,6 @@ const FORTUNE_LIBRARY = {
     'Pay attention to what your system is rejecting.',
     'Discomfort can be useful when it sharpens your standards.',
     'You are allowed to step back from what leaves a bad taste in your spirit.',
-    'Not everything deserves your openness just because it asked for it.',
     'Your reaction is giving you useful information. You can listen to it.',
     'Revulsion can be information, not a flaw.',
     'You do not owe enthusiasm to what feels fundamentally off.',
@@ -207,9 +206,7 @@ const FORTUNE_LIBRARY = {
     'Having standards isn\'t harsh - it\'s a form of self-respect.',
     'Stepping away from what repels you can be a very intelligent kindness.',
     'What feels wrong does not need to be rationalized into belonging.',
-    'A clean no may restore more energy than a complicated maybe.',
     'You are not required to make yourself comfortable with what clearly is not.',
-    'Trust the flinch when it is pointing toward self-respect.',
     'Your taste is part of your wisdom. It is allowed to vote.',
   ],
   confused: [
@@ -218,7 +215,6 @@ const FORTUNE_LIBRARY = {
     'You do not need a full life thesis by lunchtime.',
     'Clarity may arrive late, so start without it.',
     'Being puzzled doesn\'t mean anything is wrong - it just means you\'re figuring something out.',
-    'One true next step will outperform twenty dramatic guesses.',
     'Your brain may be tangled, but your next move can still be simple.',
     'You can still move forward without clarity.',
     'Be a little kinder to yourself while you figure this out.',
@@ -263,7 +259,6 @@ const FORTUNE_LIBRARY = {
   ],
   mysterious: [
     'A feeling without a name may still be trying to tell you something.',
-    'This mood arrives in smoke and symbols; let it keep a little of its privacy.',
     'What refuses a label may still know where it\'s leading you.',
     'The unreadable feeling is not empty. It is simply not explaining itself yet.',
     'Something quiet is moving under the surface, and it may know more than it has said.',
@@ -280,13 +275,11 @@ const FORTUNE_LIBRARY = {
     'Some truths prefer to be sensed before they are spoken.',
     'There is luck in letting the unexplainable remain a little luminous.',
     'What feels unclear now may be quietly becoming clearer.',
-    'The unsolved mood in you might simply be early.',
     'A mysterious day often means something real is changing shape out of sight.',
     'The message may be hidden, but the pull is not imaginary.',
     'Let things unfold before you decide what they mean.',
     'This feeling doesn\'t need to explain itself yet.',
     'When in doubt, choose the kinder interpretation - and maybe a glass of water.',
-    'The unlabeled mood is allowed to exist without becoming a problem to solve immediately.',
   ],
 };
 

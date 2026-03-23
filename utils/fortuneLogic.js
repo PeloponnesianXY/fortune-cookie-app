@@ -112,6 +112,7 @@ const COMMON_MOOD_BUCKETS = {
   happy: 'joy',
   joyful: 'joy',
   light: 'joy',
+  sublime: 'joy',
 
   depressed: 'sadness',
   down: 'sadness',
@@ -150,6 +151,7 @@ const COMMON_MOOD_BUCKETS = {
   strange: 'unknown',
   weird: 'unknown',
   blank: 'unknown',
+  bored: 'unknown',
   dull: 'unknown',
   meh: 'unknown',
   blah: 'unknown',

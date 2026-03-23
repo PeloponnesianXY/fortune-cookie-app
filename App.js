@@ -21,7 +21,7 @@ import {
   getStoredDailyFortuneSelection,
 } from './utils/fortuneLogic';
 
-const COOKIE_CLOSED_IMAGE = require('./assets/cookie/closed.png');
+const COOKIE_CLOSED_IMAGE = require('./assets/cookie/closed-2.png');
 const COOKIE_OPEN_IMAGE = require('./assets/cookie/open.png');
 
 const COOKIE_TIMINGS = {
