@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  Keyboard,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -13,7 +14,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import FortuneCard from './components/FortuneCard';
 import { SCENE_LIBRARY } from './data/scenes';
 import {
-  clearStoredDailyFortuneSelection,
+  clearAllStoredFortuneState,
   getDailyFortuneSelection,
   getDefaultSceneKey,
   getOverrideFortuneSelection,
@@ -77,7 +78,7 @@ function parseOverrideCommand(input) {
 }
 
 function isResetFortuneCommand(input) {
-  return /^\s*resetfortune\s*$/i.test(input);
+  return /^\s*reset\s*$/i.test(input);
 }
 
 function normalizeMoodInput(input) {
@@ -135,9 +136,9 @@ export default function App() {
   const cookieCueText = isOverrideLoopActive || isShowingOverrideFortune
     ? 'Ready for another fortune?'
     : !hasActionableInput
-      ? 'Enter one word first'
+      ? 'One fortune a day only. Make it count!'
     : isResetCommandActive
-      ? 'Tap the cookie to reset today'
+      ? 'Press enter to reset today'
     : isLockedForToday
       ? lockedTomorrowMessage
       : 'Ready for your fortune?';
@@ -146,6 +147,18 @@ export default function App() {
     || isLockedForToday
     || (!hasActionableInput && !isShowingOverrideFortune && !isOverrideLoopActive)
   );
+
+  async function resetTodayFortune() {
+    Keyboard.dismiss();
+    await clearAllStoredFortuneState();
+    setStoredTodaySelection(null);
+    setIsShowingOverrideFortune(false);
+    setIsOverrideLoopActive(false);
+    overrideAttemptRef.current = 0;
+    setMoodInput('');
+    setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
+    resetCookiePresentation();
+  }
 
   function clearPaperRevealTimer() {
     if (paperRevealTimer.current) {
@@ -291,13 +304,7 @@ export default function App() {
       isOpeningRef.current = true;
 
       try {
-        await clearStoredDailyFortuneSelection();
-        setStoredTodaySelection(null);
-        setIsShowingOverrideFortune(false);
-        setIsOverrideLoopActive(false);
-        setMoodInput('');
-        setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
-        resetCookiePresentation();
+        await resetTodayFortune();
       } finally {
         isOpeningRef.current = false;
       }
@@ -348,6 +355,19 @@ export default function App() {
     }
   }
 
+  async function submitMoodInput() {
+    if (isOpeningRef.current || isHydratingSelection) {
+      return;
+    }
+
+    if (!hasActionableInput && !isShowingOverrideFortune && !isOverrideLoopActive) {
+      return;
+    }
+
+    Keyboard.dismiss();
+    await openFortune();
+  }
+
   return (
     <View style={[styles.appRoot, { backgroundColor: scene.sky }]}>
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: scene.sky }]} />
@@ -367,6 +387,7 @@ export default function App() {
             moodInput={moodInput}
             onMoodChange={(nextValue) => setMoodInput(normalizeMoodInput(nextValue))}
             onOpenFortune={openFortune}
+            onSubmitMoodInput={submitMoodInput}
             paperProgress={paperProgress}
             scene={scene}
             shellProgress={shellProgress}

@@ -175,6 +175,7 @@ export default function FortuneCard({
   moodInput,
   onMoodChange,
   onOpenFortune,
+  onSubmitMoodInput,
   paperProgress,
   scene,
   shellProgress,
@@ -225,10 +226,13 @@ export default function FortuneCard({
               <TextInput
                 autoCapitalize="words"
                 autoCorrect={false}
+                blurOnSubmit={false}
                 editable={!isHydratingSelection}
                 onChangeText={onMoodChange}
+                onSubmitEditing={onSubmitMoodInput}
                 placeholder=""
                 placeholderTextColor={scene.accentSoft}
+                returnKeyType="done"
                 selectionColor={scene.accent}
                 style={[styles.input, { color: scene.textPrimary }]}
                 value={moodInput}
@@ -532,14 +536,18 @@ const styles = StyleSheet.create({
   },
   cookieCuePill: {
     marginTop: -2,
+    width: '92%',
+    maxWidth: 360,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 999,
     backgroundColor: 'rgba(255, 249, 240, 0.28)',
+    alignItems: 'center',
   },
   cookieCueText: {
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.2,
+    textAlign: 'center',
   },
 });

@@ -115,6 +115,23 @@ const SCENE_LIBRARY = {
     cookieGlow: 'rgba(226, 219, 221, 0.24)',
     cue: '#5d5867',
   },
+  silverHushDay: {
+    ...BASE_SCENE,
+    sky: '#e6e3ea',
+    wash: 'rgba(245, 243, 248, 0.78)',
+    celestial: '#f5d7a8',
+    celestialHalo: 'rgba(245, 215, 168, 0.7)',
+    cloud: 'rgba(249, 247, 252, 0.52)',
+    cloudAlt: 'rgba(237, 234, 243, 0.46)',
+    mist: 'rgba(240, 239, 245, 0.6)',
+    ridgeBack: '#d0cbd8',
+    ridgeMid: '#9f98ad',
+    ridgeFront: '#686271',
+    ridgeHighlight: 'rgba(250, 246, 251, 0.24)',
+    stageAura: 'rgba(230, 226, 238, 0.38)',
+    cookieGlow: 'rgba(234, 226, 228, 0.28)',
+    cue: '#615b6d',
+  },
   emberMesa: {
     ...BASE_SCENE,
     sky: '#efd4c6',
@@ -199,8 +216,9 @@ const EMOTION_SCENE_KEYS = {
   fear: 'silverHush',
   anger: 'emberMesa',
   disgust: 'stoneVeil',
+  confusion: 'silverHushDay',
   surprise: 'opalMist',
-  unknown: 'moonlitDunes',
+  unknown: 'apricotMorning',
 };
 
 

@@ -7,7 +7,6 @@ import {
   FORTUNE_LIBRARY,
   HATE_PATTERNS,
   PROTECTED_GROUP_TERMS,
-  TONE_FORTUNES,
 } from '../data/fortunes';
 import EMOTION_LEXICON from '../data/nrcEmotionLexicon.json';
 import { EMOTION_SCENE_KEYS } from '../data/scenes';
@@ -19,6 +18,7 @@ const DEFAULT_SCENE_KEY = 'apricotMorning';
 const EMOTION_KEYS = [
   'anger',
   'anticipation',
+  'confusion',
   'disgust',
   'fear',
   'joy',
@@ -27,6 +27,134 @@ const EMOTION_KEYS = [
   'trust',
 ];
 const EMOTION_WORDS = Object.keys(EMOTION_LEXICON);
+const STRONG_EMOTION_HINTS = {
+  anger: ['angry', 'furious', 'irritated', 'mad', 'resentful'],
+  anticipation: ['hopeful', 'eager', 'expectant', 'optimistic'],
+  confusion: ['confused', 'unclear', 'lost', 'blank', 'unsure', 'puzzled'],
+  disgust: ['disgusted', 'grossed', 'repulsed'],
+  fear: ['afraid', 'fearful', 'scared', 'terrified', 'panicked', 'anxious'],
+  joy: ['happy', 'joyful', 'excited', 'glad', 'delighted'],
+  sadness: [
+    'depressed',
+    'depression',
+    'sad',
+    'down',
+    'low',
+    'hopeless',
+    'heartbroken',
+    'grieving',
+    'lonely',
+    'miserable',
+    'numb',
+  ],
+  surprise: ['surprised', 'shocked', 'startled', 'stunned', 'unexpected'],
+  trust: ['calm', 'safe', 'steady', 'secure', 'grounded'],
+};
+const COMMON_MOOD_BUCKETS = {
+  angry: 'anger',
+  annoyed: 'anger',
+  bitter: 'anger',
+  defensive: 'anger',
+  enraged: 'anger',
+  frustrated: 'anger',
+  furious: 'anger',
+  heated: 'anger',
+  irritated: 'anger',
+  mad: 'anger',
+  outraged: 'anger',
+  resentful: 'anger',
+  upset: 'anger',
+
+  eager: 'anticipation',
+  excited: 'anticipation',
+  expectant: 'anticipation',
+  hopeful: 'anticipation',
+  optimistic: 'anticipation',
+  ready: 'anticipation',
+  restless: 'anticipation',
+
+  baffled: 'confusion',
+  conflicted: 'confusion',
+  confused: 'confusion',
+  foggy: 'confusion',
+  jumbled: 'confusion',
+  lost: 'confusion',
+  mixed: 'confusion',
+  puzzled: 'confusion',
+  torn: 'confusion',
+  unclear: 'confusion',
+  uncertain: 'confusion',
+  unsure: 'confusion',
+
+  disgusted: 'disgust',
+  grossed: 'disgust',
+  repelled: 'disgust',
+  repulsed: 'disgust',
+  sickened: 'disgust',
+
+  afraid: 'fear',
+  anxious: 'fear',
+  nervous: 'fear',
+  overwhelmed: 'fear',
+  panicked: 'fear',
+  paranoid: 'fear',
+  scared: 'fear',
+  stressed: 'fear',
+  tense: 'fear',
+  terrified: 'fear',
+  uneasy: 'fear',
+  worried: 'fear',
+
+  cheerful: 'joy',
+  delighted: 'joy',
+  glad: 'joy',
+  grateful: 'joy',
+  happy: 'joy',
+  joyful: 'joy',
+  light: 'joy',
+
+  depressed: 'sadness',
+  down: 'sadness',
+  drained: 'sadness',
+  empty: 'sadness',
+  grieving: 'sadness',
+  heartbroken: 'sadness',
+  lonely: 'sadness',
+  low: 'sadness',
+  melancholy: 'sadness',
+  miserable: 'sadness',
+  numb: 'sadness',
+  sad: 'sadness',
+  tired: 'sadness',
+  troubled: 'sadness',
+
+  shocked: 'surprise',
+  startled: 'surprise',
+  stunned: 'surprise',
+  surprised: 'surprise',
+
+  calm: 'trust',
+  centered: 'trust',
+  content: 'trust',
+  grounded: 'trust',
+  peaceful: 'trust',
+  safe: 'trust',
+  secure: 'trust',
+  settled: 'trust',
+  stable: 'trust',
+  steady: 'trust',
+  trusting: 'trust',
+
+  off: 'unknown',
+  odd: 'unknown',
+  strange: 'unknown',
+  weird: 'unknown',
+  blank: 'unknown',
+  dull: 'unknown',
+  meh: 'unknown',
+  blah: 'unknown',
+  neutral: 'unknown',
+};
 
 function buildBlockedAnalysis() {
   return {
@@ -120,6 +248,26 @@ export function analyzeMoodInput(input) {
   }
 
   const tokens = normalized.split(/[^a-z]+/).filter(Boolean);
+  const curatedEmotion = findCuratedMoodBucket(tokens);
+
+  if (curatedEmotion) {
+    return {
+      primaryEmotion: curatedEmotion,
+      scores: { [curatedEmotion]: 10 },
+      source: 'curated-mood',
+    };
+  }
+
+  const directEmotion = findStrongEmotionHint(tokens);
+
+  if (directEmotion) {
+    return {
+      primaryEmotion: directEmotion,
+      scores: { [directEmotion]: 10 },
+      source: 'strong-hint',
+    };
+  }
+
   const scores = EMOTION_KEYS.reduce((accumulator, emotion) => {
     accumulator[emotion] = 0;
     return accumulator;
@@ -167,6 +315,27 @@ export function analyzeMoodInput(input) {
   };
 }
 
+function findStrongEmotionHint(tokens) {
+  for (const emotion of EMOTION_KEYS) {
+    const hints = STRONG_EMOTION_HINTS[emotion] || [];
+    if (tokens.some((token) => hints.includes(token))) {
+      return emotion;
+    }
+  }
+
+  return null;
+}
+
+function findCuratedMoodBucket(tokens) {
+  for (const token of tokens) {
+    if (COMMON_MOOD_BUCKETS[token]) {
+      return COMMON_MOOD_BUCKETS[token];
+    }
+  }
+
+  return null;
+}
+
 function isSimilarWord(inputWord, keyword) {
   if (inputWord.length < 4 || keyword.includes(' ')) {
     return false;
@@ -184,7 +353,8 @@ function guessEmotionFromTone(tokens) {
   const trustWords = ['tender', 'gentle', 'soft', 'safe', 'settled'];
   const joyWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
   const angerWords = ['fraught', 'combative', 'heated'];
-  const surpriseWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange'];
+  const confusionWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange', 'mixed', 'scrambled'];
+  const surpriseWords = ['shocked', 'startled', 'sudden', 'abrupt', 'unexpected'];
   const flatWords = ['bored', 'meh', 'blah', 'neutral', 'whatever'];
   const anticipationEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
 
@@ -198,6 +368,10 @@ function guessEmotionFromTone(tokens) {
 
   if (tokens.some((token) => angerWords.includes(token))) {
     return 'anger';
+  }
+
+  if (tokens.some((token) => confusionWords.includes(token))) {
+    return 'confusion';
   }
 
   if (tokens.some((token) => surpriseWords.includes(token))) {
@@ -252,17 +426,13 @@ function findSimilarEmotionWord(token) {
 }
 
 function buildFortunePool(analysis) {
-  if (analysis.source === 'fallback-unknown') {
-    return FORTUNE_LIBRARY.mysterious;
-  }
-
   const { primaryEmotion } = analysis;
   const profile = EMOTION_PROFILES[primaryEmotion] || EMOTION_PROFILES.unknown;
   if (profile.fortuneKey && FORTUNE_LIBRARY[profile.fortuneKey]) {
     return FORTUNE_LIBRARY[profile.fortuneKey];
   }
 
-  return TONE_FORTUNES[profile.tone] || FORTUNE_LIBRARY.unknown;
+  return FORTUNE_LIBRARY.mysterious;
 }
 
 function pickSceneForSelection(analysis) {
@@ -362,6 +532,13 @@ export async function getStoredDailyFortuneSelection() {
 
 export async function clearStoredDailyFortuneSelection() {
   await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);
+}
+
+export async function clearAllStoredFortuneState() {
+  await AsyncStorage.multiRemove([
+    USER_ID_STORAGE_KEY,
+    DAILY_SELECTION_STORAGE_KEY,
+  ]);
 }
 
 export function getDefaultSceneKey() {
