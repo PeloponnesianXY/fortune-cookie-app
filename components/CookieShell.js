@@ -44,7 +44,6 @@ function CookieShell({
   isOpened,
   isPaperVisible,
   paperProgress,
-  scene,
 }) {
   const paperWrapStyle = isPaperVisible
     ? {

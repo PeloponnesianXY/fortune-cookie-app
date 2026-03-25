@@ -5,13 +5,13 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/appicon_final_clean.png",
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.peloponnesianxy.fortunecookiedaily",
-      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -21,7 +21,8 @@
       "package": "com.peloponnesianxy.fortunecookiedaily"
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      "./plugins/withBadgeOnlyNotifications"
     ],
     "extra": {
       "eas": {

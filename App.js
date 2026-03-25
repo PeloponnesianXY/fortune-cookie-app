@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  AppState,
   Animated,
   Easing,
   Keyboard,
@@ -13,6 +14,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
 import FortuneCard from './components/FortuneCard';
 import { SCENE_LIBRARY } from './data/scenes';
+import { syncAppBadgeAsync } from './utils/appBadge';
 import {
   clearAllStoredFortuneState,
   getDailyFortuneSelection,
@@ -252,6 +254,57 @@ export default function App() {
     if (storedTodaySelection && !isShowingOverrideFortune && !isOverrideInputActive) {
       showSelection(storedTodaySelection);
     }
+  }, [isOverrideInputActive, isShowingOverrideFortune]);
+
+  useEffect(() => {
+    if (isHydratingSelection) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    async function syncBadge() {
+      await syncAppBadgeAsync(Boolean(storedTodaySelection));
+    }
+
+    if (isMounted) {
+      syncBadge();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isHydratingSelection, storedTodaySelection]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') {
+        return;
+      }
+
+      (async () => {
+        const refreshedSelection = await getStoredDailyFortuneSelection();
+
+        setStoredTodaySelection(refreshedSelection);
+
+        if (refreshedSelection) {
+          if (!isShowingOverrideFortune && !isOverrideInputActive) {
+            showSelection(refreshedSelection);
+          }
+          return;
+        }
+
+        if (!isShowingOverrideFortune) {
+          setIsShowingOverrideFortune(false);
+          setIsOverrideLoopActive(false);
+          resetCookiePresentation();
+        }
+      })();
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, [isOverrideInputActive, isShowingOverrideFortune]);
 
   useEffect(() => {

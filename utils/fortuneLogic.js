@@ -3,38 +3,74 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BLOCKED_HATE_TERMS,
   BLOCKED_INPUT_FORTUNE,
-  EMOTION_PROFILES,
   FORTUNE_LIBRARY,
   HATE_PATTERNS,
+  MOOD_BUCKET_PROFILES,
   PROTECTED_GROUP_TERMS,
 } from '../data/fortunes';
 import EMOTION_LEXICON from '../data/nrcEmotionLexicon.json';
-import { EMOTION_SCENE_KEYS } from '../data/scenes';
+import { MOOD_SCENE_KEYS } from '../data/scenes';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAILY_SELECTION_STORAGE_KEY = '@fortune-cookie-daily/daily-selection';
 const DEFAULT_SCENE_KEY = 'apricotMorning';
 
-const EMOTION_KEYS = [
-  'anger',
-  'anticipation',
-  'confusion',
-  'disgust',
-  'fear',
-  'joy',
-  'sadness',
-  'surprise',
-  'trust',
+const LEGACY_EMOTION_TO_MOOD_BUCKET = {
+  anger: 'angry',
+  anticipation: 'hopeful',
+  disgust: 'averse',
+  fear: 'anxious',
+  joy: 'happy',
+  sadness: 'sad',
+  surprise: 'surprised',
+  trust: 'calm',
+};
+
+const LEGACY_EMOTION_WEIGHTS = {
+  anger: 1.12,
+  anticipation: 0.96,
+  disgust: 0.72,
+  fear: 1.08,
+  joy: 1.04,
+  sadness: 1.1,
+  surprise: 0.9,
+  trust: 1.0,
+};
+
+const MOOD_BUCKET_KEYS = [
+  'angry',
+  'hopeful',
+  'confused',
+  'averse',
+  'anxious',
+  'happy',
+  'sad',
+  'surprised',
+  'calm',
+  'weird',
 ];
-const EMOTION_WORDS = Object.keys(EMOTION_LEXICON);
-const STRONG_EMOTION_HINTS = {
-  anger: ['angry', 'furious', 'irritated', 'mad', 'resentful'],
-  anticipation: ['hopeful', 'eager', 'expectant', 'optimistic'],
-  confusion: ['confused', 'unclear', 'lost', 'blank', 'unsure', 'puzzled'],
-  disgust: ['disgusted', 'grossed', 'repulsed'],
-  fear: ['afraid', 'fearful', 'scared', 'terrified', 'panicked', 'anxious'],
-  joy: ['happy', 'joyful', 'excited', 'glad', 'delighted'],
-  sadness: [
+
+const MOOD_BUCKET_PRIORITY = [
+  'happy',
+  'hopeful',
+  'calm',
+  'sad',
+  'anxious',
+  'angry',
+  'averse',
+  'surprised',
+  'confused',
+  'weird',
+];
+
+const STRONG_MOOD_HINTS = {
+  angry: ['angry', 'furious', 'irritated', 'mad', 'resentful'],
+  hopeful: ['hopeful', 'eager', 'expectant', 'optimistic'],
+  confused: ['confused', 'unclear', 'lost', 'blank', 'unsure', 'puzzled'],
+  averse: ['disgusted', 'grossed', 'repulsed'],
+  anxious: ['afraid', 'fearful', 'scared', 'terrified', 'panicked', 'anxious'],
+  happy: ['happy', 'joyful', 'excited', 'glad', 'delighted'],
+  sad: [
     'depressed',
     'depression',
     'sad',
@@ -47,120 +83,129 @@ const STRONG_EMOTION_HINTS = {
     'miserable',
     'numb',
   ],
-  surprise: ['surprised', 'shocked', 'startled', 'stunned', 'unexpected'],
-  trust: ['calm', 'safe', 'steady', 'secure', 'grounded'],
+  surprised: ['surprised', 'shocked', 'startled', 'stunned', 'unexpected'],
+  calm: ['calm', 'safe', 'steady', 'secure', 'grounded'],
 };
-const COMMON_MOOD_BUCKETS = {
-  angry: 'anger',
-  annoyed: 'anger',
-  bitter: 'anger',
-  defensive: 'anger',
-  enraged: 'anger',
-  frustrated: 'anger',
-  furious: 'anger',
-  heated: 'anger',
-  irritated: 'anger',
-  mad: 'anger',
-  outraged: 'anger',
-  resentful: 'anger',
-  upset: 'anger',
 
-  eager: 'anticipation',
-  excited: 'anticipation',
-  expectant: 'anticipation',
-  hopeful: 'anticipation',
-  optimistic: 'anticipation',
-  ready: 'anticipation',
-  restless: 'anticipation',
-
-  baffled: 'confusion',
-  conflicted: 'confusion',
-  confused: 'confusion',
-  foggy: 'confusion',
-  jumbled: 'confusion',
-  lost: 'confusion',
-  mixed: 'confusion',
-  puzzled: 'confusion',
-  torn: 'confusion',
-  unclear: 'confusion',
-  uncertain: 'confusion',
-  unsure: 'confusion',
-
-  disgusted: 'disgust',
-  grossed: 'disgust',
-  repelled: 'disgust',
-  repulsed: 'disgust',
-  sickened: 'disgust',
-
-  afraid: 'fear',
-  anxious: 'fear',
-  nervous: 'fear',
-  overwhelmed: 'fear',
-  panicked: 'fear',
-  paranoid: 'fear',
-  scared: 'fear',
-  stressed: 'fear',
-  tense: 'fear',
-  terrified: 'fear',
-  uneasy: 'fear',
-  worried: 'fear',
-
-  cheerful: 'joy',
-  delighted: 'joy',
-  glad: 'joy',
-  grateful: 'joy',
-  happy: 'joy',
-  joyful: 'joy',
-  light: 'joy',
-  sublime: 'joy',
-
-  depressed: 'sadness',
-  down: 'sadness',
-  drained: 'sadness',
-  empty: 'sadness',
-  grieving: 'sadness',
-  heartbroken: 'sadness',
-  lonely: 'sadness',
-  low: 'sadness',
-  melancholy: 'sadness',
-  miserable: 'sadness',
-  numb: 'sadness',
-  sad: 'sadness',
-  tired: 'sadness',
-  troubled: 'sadness',
-
-  shocked: 'surprise',
-  startled: 'surprise',
-  stunned: 'surprise',
-  surprised: 'surprise',
-
-  calm: 'trust',
-  centered: 'trust',
-  content: 'trust',
-  grounded: 'trust',
-  peaceful: 'trust',
-  safe: 'trust',
-  secure: 'trust',
-  settled: 'trust',
-  stable: 'trust',
-  steady: 'trust',
-  trusting: 'trust',
-
-  off: 'unknown',
-  odd: 'unknown',
-  strange: 'unknown',
-  weird: 'unknown',
-  blank: 'unknown',
-  bored: 'unknown',
-  dull: 'unknown',
-  meh: 'unknown',
-  blah: 'unknown',
-  neutral: 'unknown',
+const CURATED_MOOD_WORDS = {
+  angry: [
+    'angry', 'annoyed', 'bitter', 'defensive', 'enraged', 'frustrated', 'furious', 'heated',
+    'irritated', 'mad', 'outraged', 'resentful', 'upset', 'agitated', 'aggravated',
+    'antagonistic', 'argumentative', 'belligerent', 'bothered', 'combative', 'confrontational',
+    'cranky', 'cross', 'exasperated', 'fuming', 'grumpy', 'huffy', 'hostile', 'impatient',
+    'incensed', 'indignant', 'inflamed', 'irate', 'livid', 'offended', 'peeved', 'petty',
+    'provoked', 'raging', 'riled', 'seething', 'snappy', 'sore', 'spiteful', 'stormy',
+    'testy', 'touchy', 'vengeful', 'volatile', 'wrathful',
+  ],
+  hopeful: [
+    'eager', 'excited', 'expectant', 'hopeful', 'optimistic', 'ready', 'restless', 'alert',
+    'ambitious', 'anticipatory', 'aspiring', 'attentive', 'awake', 'buoyant', 'charged',
+    'confident', 'craving', 'curious', 'determined', 'driven', 'encouraged', 'energized',
+    'enthusiastic', 'game', 'hungry', 'inspired', 'interested', 'intrigued', 'invested',
+    'keyed', 'keen', 'longing', 'looking', 'motivated', 'open', 'prepared', 'primed',
+    'pumped', 'receptive', 'refreshed', 'revived', 'searching', 'seeking', 'striving',
+    'yearning', 'adventurous', 'forward', 'watchful', 'awaiting', 'enterprising',
+  ],
+  confused: [
+    'baffled', 'conflicted', 'confused', 'foggy', 'jumbled', 'lost', 'mixed', 'puzzled',
+    'torn', 'unclear', 'uncertain', 'unsure', 'ambivalent', 'bewildered', 'discombobulated',
+    'disoriented', 'doubtful', 'drifting', 'hazy', 'hesitant', 'indecisive', 'indifferent',
+    'incoherent', 'muddled', 'murky', 'perplexed', 'questioning', 'scattered', 'scrambled',
+    'split', 'stuck', 'unconvinced', 'undecided', 'unfocused', 'ungrounded', 'unresolved',
+    'unsorted', 'vague', 'wavering', 'wondering', 'adrift', 'disjointed', 'floating',
+    'tangled', 'thrown', 'unmoored', 'wobbly', 'disorganized', 'circling', 'disordered',
+    'scrappy', 'messy', 'scruffy', 'rattled', 'scrutinizing', 'secondguessing', 'spiraling',
+    'hesitating', 'ruminating', 'overthinking', 'pensive', 'displaced', 'turnedaround',
+    'misaligned', 'unclearheaded', 'atsea', 'inbetween', 'unanchored', 'divided', 'uncertainly',
+  ],
+  averse: [
+    'disgusted', 'grossed', 'repelled', 'repulsed', 'sickened', 'appalled', 'averse',
+    'contaminated', 'contemptuous', 'creeped', 'disdainful', 'displeased', 'disturbed',
+    'disgust', 'eww', 'filthy', 'gross', 'grimacing', 'icky', 'loathing', 'nauseated',
+    'nauseous', 'queasy', 'recoiling', 'revolted', 'revolting', 'rancid', 'rank', 'revulsed',
+    'rotten', 'squeamish', 'stale', 'tainted', 'turnedoff', 'uncomfortable', 'unclean',
+    'unsettled', 'violated', 'yucky', 'disapproving', 'disenchanted', 'disillusioned',
+    'grimy', 'sullied', 'sticky', 'foul', 'sour', 'polluted', 'toxic', 'putrid',
+  ],
+  anxious: [
+    'afraid', 'anxious', 'nervous', 'overwhelmed', 'panicked', 'paranoid', 'scared',
+    'stressed', 'tense', 'terrified', 'uneasy', 'worried', 'alarmed', 'apprehensive',
+    'cautious', 'cornered', 'dreading', 'fearful', 'fragile', 'fretful', 'guarded',
+    'insecure', 'intimidated', 'jittery', 'jumpy', 'pressured', 'shaky', 'spooked',
+    'threatened', 'timid', 'twitchy', 'unnerved', 'unsafe', 'unsteady', 'vulnerable',
+    'wary', 'panicky', 'frantic', 'haunted', 'petrified', 'trembling', 'foreboding',
+    'frozen', 'shaken', 'hunted', 'exposed', 'skittish', 'selfconscious', 'suspicious',
+    'edgy',
+  ],
+  happy: [
+    'cheerful', 'delighted', 'glad', 'grateful', 'happy', 'joyful', 'light', 'sexy',
+    'spicy', 'sublime', 'amused', 'blissful', 'carefree', 'celebratory', 'charmed',
+    'ecstatic', 'elated', 'enlivened', 'euphoric', 'flirty', 'free', 'friendly', 'fulfilled',
+    'giddy', 'gleeful', 'glowing', 'jolly', 'laughing', 'lively', 'loved', 'lucky',
+    'playful', 'pleased', 'proud', 'radiant', 'relieved', 'sparkly', 'sunny', 'thrilled',
+    'vibrant', 'warm', 'welcomed', 'whimsical', 'wonderful', 'merry', 'beaming', 'sunlit',
+    'rosy', 'upbeat', 'blessed',
+  ],
+  sad: [
+    'depressed', 'down', 'drained', 'empty', 'grieving', 'heartbroken', 'lonely', 'low',
+    'melancholy', 'miserable', 'numb', 'sad', 'stupid', 'tired', 'troubled', 'ashamed',
+    'blue', 'broken', 'defeated', 'deflated', 'depleted', 'despairing', 'discouraged',
+    'exhausted', 'heavy', 'homesick', 'hopeless', 'hurt', 'inadequate', 'isolated',
+    'languishing', 'pained', 'raw', 'regretful', 'rejected', 'rueful', 'small', 'sorrowful',
+    'sorry', 'spent', 'tender', 'unworthy', 'weary', 'weepy', 'wounded', 'worthless',
+    'bleak', 'crestfallen', 'hollow', 'forlorn',
+  ],
+  surprised: [
+    'shocked', 'startled', 'stunned', 'surprised', 'amazed', 'astonished', 'awed',
+    'blindsided', 'dazzled', 'dumbfounded', 'flabbergasted', 'gobsmacked', 'jolted',
+    'marveling', 'reeling', 'rocked', 'speechless', 'thunderstruck', 'unprepared',
+    'unexpected', 'wonderstruck', 'wowed', 'abrupt', 'sudden', 'uncanny', 'wild', 'agog',
+    'astounded', 'floored', 'gasping', 'incredulous', 'jarred', 'shellshocked', 'breathless',
+    'confounded', 'disbelieving', 'overawed', 'unready', 'shook', 'wow', 'whoa',
+    'nonplussed', 'stupefied', 'agape', 'starstruck', 'spellbound', 'awestruck',
+    'astonied', 'sparkstruck', 'mesmerized',
+  ],
+  calm: [
+    'calm', 'centered', 'content', 'grounded', 'peaceful', 'safe', 'secure', 'settled',
+    'stable', 'steady', 'trusting', 'aligned', 'anchored', 'assured', 'balanced', 'clear',
+    'collected', 'comfortable', 'comforted', 'composed', 'connected', 'cozy', 'held',
+    'okay', 'protected', 'reassured', 'relaxed', 'reliable', 'rooted', 'soothed',
+    'supported', 'whole', 'capable', 'certain', 'cushioned', 'eased', 'fortified',
+    'gentle', 'harmonious', 'homey', 'intact', 'mellow', 'nourished', 'openhearted',
+    'patient', 'quiet', 'resilient', 'rested', 'sheltered', 'steadying',
+  ],
+  weird: [
+    'off', 'odd', 'strange', 'weird', 'blank', 'bored', 'dull', 'meh', 'blah', 'neutral',
+    'abstract', 'absent', 'aloof', 'ambiguous', 'anonymous', 'bizarre', 'cloudy',
+    'detached', 'disconnected', 'distant', 'flat', 'funky', 'gray', 'indescribable',
+    'intangible', 'liminal', 'muted', 'nebulous', 'obscure', 'offcenter', 'opaque',
+    'peculiar', 'plain', 'random', 'shapeless', 'surreal', 'undefined', 'unmarked',
+    'unnamed', 'unreadable', 'untitled', 'vacant', 'void', 'whatever', 'airy',
+    'unclassifiable', 'floaty', 'neither', 'elsewhere', 'miscellaneous', 'wonky', 'eerie',
+    'dreamy', 'hazyblank', 'nondescript', 'fuzzy', 'drifty', 'spacey', 'diffuse', 'untethered',
+    'unplaceable', 'inexplicable', 'peculiarish', 'outofbody', 'unusual', 'idiosyncratic', 'vibey',
+    'offbeat', 'leftfield', 'otherworldly', 'inbetweeny',
+  ],
 };
+
+const COMMON_MOOD_BUCKETS = Object.fromEntries(
+  Object.entries(CURATED_MOOD_WORDS).flatMap(([bucket, words]) => (
+    words.map((word) => [word, bucket])
+  ))
+);
+
+const NRC_WORD_TO_MOOD_BUCKET = Object.fromEntries(
+  Object.entries(EMOTION_LEXICON).map(([word, legacyEmotions]) => [
+    word,
+    pickMoodBucketFromLegacyEmotions(legacyEmotions),
+  ])
+);
+
+const NRC_WORDS = Object.keys(NRC_WORD_TO_MOOD_BUCKET);
 
 function buildBlockedAnalysis() {
   return {
-    primaryEmotion: 'unknown',
+    primaryEmotion: 'weird',
     scores: {},
     source: 'blocked-hate',
   };
@@ -215,6 +260,40 @@ function hashString(value) {
   return hash >>> 0;
 }
 
+function createMoodScoreCard() {
+  return MOOD_BUCKET_KEYS.reduce((accumulator, bucket) => {
+    accumulator[bucket] = 0;
+    return accumulator;
+  }, {});
+}
+
+function rankMoodScores(scores) {
+  return Object.entries(scores)
+    .filter(([, score]) => score > 0)
+    .sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1];
+      }
+
+      return MOOD_BUCKET_PRIORITY.indexOf(a[0]) - MOOD_BUCKET_PRIORITY.indexOf(b[0]);
+    });
+}
+
+function pickMoodBucketFromLegacyEmotions(legacyEmotions) {
+  const scores = createMoodScoreCard();
+
+  for (const legacyEmotion of legacyEmotions) {
+    const bucket = LEGACY_EMOTION_TO_MOOD_BUCKET[legacyEmotion];
+    if (!bucket) {
+      continue;
+    }
+
+    scores[bucket] += LEGACY_EMOTION_WEIGHTS[legacyEmotion] || 1;
+  }
+
+  return rankMoodScores(scores)[0]?.[0] || 'weird';
+}
+
 export function moderateMoodInput(input) {
   const normalized = input.trim().toLowerCase();
   const tokens = normalized.split(/[^a-z]+/).filter(Boolean);
@@ -243,85 +322,76 @@ export function analyzeMoodInput(input) {
   const normalized = input.trim().toLowerCase();
   if (!normalized) {
     return {
-      primaryEmotion: 'unknown',
+      primaryEmotion: 'weird',
       scores: {},
       source: 'empty',
     };
   }
 
   const tokens = normalized.split(/[^a-z]+/).filter(Boolean);
-  const curatedEmotion = findCuratedMoodBucket(tokens);
+  const curatedMoodBucket = findCuratedMoodBucket(tokens);
 
-  if (curatedEmotion) {
+  if (curatedMoodBucket) {
     return {
-      primaryEmotion: curatedEmotion,
-      scores: { [curatedEmotion]: 10 },
+      primaryEmotion: curatedMoodBucket,
+      scores: { [curatedMoodBucket]: 10 },
       source: 'curated-mood',
     };
   }
 
-  const directEmotion = findStrongEmotionHint(tokens);
+  const directMoodBucket = findStrongMoodHint(tokens);
 
-  if (directEmotion) {
+  if (directMoodBucket) {
     return {
-      primaryEmotion: directEmotion,
-      scores: { [directEmotion]: 10 },
+      primaryEmotion: directMoodBucket,
+      scores: { [directMoodBucket]: 10 },
       source: 'strong-hint',
     };
   }
 
-  const scores = EMOTION_KEYS.reduce((accumulator, emotion) => {
-    accumulator[emotion] = 0;
-    return accumulator;
-  }, {});
+  const scores = createMoodScoreCard();
 
   for (const token of tokens) {
-    const exactMatch = EMOTION_LEXICON[token];
+    const exactMatchBucket = NRC_WORD_TO_MOOD_BUCKET[token];
 
-    if (exactMatch) {
-      for (const emotion of exactMatch) {
-        scores[emotion] += 4;
-      }
+    if (exactMatchBucket) {
+      scores[exactMatchBucket] += 4;
       continue;
     }
 
-    const similarWord = findSimilarEmotionWord(token);
+    const similarWord = findSimilarMoodWord(token);
     if (!similarWord) {
       continue;
     }
 
-    for (const emotion of EMOTION_LEXICON[similarWord]) {
-      scores[emotion] += 1;
-    }
+    scores[NRC_WORD_TO_MOOD_BUCKET[similarWord]] += 1;
   }
 
-  const rankedEmotions = Object.entries(scores)
-    .filter(([, score]) => score > 0)
-    .sort((a, b) => b[1] - a[1]);
+  const rankedBuckets = rankMoodScores(scores);
 
-  if (rankedEmotions.length === 0) {
-    const guessedEmotion = guessEmotionFromTone(tokens);
+  if (rankedBuckets.length === 0) {
+    const guessedMoodBucket = guessMoodFromTone(tokens);
     return {
-      primaryEmotion: guessedEmotion,
+      primaryEmotion: guessedMoodBucket,
       scores,
-      source: guessedEmotion === 'unknown' ? 'fallback-unknown' : 'fallback-tone',
+      source: guessedMoodBucket === 'weird' ? 'fallback-weird' : 'fallback-tone',
     };
   }
 
-  const [primaryEmotion] = rankedEmotions[0];
+  const [primaryEmotion] = rankedBuckets[0];
 
   return {
     primaryEmotion,
     scores,
-    source: 'emotion-lexicon',
+    source: 'nrc-mood-map',
   };
 }
 
-function findStrongEmotionHint(tokens) {
-  for (const emotion of EMOTION_KEYS) {
-    const hints = STRONG_EMOTION_HINTS[emotion] || [];
+function findStrongMoodHint(tokens) {
+  for (const bucket of MOOD_BUCKET_KEYS) {
+    const hints = STRONG_MOOD_HINTS[bucket] || [];
     if (tokens.some((token) => hints.includes(token))) {
-      return emotion;
+      return bucket;
     }
   }
 
@@ -351,44 +421,44 @@ function isSimilarWord(inputWord, keyword) {
   return distance <= 2 && Math.abs(inputWord.length - keyword.length) <= 2;
 }
 
-function guessEmotionFromTone(tokens) {
-  const trustWords = ['tender', 'gentle', 'soft', 'safe', 'settled'];
-  const joyWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
-  const angerWords = ['fraught', 'combative', 'heated'];
-  const confusionWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange', 'mixed', 'scrambled'];
-  const surpriseWords = ['shocked', 'startled', 'sudden', 'abrupt', 'unexpected'];
+function guessMoodFromTone(tokens) {
+  const calmWords = ['tender', 'gentle', 'soft', 'safe', 'settled'];
+  const happyWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
+  const angryWords = ['fraught', 'combative', 'heated'];
+  const confusedWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange', 'mixed', 'scrambled'];
+  const surprisedWords = ['shocked', 'startled', 'sudden', 'abrupt', 'unexpected'];
   const flatWords = ['bored', 'meh', 'blah', 'neutral', 'whatever'];
-  const anticipationEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
+  const hopefulEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
 
-  if (tokens.some((token) => trustWords.includes(token))) {
-    return 'trust';
+  if (tokens.some((token) => calmWords.includes(token))) {
+    return 'calm';
   }
 
-  if (tokens.some((token) => joyWords.includes(token))) {
-    return 'joy';
+  if (tokens.some((token) => happyWords.includes(token))) {
+    return 'happy';
   }
 
-  if (tokens.some((token) => angerWords.includes(token))) {
-    return 'anger';
+  if (tokens.some((token) => angryWords.includes(token))) {
+    return 'angry';
   }
 
-  if (tokens.some((token) => confusionWords.includes(token))) {
-    return 'confusion';
+  if (tokens.some((token) => confusedWords.includes(token))) {
+    return 'confused';
   }
 
-  if (tokens.some((token) => surpriseWords.includes(token))) {
-    return 'surprise';
+  if (tokens.some((token) => surprisedWords.includes(token))) {
+    return 'surprised';
   }
 
   if (tokens.some((token) => flatWords.includes(token))) {
-    return 'unknown';
+    return 'weird';
   }
 
-  if (tokens.some((token) => anticipationEndings.some((ending) => token.endsWith(ending)))) {
-    return 'anticipation';
+  if (tokens.some((token) => hopefulEndings.some((ending) => token.endsWith(ending)))) {
+    return 'hopeful';
   }
 
-  return 'unknown';
+  return 'weird';
 }
 
 function levenshteinDistance(a, b) {
@@ -417,8 +487,8 @@ function levenshteinDistance(a, b) {
   return matrix[a.length][b.length];
 }
 
-function findSimilarEmotionWord(token) {
-  for (const keyword of EMOTION_WORDS) {
+function findSimilarMoodWord(token) {
+  for (const keyword of NRC_WORDS) {
     if (isSimilarWord(token, keyword)) {
       return keyword;
     }
@@ -429,16 +499,16 @@ function findSimilarEmotionWord(token) {
 
 function buildFortunePool(analysis) {
   const { primaryEmotion } = analysis;
-  const profile = EMOTION_PROFILES[primaryEmotion] || EMOTION_PROFILES.unknown;
+  const profile = MOOD_BUCKET_PROFILES[primaryEmotion] || MOOD_BUCKET_PROFILES.weird;
   if (profile.fortuneKey && FORTUNE_LIBRARY[profile.fortuneKey]) {
     return FORTUNE_LIBRARY[profile.fortuneKey];
   }
 
-  return FORTUNE_LIBRARY.mysterious;
+  return FORTUNE_LIBRARY.weird;
 }
 
 function pickSceneForSelection(analysis) {
-  return EMOTION_SCENE_KEYS[analysis.primaryEmotion] || EMOTION_SCENE_KEYS.unknown;
+  return MOOD_SCENE_KEYS[analysis.primaryEmotion] || MOOD_SCENE_KEYS.weird;
 }
 
 async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection }) {
@@ -449,7 +519,7 @@ async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection 
       moderation: 'blocked-hate',
       fortuneText: BLOCKED_INPUT_FORTUNE,
       analysis: buildBlockedAnalysis(),
-      sceneKey: 'moonlitDunes',
+      sceneKey: DEFAULT_SCENE_KEY,
       dayKey,
     };
 

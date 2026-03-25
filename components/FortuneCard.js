@@ -83,7 +83,6 @@ const CookieStage = memo(function CookieStage({
             isOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
             paperProgress={paperProgress}
-            scene={scene}
           />
         </Animated.View>
       </View>
