@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fortune Cookie Daily Support</title>
+  <meta
+    name="description"
+    content="Support, contact, and privacy information for the Fortune Cookie Daily app."
+  >
+  <link rel="stylesheet" href="support.css">
+</head>
+<body>
+  <main class="support-shell">
+    <section class="support-card">
+      <div class="support-badge">Apple Review Ready</div>
+
+      <div class="support-hero">
+        <div class="support-icon-wrap" aria-hidden="true">
+          <img
+            class="support-app-icon"
+            src="assets/appicon_B2.png"
+            alt="Fortune Cookie Daily app icon"
+          >
+        </div>
+
+        <div class="support-hero-copy">
+          <p class="support-kicker">Fortune Cookie Daily</p>
+          <p class="support-subtitle">Support, privacy, and contact information</p>
+        </div>
+      </div>
+
+      <section class="support-policy" aria-labelledby="privacy-policy-title">
+        <h1 class="support-title">Support</h1>
+        <p class="support-copy">
+          If you need help with the app, have a bug report, or want to ask a question,
+          send a message below and it will be forwarded to the app admin.
+        </p>
+
+        <h2 class="support-policy-title" id="privacy-policy-title">Privacy Policy</h2>
+        <p class="support-policy-copy">
+          Fortune Cookie Daily does not collect, store, or share personal data.
+        </p>
+        <p class="support-policy-copy">
+          The app lets you enter a mood locally on your device and receive a daily fortune.
+          That information stays on the device and is not transmitted to a server.
+        </p>
+      </section>
+
+      <section aria-labelledby="contact-support-title">
+        <h2 class="support-section-title" id="contact-support-title">Contact Support</h2>
+
+        <form
+          class="support-form"
+          id="support-form"
+          action="https://formsubmit.co/imeyzin@gmail.com"
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value="Fortune Cookie Daily Support Request">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_template" value="table">
+
+          <label class="sr-only" for="support-email">Email</label>
+          <input
+            id="support-email"
+            name="email"
+            type="email"
+            class="support-input"
+            placeholder="Your email"
+            required
+          >
+
+          <label class="sr-only" for="support-message">Support message</label>
+          <textarea
+            id="support-message"
+            name="message"
+            class="support-input support-textarea"
+            rows="7"
+            placeholder="Describe the issue or question..."
+            required
+          ></textarea>
+
+          <button type="submit" class="support-submit" id="support-submit">Submit</button>
+        </form>
+
+        <p class="support-confirmation" id="support-confirmation" hidden>Your note is on its way.</p>
+        <p class="support-error" id="support-error" hidden>Something went wrong. Please try again later.</p>
+        <p class="support-footnote">Direct contact: <a href="mailto:imeyzin@gmail.com">imeyzin@gmail.com</a></p>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('support-form');
+    const submitButton = document.getElementById('support-submit');
+    const confirmation = document.getElementById('support-confirmation');
+    const errorMessage = document.getElementById('support-error');
+
+    if (form && submitButton && confirmation && errorMessage) {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        confirmation.hidden = true;
+        errorMessage.hidden = true;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+
+        try {
+          const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+              Accept: 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+
+          form.reset();
+          confirmation.hidden = false;
+        } catch (error) {
+          errorMessage.hidden = false;
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

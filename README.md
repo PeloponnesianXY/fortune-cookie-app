@@ -59,6 +59,17 @@ $env:Path = "C:\Program Files\nodejs;" + $env:Path
 cmd /c npm run web
 ```
 
+## Standalone support page
+
+This repo now also includes a static support landing page for App Review:
+
+- `index.html`: standalone support/privacy/contact landing page
+- `support.html`: redirect to `index.html`
+- `support.css`: styling for the support page
+- `netlify.toml`: Netlify publish and redirect config
+
+If you host this repo as a static site, the root URL will open the support page directly.
+
 ## Hidden test commands
 
 These are development shortcuts for testing the app without waiting for the next calendar day:

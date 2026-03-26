@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/support"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/support.html"
+  to = "/"
+  status = 301
