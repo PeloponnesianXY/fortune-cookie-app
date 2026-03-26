@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "icon": "./assets/appicon_final_clean.png",
+    "icon": "./assets/appicon_B2.png",
     "assetBundlePatterns": [
       "**/*"
     ],
