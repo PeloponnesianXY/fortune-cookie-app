@@ -1,6 +1,7 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import {
   Animated,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 
 import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
+import FortuneLibrarySheet from './FortuneLibrarySheet';
 
 const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
   return (
@@ -105,8 +107,11 @@ const CookieStage = memo(function CookieStage({
 });
 
 export default function FortuneCard({
+  currentFortuneIsFavorite,
   cookieCueText,
+  favoriteFortunes,
   fortuneText,
+  historyFortunes,
   isAnimating,
   isCookieOpened,
   isHydratingSelection,
@@ -114,21 +119,50 @@ export default function FortuneCard({
   isTapDisabled,
   moodInput,
   onMoodChange,
+  onRemoveFavorite,
   onOpenFortune,
+  onShareFortune,
   onSubmitMoodInput,
+  onToggleFavorite,
   paperProgress,
   scene,
   shellProgress,
 }) {
+  const [activeLibrary, setActiveLibrary] = useState(null);
   const { height: viewportHeight } = useWindowDimensions();
   const topPadding = Math.max(Math.round(viewportHeight * 0.3), 232);
   const gapAfterInput = Math.max(Math.round(viewportHeight * 0.04), 28);
+  const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
+
+  function openLibrary(library) {
+    setActiveLibrary(library);
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop scene={scene} />
 
       <View style={styles.contentFrame}>
+        <View style={styles.topControls}>
+          <Pressable
+            onPress={() => openLibrary('history')}
+            style={[styles.libraryButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+          >
+            <Text style={[styles.libraryButtonText, { color: scene.textPrimary }]}>
+              History
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => openLibrary('favorites')}
+            style={[styles.libraryButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+          >
+            <Text style={[styles.libraryButtonText, { color: scene.textPrimary }]}>
+              Favorites
+            </Text>
+          </Pressable>
+        </View>
+
         <View style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder, marginTop: topPadding }]}>
           <Text style={[styles.inputLabel, { color: scene.accent }]}>
             Which <Text style={styles.underlinedWord}>one</Text> word best describes your mood?
@@ -165,7 +199,41 @@ export default function FortuneCard({
           scene={scene}
           shellProgress={shellProgress}
         />
+
+        {isFortuneRevealed ? (
+          <View style={styles.actionRow}>
+            <Pressable
+              onPress={onToggleFavorite}
+              style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+            >
+              <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
+                {currentFortuneIsFavorite ? 'Unfavorite' : 'Favorite'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={onShareFortune}
+              style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+            >
+              <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
+                Share
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
       </View>
+
+      <FortuneLibrarySheet
+        activeLibrary={activeLibrary || 'history'}
+        favoriteCount={favoriteFortunes.length}
+        favorites={favoriteFortunes}
+        history={historyFortunes}
+        historyCount={historyFortunes.length}
+        onClose={() => setActiveLibrary(null)}
+        onRemoveFavorite={onRemoveFavorite}
+        onSelectLibrary={setActiveLibrary}
+        visible={Boolean(activeLibrary)}
+      />
     </View>
   );
 }
@@ -177,6 +245,27 @@ const styles = StyleSheet.create({
   contentFrame: {
     flex: 1,
     paddingHorizontal: 22,
+  },
+  topControls: {
+    position: 'absolute',
+    top: 14,
+    right: 22,
+    zIndex: 10,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  libraryButton: {
+    minHeight: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+  },
+  libraryButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: -0.1,
   },
   topGlow: {
     position: 'absolute',
@@ -191,7 +280,7 @@ const styles = StyleSheet.create({
   sunHalo: {
     position: 'absolute',
     top: 30,
-    right: 28,
+    left: 28,
     width: 156,
     height: 156,
     borderRadius: 999,
@@ -200,7 +289,7 @@ const styles = StyleSheet.create({
   sunDisc: {
     position: 'absolute',
     top: 72,
-    right: 72,
+    left: 72,
     width: 62,
     height: 62,
     borderRadius: 999,
@@ -312,5 +401,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.1,
     textAlign: 'center',
+  },
+  actionRow: {
+    width: '100%',
+    maxWidth: 540,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 22,
+  },
+  actionButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.15,
   },
 });

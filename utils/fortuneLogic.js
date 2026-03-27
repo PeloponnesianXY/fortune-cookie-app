@@ -201,7 +201,15 @@ const NRC_WORD_TO_MOOD_BUCKET = Object.fromEntries(
   ])
 );
 
-const NRC_WORDS = Object.keys(NRC_WORD_TO_MOOD_BUCKET);
+const NRC_WORDS_BY_FIRST_LETTER = Object.keys(NRC_WORD_TO_MOOD_BUCKET).reduce((accumulator, word) => {
+  const firstLetter = word[0];
+  if (!accumulator[firstLetter]) {
+    accumulator[firstLetter] = [];
+  }
+
+  accumulator[firstLetter].push(word);
+  return accumulator;
+}, {});
 
 function buildBlockedAnalysis() {
   return {
@@ -221,6 +229,15 @@ function getLocalDayKey(date = new Date()) {
 function createUserId() {
   const random = Math.random().toString(36).slice(2, 10);
   return `fortune-user-${random}`;
+}
+
+function createFortuneId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `fortune-${Date.now()}-${random}`;
+}
+
+function hasSelectionMetadata(selection) {
+  return Boolean(selection?.id && selection?.createdAt);
 }
 
 async function getOrCreateUserId() {
@@ -248,7 +265,21 @@ async function loadDailySelection() {
 }
 
 async function saveDailySelection(selection) {
-  await AsyncStorage.setItem(DAILY_SELECTION_STORAGE_KEY, JSON.stringify(selection));
+  const nextSelection = ensureSelectionMetadata(selection);
+  await AsyncStorage.setItem(DAILY_SELECTION_STORAGE_KEY, JSON.stringify(nextSelection));
+  return nextSelection;
+}
+
+function ensureSelectionMetadata(selection) {
+  if (!selection) {
+    return null;
+  }
+
+  return {
+    ...selection,
+    id: selection.id || createFortuneId(),
+    createdAt: selection.createdAt || new Date().toISOString(),
+  };
 }
 
 function hashString(value) {
@@ -488,7 +519,9 @@ function levenshteinDistance(a, b) {
 }
 
 function findSimilarMoodWord(token) {
-  for (const keyword of NRC_WORDS) {
+  const candidateWords = NRC_WORDS_BY_FIRST_LETTER[token[0]] || [];
+
+  for (const keyword of candidateWords) {
     if (isSimilarWord(token, keyword)) {
       return keyword;
     }
@@ -524,11 +557,15 @@ async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection 
     };
 
     if (persistSelection) {
-      await saveDailySelection(blockedSelection);
+      const storedSelection = await saveDailySelection(blockedSelection);
+      return {
+        ...storedSelection,
+        fromCache: false,
+      };
     }
 
     return {
-      ...blockedSelection,
+      ...ensureSelectionMetadata(blockedSelection),
       fromCache: false,
     };
   }
@@ -548,11 +585,15 @@ async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection 
   };
 
   if (persistSelection) {
-    await saveDailySelection(selection);
+    const storedSelection = await saveDailySelection(selection);
+    return {
+      ...storedSelection,
+      fromCache: false,
+    };
   }
 
   return {
-    ...selection,
+    ...ensureSelectionMetadata(selection),
     fromCache: false,
   };
 }
@@ -562,9 +603,13 @@ export async function getDailyFortuneSelection(input) {
   const existingSelection = await loadDailySelection();
 
   if (existingSelection?.dayKey === dayKey && existingSelection?.fortuneText) {
+    const normalizedSelection = hasSelectionMetadata(existingSelection)
+      ? existingSelection
+      : await saveDailySelection(existingSelection);
+
     return {
-      ...existingSelection,
-      moderation: existingSelection.moderation || 'clean',
+      ...normalizedSelection,
+      moderation: normalizedSelection.moderation || 'clean',
       fromCache: true,
     };
   }
@@ -595,7 +640,9 @@ export async function getStoredDailyFortuneSelection() {
   }
 
   if (selection.dayKey === dayKey && selection.fortuneText) {
-    return selection;
+    return hasSelectionMetadata(selection)
+      ? selection
+      : saveDailySelection(selection);
   }
 
   await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);

@@ -1,0 +1,276 @@
+import React from 'react';
+import {
+  FlatList,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+function formatFortuneTimestamp(value) {
+  if (!value) {
+    return '';
+  }
+
+  return new Date(value).toLocaleString([], {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}
+
+function formatMeta(item, library) {
+  const detailParts = [];
+
+  if (item.mood) {
+    detailParts.push(item.mood);
+  } else if (item.category) {
+    detailParts.push(item.category);
+  }
+
+  const timestamp = library === 'favorites'
+    ? item.favoritedAt || item.createdAt
+    : item.latestCreatedAt || item.createdAt;
+
+  if (timestamp) {
+    detailParts.push(formatFortuneTimestamp(timestamp));
+  }
+
+  return detailParts.join(' | ');
+}
+
+function LibraryItem({ item, library, onRemoveFavorite }) {
+  return (
+    <View style={styles.itemCard}>
+      <View style={styles.itemHeader}>
+        <Text style={styles.itemMeta}>{formatMeta(item, library)}</Text>
+        {item.repeatCount > 1 ? (
+          <View style={styles.repeatBadge}>
+            <Text style={styles.repeatBadgeText}>x{item.repeatCount}</Text>
+          </View>
+        ) : null}
+      </View>
+
+      <Text style={styles.itemText}>{item.text}</Text>
+
+      {library === 'favorites' ? (
+        <Pressable onPress={() => onRemoveFavorite(item)} style={styles.inlineAction}>
+          <Text style={styles.inlineActionText}>Remove</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+export default function FortuneLibrarySheet({
+  activeLibrary,
+  favoriteCount,
+  favorites,
+  history,
+  historyCount,
+  onClose,
+  onRemoveFavorite,
+  onSelectLibrary,
+  visible,
+}) {
+  const isFavorites = activeLibrary === 'favorites';
+  const items = isFavorites ? favorites : history;
+
+  return (
+    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.backdrop}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.sheet}>
+            <View style={styles.topRow}>
+              <Text style={styles.title}>Your fortunes</Text>
+              <Pressable hitSlop={8} onPress={onClose}>
+                <Text style={styles.closeText}>Close</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.switcher}>
+              <Pressable
+                onPress={() => onSelectLibrary('history')}
+                style={[styles.switcherButton, !isFavorites && styles.switcherButtonActive]}
+              >
+                <Text style={[styles.switcherText, !isFavorites && styles.switcherTextActive]}>
+                  History ({historyCount})
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => onSelectLibrary('favorites')}
+                style={[styles.switcherButton, isFavorites && styles.switcherButtonActive]}
+              >
+                <Text style={[styles.switcherText, isFavorites && styles.switcherTextActive]}>
+                  Favorites ({favoriteCount})
+                </Text>
+              </Pressable>
+            </View>
+
+            <FlatList
+              contentContainerStyle={items.length ? styles.listContent : styles.emptyContent}
+              data={items}
+              initialNumToRender={8}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <LibraryItem item={item} library={activeLibrary} onRemoveFavorite={onRemoveFavorite} />
+              )}
+              removeClippedSubviews
+              ListEmptyComponent={(
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyTitle}>
+                    {isFavorites ? 'No favorites yet' : 'No fortune history yet'}
+                  </Text>
+                  <Text style={styles.emptyText}>
+                    {isFavorites
+                      ? 'Favorite a revealed fortune and it will appear here.'
+                      : 'Open a fortune and it will be saved here automatically.'}
+                  </Text>
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+              windowSize={5}
+            />
+          </View>
+        </SafeAreaView>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(27, 30, 36, 0.34)',
+    justifyContent: 'flex-end',
+  },
+  safeArea: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    maxHeight: '72%',
+    backgroundColor: '#fffaf2',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#5b412d',
+  },
+  closeText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#9a673d',
+  },
+  switcher: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  switcherButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ead6be',
+    borderRadius: 999,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff3e4',
+  },
+  switcherButtonActive: {
+    backgroundColor: '#f0cda1',
+    borderColor: '#ddb17a',
+  },
+  switcherText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#8a6544',
+  },
+  switcherTextActive: {
+    color: '#5d3d21',
+  },
+  listContent: {
+    paddingBottom: 12,
+    gap: 12,
+  },
+  emptyContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  itemCard: {
+    borderWidth: 1,
+    borderColor: '#ecdcc9',
+    backgroundColor: '#fffdf8',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    gap: 10,
+  },
+  itemMeta: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
+    color: '#8b6c50',
+    fontWeight: '600',
+  },
+  repeatBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: '#f5e4ca',
+  },
+  repeatBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#8a5b2b',
+  },
+  itemText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#3c2b1f',
+  },
+  inlineAction: {
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    paddingVertical: 4,
+  },
+  inlineActionText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#a24c3f',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingHorizontal: 18,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#5c432d',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: '#7b634c',
+    textAlign: 'center',
+  },
+});
