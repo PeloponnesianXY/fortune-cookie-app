@@ -659,23 +659,22 @@ async function buildFortuneSelection(input, {
 export async function getDailyFortuneSelection(input) {
   const dayKey = getLocalDayKey();
   const existingSelection = await loadDailySelection();
+  const nextDailyFortuneCount = existingSelection?.dayKey === dayKey
+    ? Math.max(existingSelection.dailyFortuneCount || 0, 0) + 1
+    : 1;
 
-  if (existingSelection?.dayKey === dayKey && existingSelection?.fortuneText) {
-    const normalizedSelection = hasSelectionMetadata(existingSelection)
-      ? existingSelection
-      : await saveDailySelection(existingSelection);
-
-    return {
-      ...normalizedSelection,
-      moderation: normalizedSelection.moderation || 'clean',
-      fromCache: true,
-    };
-  }
-
-  return buildFortuneSelection(input, {
+  const nextSelection = await buildFortuneSelection(input, {
     dayKey,
-    seedKey: dayKey,
+    seedKey: `${dayKey}|fortune|${nextDailyFortuneCount}`,
     persistSelection: true,
+  });
+
+  return saveDailySelection({
+    ...nextSelection,
+    dayKey,
+    dailyFortuneCount: nextDailyFortuneCount,
+    moderation: nextSelection.moderation || 'clean',
+    fromCache: false,
   });
 }
 
@@ -696,14 +695,29 @@ export async function getReplacementFortuneSelection(input, {
   excludeFortuneText = null,
 } = {}) {
   const dayKey = getLocalDayKey();
+  const existingSelection = mode === 'daily' ? await loadDailySelection() : null;
 
-  return buildFortuneSelection(input, {
+  const replacementSelection = await buildFortuneSelection(input, {
     dayKey,
     seedKey: mode === 'override'
       ? `${dayKey}|override-replace|${replacementKey}`
       : `${dayKey}|replace|${replacementKey}`,
     persistSelection: mode !== 'override',
     excludeFortuneText,
+  });
+
+  if (mode !== 'daily') {
+    return replacementSelection;
+  }
+
+  return saveDailySelection({
+    ...replacementSelection,
+    dayKey,
+    dailyFortuneCount: existingSelection?.dayKey === dayKey
+      ? Math.max(existingSelection.dailyFortuneCount || 1, 1)
+      : 1,
+    moderation: replacementSelection.moderation || 'clean',
+    fromCache: false,
   });
 }
 
@@ -716,9 +730,15 @@ export async function getStoredDailyFortuneSelection() {
   }
 
   if (selection.dayKey === dayKey && selection.fortuneText) {
-    return hasSelectionMetadata(selection)
-      ? selection
-      : saveDailySelection(selection);
+    const normalizedSelection = {
+      ...selection,
+      dailyFortuneCount: Math.max(selection.dailyFortuneCount || 1, 1),
+      moderation: selection.moderation || 'clean',
+    };
+
+    return hasSelectionMetadata(normalizedSelection)
+      ? normalizedSelection
+      : saveDailySelection(normalizedSelection);
   }
 
   await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);

@@ -4,11 +4,11 @@ import {
   Easing,
   InputAccessoryView,
   Keyboard,
+  KeyboardAvoidingView,
   Linking,
   PanResponder,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -93,6 +93,7 @@ const CookieStage = memo(function CookieStage({
             isOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
             paperProgress={paperProgress}
+            shellProgress={shellProgress}
           />
         </Animated.View>
       </View>
@@ -103,6 +104,7 @@ const CookieStage = memo(function CookieStage({
 export default function FortuneCard({
   canReplaceCurrentFortune,
   currentFortuneIsFavorite,
+  dailyWisdomMessage,
   favoriteFortunes,
   fortuneText,
   historyFortunes,
@@ -113,6 +115,7 @@ export default function FortuneCard({
   isReplaceConfirmVisible,
   isTapDisabled,
   moodInput,
+  onBeginMoodEntry,
   onCancelReplace,
   onConfirmReplace,
   onMoodChange,
@@ -131,11 +134,13 @@ export default function FortuneCard({
   const [activeLibrary, setActiveLibrary] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [inputCardLayout, setInputCardLayout] = useState({ y: 0, height: 0 });
+  const [isDailyWisdomVisible, setIsDailyWisdomVisible] = useState(Boolean(dailyWisdomMessage));
   const { height: viewportHeight } = useWindowDimensions();
   const drawerProgress = useRef(new Animated.Value(0)).current;
-  const promptLiftProgress = useRef(new Animated.Value(0)).current;
+  const dailyWisdomProgress = useRef(new Animated.Value(dailyWisdomMessage ? 1 : 0)).current;
   const idleKeyboardTimerRef = useRef(null);
+  const dailyWisdomTimerRef = useRef(null);
+  const dailyWisdomShowTimerRef = useRef(null);
   const inputRef = useRef(null);
   const keyboardAccessoryPanResponder = useRef(
     PanResponder.create({
@@ -149,16 +154,31 @@ export default function FortuneCard({
       },
     })
   ).current;
-  const cookieTopPadding = Math.min(Math.max(Math.round(viewportHeight * 0.28), 224), 284);
-  const promptTopGap = Math.max(Math.round(viewportHeight * 0.06), 48);
-  const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.22), 208), 266);
+  const cookieTopPadding = Math.min(Math.max(Math.round(viewportHeight * 0.235), 176), 224);
+  const promptTopGap = Math.max(Math.round(viewportHeight * 0.002), 0);
+  const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.15), 142), 184);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
+  const isPromptTemporarilyLocked = Boolean(dailyWisdomMessage && isDailyWisdomVisible);
   const celebratoryStreakLabel = streakLabel === 'Start a streak' ? 'Start your streak!' : `${streakLabel}!`;
 
   function clearIdleKeyboardTimer() {
     if (idleKeyboardTimerRef.current) {
       clearTimeout(idleKeyboardTimerRef.current);
       idleKeyboardTimerRef.current = null;
+    }
+  }
+
+  function clearDailyWisdomTimer() {
+    if (dailyWisdomTimerRef.current) {
+      clearTimeout(dailyWisdomTimerRef.current);
+      dailyWisdomTimerRef.current = null;
+    }
+  }
+
+  function clearDailyWisdomShowTimer() {
+    if (dailyWisdomShowTimerRef.current) {
+      clearTimeout(dailyWisdomShowTimerRef.current);
+      dailyWisdomShowTimerRef.current = null;
     }
   }
 
@@ -217,17 +237,10 @@ export default function FortuneCard({
     }, 10000);
   }
 
-  function animatePromptLift(toValue) {
-    Animated.timing(promptLiftProgress, {
-      toValue,
-      duration: 240,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }
-
   useEffect(() => () => {
     clearIdleKeyboardTimer();
+    clearDailyWisdomTimer();
+    clearDailyWisdomShowTimer();
   }, []);
 
   useEffect(() => {
@@ -235,29 +248,72 @@ export default function FortuneCard({
   }, [isInputFocused, moodInput]);
 
   useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    clearDailyWisdomShowTimer();
+    clearDailyWisdomTimer();
 
-    const showSubscription = Keyboard.addListener(showEvent, (event) => {
-      if (!isInputFocused) {
-        return;
-      }
+    if (!dailyWisdomMessage) {
+      Animated.timing(dailyWisdomProgress, {
+        toValue: 0,
+        duration: 420,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) {
+          setIsDailyWisdomVisible(false);
+        }
+      });
+      return undefined;
+    }
 
-      const keyboardTop = viewportHeight - event.endCoordinates.height - 16;
-      const cardBottom = inputCardLayout.y + inputCardLayout.height;
-      const overlap = Math.max(cardBottom - keyboardTop, 0);
-      animatePromptLift(overlap > 0 ? -(overlap + 36) : -36);
-    });
+    dailyWisdomProgress.setValue(0);
+    dailyWisdomShowTimerRef.current = setTimeout(() => {
+      setIsDailyWisdomVisible(true);
+      Animated.timing(dailyWisdomProgress, {
+        toValue: 1,
+        duration: 560,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start();
+      dailyWisdomShowTimerRef.current = null;
 
-    const hideSubscription = Keyboard.addListener(hideEvent, () => {
-      animatePromptLift(0);
-    });
+      dailyWisdomTimerRef.current = setTimeout(() => {
+        Animated.timing(dailyWisdomProgress, {
+          toValue: 0,
+          duration: 520,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }).start(({ finished }) => {
+          if (finished) {
+            setIsDailyWisdomVisible(false);
+          }
+        });
+        dailyWisdomTimerRef.current = null;
+      }, 3600);
+    }, 2000);
 
     return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
+      clearDailyWisdomShowTimer();
+      clearDailyWisdomTimer();
     };
-  }, [inputCardLayout.height, inputCardLayout.y, isInputFocused, viewportHeight]);
+  }, [dailyWisdomMessage, dailyWisdomProgress]);
+
+  useEffect(() => {
+    if (isPromptTemporarilyLocked && isInputFocused) {
+      inputRef.current?.blur();
+    }
+  }, [isInputFocused, isPromptTemporarilyLocked]);
+
+  const dailyWisdomAnimatedStyle = {
+    opacity: dailyWisdomProgress,
+    transform: [
+      {
+        translateY: dailyWisdomProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [10, 0],
+        }),
+      },
+    ],
+  };
 
   const drawerPanelAnimatedStyle = {
     transform: [
@@ -277,22 +333,11 @@ export default function FortuneCard({
     }),
   };
 
-  const promptLiftAnimatedStyle = {
-    transform: [{ translateY: promptLiftProgress }],
-  };
-
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop scene={scene} />
 
-      <ScrollView
-        alwaysBounceVertical={isInputFocused}
-        bounces={isInputFocused}
-        contentContainerStyle={styles.contentFrame}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.contentFrame}>
         <View style={styles.menuChrome} pointerEvents="box-none">
           <Pressable
             hitSlop={8}
@@ -323,12 +368,28 @@ export default function FortuneCard({
 
         <View style={{ height: cookieTopPadding }} />
 
+        <View style={styles.dailyWisdomSlot}>
+          {dailyWisdomMessage && isDailyWisdomVisible ? (
+            <Animated.View
+              style={[
+                styles.dailyWisdomCard,
+                dailyWisdomAnimatedStyle,
+                { backgroundColor: scene.panel, borderColor: scene.panelBorder },
+              ]}
+            >
+              <Text style={[styles.dailyWisdomText, { color: scene.accent }]}>
+                {dailyWisdomMessage}
+              </Text>
+            </Animated.View>
+          ) : null}
+        </View>
+
         <CookieStage
           fortuneText={fortuneText}
           isAnimating={isAnimating}
           isCookieOpened={isCookieOpened}
           isPaperVisible={isPaperVisible}
-          isTapDisabled={isTapDisabled}
+          isTapDisabled={isTapDisabled || isPromptTemporarilyLocked}
           onPress={onOpenFortune}
           paperProgress={paperProgress}
           scene={scene}
@@ -338,14 +399,20 @@ export default function FortuneCard({
 
         <View style={{ height: promptTopGap }} />
 
-        <Animated.View
-          onLayout={(event) => setInputCardLayout(event.nativeEvent.layout)}
-          style={promptLiftAnimatedStyle}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'position' : undefined}
+          enabled={Platform.OS === 'ios'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 52 : 0}
+          style={styles.promptSection}
         >
           <View
           style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
           >
-            <Text style={[styles.inputLabel, { color: scene.accent }]}>
+            <Text style={[
+              styles.inputLabel,
+              { color: scene.accent },
+              isPromptTemporarilyLocked ? styles.inputLabelLocked : null,
+            ]}>
               Describe your mood in one word
             </Text>
             <View
@@ -355,6 +422,7 @@ export default function FortuneCard({
                   backgroundColor: scene.input,
                   borderColor: isInputFocused ? scene.accent : scene.inputBorder,
                 },
+                isPromptTemporarilyLocked ? styles.inputRowLocked : null,
                 isInputFocused ? styles.inputRowFocused : null,
               ]}
             >
@@ -362,7 +430,7 @@ export default function FortuneCard({
                 autoCapitalize="words"
                 autoCorrect={false}
                 blurOnSubmit={false}
-                editable={!isHydratingSelection}
+                editable={!isHydratingSelection && !isPromptTemporarilyLocked}
                 inputAccessoryViewID={Platform.OS === 'ios' ? KEYBOARD_ACCESSORY_ID : undefined}
                 ref={inputRef}
                 onBlur={() => {
@@ -374,8 +442,14 @@ export default function FortuneCard({
                   scheduleIdleKeyboardDismiss(nextValue);
                 }}
                 onFocus={() => {
+                  if (isPromptTemporarilyLocked) {
+                    inputRef.current?.blur();
+                    return;
+                  }
+
+                  onBeginMoodEntry?.();
                   setIsInputFocused(true);
-                  scheduleIdleKeyboardDismiss(moodInput);
+                  scheduleIdleKeyboardDismiss('');
                 }}
                 onSubmitEditing={() => {
                   inputRef.current?.blur();
@@ -385,12 +459,16 @@ export default function FortuneCard({
                 placeholderTextColor={scene.accentSoft}
                 returnKeyType="done"
                 selectionColor={scene.accent}
-                style={[styles.input, { color: scene.textPrimary }]}
+                style={[
+                  styles.input,
+                  { color: scene.textPrimary },
+                  isPromptTemporarilyLocked ? styles.inputLocked : null,
+                ]}
                 value={moodInput}
               />
             </View>
           </View>
-        </Animated.View>
+        </KeyboardAvoidingView>
 
         {isFortuneRevealed ? (
           <View style={styles.actionZone}>
@@ -423,7 +501,7 @@ export default function FortuneCard({
             ) : null}
           </View>
         ) : null}
-      </ScrollView>
+      </View>
 
       {isDrawerOpen ? (
         <View pointerEvents="box-none" style={styles.drawerLayer}>
@@ -554,13 +632,13 @@ const styles = StyleSheet.create({
   },
   menuChrome: {
     position: 'absolute',
-    top: 12,
+    top: 18,
     left: 22,
     zIndex: 12,
   },
   topChrome: {
     position: 'absolute',
-    top: 12,
+    top: 18,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -583,8 +661,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   streakBar: {
-    minHeight: 38,
+    minHeight: 32,
     minWidth: 172,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
   },
   menuButton: {
     width: 38,
@@ -634,8 +714,8 @@ const styles = StyleSheet.create({
   },
   sunHalo: {
     position: 'absolute',
-    top: 92,
-    right: 70,
+    top: 74,
+    right: 46,
     width: 128,
     height: 128,
     borderRadius: 999,
@@ -643,8 +723,8 @@ const styles = StyleSheet.create({
   },
   sunDisc: {
     position: 'absolute',
-    top: 130,
-    right: 110,
+    top: 112,
+    right: 82,
     width: 52,
     height: 52,
     borderRadius: 999,
@@ -687,6 +767,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.1,
   },
+  inputLabelLocked: {
+    opacity: 0.45,
+  },
   inputRow: {
     borderRadius: 16,
     borderWidth: 1,
@@ -702,11 +785,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 1,
   },
+  inputRowLocked: {
+    opacity: 0.8,
+  },
   input: {
     flex: 1,
     paddingHorizontal: 2,
     fontSize: 16,
     paddingVertical: 7,
+  },
+  inputLocked: {
+    opacity: 0.5,
   },
   cookieTapArea: {
     width: '100%',
@@ -725,7 +814,36 @@ const styles = StyleSheet.create({
     height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 30,
+    marginTop: 14,
+  },
+  dailyWisdomSlot: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    height: 116,
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  dailyWisdomCard: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: -20,
+    width: '100%',
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  promptSection: {
+    marginTop: -14,
+  },
+  dailyWisdomText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+    textAlign: 'center',
   },
   actionZone: {
     width: '100%',

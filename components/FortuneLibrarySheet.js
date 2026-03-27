@@ -24,7 +24,7 @@ function formatMeta(item, library) {
   const detailParts = [];
 
   if (item.mood) {
-    detailParts.push(item.mood);
+    detailParts.push(library === 'history' ? `"${item.mood}"` : item.mood);
   } else if (item.category) {
     detailParts.push(item.category);
   }

@@ -24,14 +24,14 @@ const CLOSED_COOKIE_FIT = {
   width: 330,
   height: 220,
   translateX: -14,
-  translateY: 36,
+  translateY: 18,
 };
 
 const OPEN_COOKIE_FIT = {
   width: 392,
   height: 258,
   translateX: -2,
-  translateY: 38,
+  translateY: 20,
 };
 
 const PAPER_SIZE = {
@@ -44,24 +44,43 @@ function CookieShell({
   isOpened,
   isPaperVisible,
   paperProgress,
+  shellProgress,
 }) {
+  const closedCookieStyle = shellProgress
+    ? {
+        opacity: shellProgress.interpolate({
+          inputRange: [0, 0.42, 1],
+          outputRange: [1, 0.78, 0],
+        }),
+      }
+    : null;
+
+  const openCookieStyle = shellProgress
+    ? {
+        opacity: shellProgress.interpolate({
+          inputRange: [0, 0.24, 0.62, 1],
+          outputRange: [0, 0.08, 0.72, 1],
+        }),
+      }
+    : null;
+
   const paperWrapStyle = isPaperVisible
     ? {
         opacity: paperProgress.interpolate({
-          inputRange: [0, 0.08, 1],
-          outputRange: [0, 0.72, 1],
+          inputRange: [0, 0.18, 0.6, 1],
+          outputRange: [0, 0.16, 0.82, 1],
         }),
         transform: [
       {
         translateY: paperProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [32, 18],
+          outputRange: [40, 18],
         }),
       },
           {
             rotate: paperProgress.interpolate({
               inputRange: [0, 1],
-              outputRange: ['-1deg', '-3deg'],
+              outputRange: ['-0.5deg', '-3deg'],
             }),
           },
         ],
@@ -71,20 +90,20 @@ function CookieShell({
   const paperShadowStyle = isPaperVisible
     ? {
         opacity: paperProgress.interpolate({
-          inputRange: [0, 0.12, 1],
-          outputRange: [0, 0.12, 0.22],
+          inputRange: [0, 0.24, 1],
+          outputRange: [0, 0.04, 0.22],
         }),
         transform: [
       {
         translateY: paperProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [34, 22],
+          outputRange: [42, 22],
         }),
       },
           {
             rotate: paperProgress.interpolate({
               inputRange: [0, 1],
-              outputRange: ['-1deg', '-3deg'],
+              outputRange: ['-0.5deg', '-3deg'],
             }),
           },
         ],
@@ -94,22 +113,24 @@ function CookieShell({
   return (
     <View style={styles.cookieShellFrame}>
       <View style={styles.frameWrap}>
-        <Image
+        <Animated.Image
           resizeMode="contain"
           source={COOKIE_CLOSED_IMAGE}
           style={[
             styles.frameImage,
             styles.closedImageFit,
-            isOpened ? styles.inactiveImage : styles.activeImage,
+            isOpened ? styles.imageLayerHidden : styles.imageLayerVisible,
+            isOpened ? styles.imageOff : closedCookieStyle,
           ]}
         />
-        <Image
+        <Animated.Image
           resizeMode="contain"
           source={COOKIE_OPEN_IMAGE}
           style={[
             styles.frameImage,
             styles.openImageFit,
-            isOpened ? styles.activeImage : styles.inactiveImage,
+            isOpened ? openCookieStyle : styles.imageOff,
+            isOpened ? styles.imageLayerVisible : styles.imageLayerHidden,
           ]}
         />
       </View>
@@ -158,13 +179,14 @@ const styles = StyleSheet.create({
   frameImage: {
     position: 'absolute',
   },
-  activeImage: {
-    opacity: 1,
+  imageLayerVisible: {
     zIndex: 2,
   },
-  inactiveImage: {
-    opacity: 0,
+  imageLayerHidden: {
     zIndex: 1,
+  },
+  imageOff: {
+    opacity: 0,
   },
   closedImageFit: {
     width: CLOSED_COOKIE_FIT.width,
