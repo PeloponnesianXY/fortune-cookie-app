@@ -108,7 +108,7 @@ a:hover {
 }
 
 .hero-copy {
-  min-height: 420px;
+  min-height: 0;
   border-radius: 34px;
 }
 
@@ -121,8 +121,9 @@ a:hover {
 
 .hero-brand {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 18px;
+  align-items: center;
+  gap: 18px;
+  margin: 18px 0 18px;
 }
 
 .hero-icon-wrap {
@@ -145,43 +146,37 @@ a:hover {
 }
 
 .hero-copy h1 {
-  max-width: 10ch;
-  font-size: clamp(3.25rem, 9vw, 5.8rem);
-  line-height: 0.92;
+  max-width: none;
+  font-size: 17px;
+  line-height: 1.7;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .support-badge,
-.section-kicker,
-.highlight-label {
+.section-kicker {
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .support-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 18px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--accent-strong);
-  font-size: 12px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-main);
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: clamp(2rem, 4.8vw, 3.6rem);
   font-weight: 700;
-}
-
-.support-badge::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 12px rgba(241, 185, 108, 0.9);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: none;
 }
 
 .hero-lede,
 .section-copy,
-.highlight-value,
 .support-footnote,
 .support-confirmation,
 .support-error,
@@ -194,34 +189,6 @@ a:hover {
 .hero-lede {
   max-width: 42rem;
   margin: 18px 0 0;
-}
-
-.hero-highlights {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 26px;
-}
-
-.highlight-card {
-  padding: 16px 16px 18px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.highlight-label {
-  margin: 0 0 10px;
-  color: var(--text-faint);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.highlight-value {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 15px;
-  line-height: 1.5;
 }
 
 .support-app-icon {
@@ -407,13 +374,13 @@ a:hover {
     padding: 22px 18px;
   }
 
-  .hero-highlights {
-    grid-template-columns: 1fr;
+  .hero-brand {
+    align-items: center;
+    gap: 14px;
   }
 
   .hero-lede,
   .section-copy,
-  .highlight-value,
   .trust-item {
     font-size: 16px;
   }
