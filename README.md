@@ -14,13 +14,16 @@ App.js
 components/
   CookieShell.js
   FortuneCard.js
+  FortuneLibrarySheet.js
 data/
   fortunes.js
   scenes.js
 utils/
+  savedFortunes.js
+  streaks.js
   fortuneLogic.js
 assets/
-  appicon_final_clean.png
+  appicon_B2.png
   cookie/
     closed-2.png
     open.png
@@ -28,13 +31,17 @@ assets/
 
 ## What is live now
 
-- `assets/appicon_final_clean.png`: app icon for the next native build
+- `assets/appicon_B2.png`: app icon for the next native build
 - `assets/cookie/closed-2.png`: closed cookie image
 - `assets/cookie/open.png`: broken/open cookie image
 - `components/CookieShell.js`: cookie image swap + paper overlay
+- `components/FortuneCard.js`: main single-screen layout, streak chrome, reveal actions
+- `components/FortuneLibrarySheet.js`: lightweight history/favorites sheet
 - `data/fortunes.js`: merged 10-bucket runtime fortune library
 - `data/scenes.js`: dedicated scene per detected emotion bucket
-- `utils/fortuneLogic.js`: emotion analysis, moderation, scene selection, daily persistence
+- `utils/fortuneLogic.js`: emotion analysis, moderation, scene selection, daily and replacement selection
+- `utils/savedFortunes.js`: local history/favorites persistence
+- `utils/streaks.js`: local daily streak persistence
 
 Old visual experiments and export artifacts were removed so the repo reflects the current app instead of abandoned approaches.
 
@@ -109,6 +116,7 @@ eas submit --platform ios
 ## Notes
 
 - The app uses local persistence via `AsyncStorage` to keep exactly one normal fortune per calendar day on the device.
+- Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - The classifier now uses a mood-first path: a curated 500-word dictionary runs first, then the bundled NRC lexicon is flattened to one runtime mood bucket per word as fallback coverage.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
 - The runtime fortune system now uses 10 mood buckets:

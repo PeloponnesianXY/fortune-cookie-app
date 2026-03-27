@@ -153,7 +153,7 @@ const CURATED_MOOD_WORDS = {
     'exhausted', 'heavy', 'homesick', 'hopeless', 'hurt', 'inadequate', 'isolated',
     'languishing', 'pained', 'raw', 'regretful', 'rejected', 'rueful', 'small', 'sorrowful',
     'sorry', 'spent', 'tender', 'unworthy', 'weary', 'weepy', 'wounded', 'worthless',
-    'bleak', 'crestfallen', 'hollow', 'forlorn',
+    'bleak', 'crestfallen', 'hollow', 'forlorn', 'meh', 'blah',
   ],
   surprised: [
     'shocked', 'startled', 'stunned', 'surprised', 'amazed', 'astonished', 'awed',
@@ -175,7 +175,7 @@ const CURATED_MOOD_WORDS = {
     'patient', 'quiet', 'resilient', 'rested', 'sheltered', 'steadying',
   ],
   weird: [
-    'off', 'odd', 'strange', 'weird', 'blank', 'bored', 'dull', 'meh', 'blah', 'neutral',
+    'off', 'odd', 'strange', 'weird', 'blank', 'bored', 'dull', 'neutral',
     'abstract', 'absent', 'aloof', 'ambiguous', 'anonymous', 'bizarre', 'cloudy',
     'detached', 'disconnected', 'distant', 'flat', 'funky', 'gray', 'indescribable',
     'intangible', 'liminal', 'muted', 'nebulous', 'obscure', 'offcenter', 'opaque',
@@ -458,7 +458,8 @@ function guessMoodFromTone(tokens) {
   const angryWords = ['fraught', 'combative', 'heated'];
   const confusedWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange', 'mixed', 'scrambled'];
   const surprisedWords = ['shocked', 'startled', 'sudden', 'abrupt', 'unexpected'];
-  const flatWords = ['bored', 'meh', 'blah', 'neutral', 'whatever'];
+  const sadFlatWords = ['meh', 'blah'];
+  const flatWords = ['bored', 'neutral', 'whatever'];
   const hopefulEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
 
   if (tokens.some((token) => calmWords.includes(token))) {
@@ -479,6 +480,10 @@ function guessMoodFromTone(tokens) {
 
   if (tokens.some((token) => surprisedWords.includes(token))) {
     return 'surprised';
+  }
+
+  if (tokens.some((token) => sadFlatWords.includes(token))) {
+    return 'sad';
   }
 
   if (tokens.some((token) => flatWords.includes(token))) {
@@ -544,7 +549,12 @@ function pickSceneForSelection(analysis) {
   return MOOD_SCENE_KEYS[analysis.primaryEmotion] || MOOD_SCENE_KEYS.weird;
 }
 
-async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection }) {
+async function buildFortuneSelection(input, {
+  dayKey,
+  seedKey,
+  persistSelection,
+  excludeFortuneText = null,
+}) {
   const moderationResult = moderateMoodInput(input);
 
   if (moderationResult.moderation === 'blocked-hate') {
@@ -552,6 +562,7 @@ async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection 
       moderation: 'blocked-hate',
       fortuneText: BLOCKED_INPUT_FORTUNE,
       analysis: buildBlockedAnalysis(),
+      inputMood: '',
       sceneKey: DEFAULT_SCENE_KEY,
       dayKey,
     };
@@ -574,12 +585,18 @@ async function buildFortuneSelection(input, { dayKey, seedKey, persistSelection 
   const userId = await getOrCreateUserId();
   const pool = buildFortunePool(analysis);
   const seed = hashString(`${userId}|${seedKey}`);
-  const fortuneText = pool[seed % pool.length];
+  let fortuneText = pool[seed % pool.length];
+
+  if (excludeFortuneText && pool.length > 1 && fortuneText === excludeFortuneText) {
+    fortuneText = pool[(seed + 1) % pool.length];
+  }
+
   const sceneKey = pickSceneForSelection(analysis);
   const selection = {
     analysis,
     dayKey,
     fortuneText,
+    inputMood: moderationResult.sanitizedInput,
     sceneKey,
     moderation: 'clean',
   };
@@ -621,13 +638,31 @@ export async function getDailyFortuneSelection(input) {
   });
 }
 
-export async function getOverrideFortuneSelection(input, overrideKey) {
+export async function getOverrideFortuneSelection(input, overrideKey, options = {}) {
   const dayKey = getLocalDayKey();
 
   return buildFortuneSelection(input, {
     dayKey,
     seedKey: `${dayKey}|override|${overrideKey}`,
     persistSelection: false,
+    excludeFortuneText: options.excludeFortuneText || null,
+  });
+}
+
+export async function getReplacementFortuneSelection(input, {
+  mode = 'daily',
+  replacementKey = 1,
+  excludeFortuneText = null,
+} = {}) {
+  const dayKey = getLocalDayKey();
+
+  return buildFortuneSelection(input, {
+    dayKey,
+    seedKey: mode === 'override'
+      ? `${dayKey}|override-replace|${replacementKey}`
+      : `${dayKey}|replace|${replacementKey}`,
+    persistSelection: mode !== 'override',
+    excludeFortuneText,
   });
 }
 

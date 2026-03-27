@@ -21,6 +21,7 @@ import {
   getDailyFortuneSelection,
   getDefaultSceneKey,
   getOverrideFortuneSelection,
+  getReplacementFortuneSelection,
   getStoredDailyFortuneSelection,
 } from './utils/fortuneLogic';
 import {
@@ -30,6 +31,10 @@ import {
   saveFortuneToHistory,
   toggleFavoriteFortune,
 } from './utils/savedFortunes';
+import {
+  getStoredStreak,
+  registerDailyStreak,
+} from './utils/streaks';
 
 const COOKIE_CLOSED_IMAGE = require('./assets/cookie/closed-2.png');
 const COOKIE_OPEN_IMAGE = require('./assets/cookie/open.png');
@@ -115,12 +120,16 @@ export default function App() {
   const [currentFortuneRecord, setCurrentFortuneRecord] = useState(null);
   const [historyFortunes, setHistoryFortunes] = useState([]);
   const [favoriteFortunes, setFavoriteFortunes] = useState([]);
+  const [streakCount, setStreakCount] = useState(0);
   const [sceneKey, setSceneKey] = useState(getDefaultSceneKey());
   const [revealPhase, setRevealPhase] = useState(REVEAL_PHASE.IDLE);
   const [assetsReady, setAssetsReady] = useState(false);
   const [isHydratingSelection, setIsHydratingSelection] = useState(true);
   const [isOverrideLoopActive, setIsOverrideLoopActive] = useState(false);
   const [isShowingOverrideFortune, setIsShowingOverrideFortune] = useState(false);
+  const [hasUsedReplacement, setHasUsedReplacement] = useState(false);
+  const [isReplaceConfirmVisible, setIsReplaceConfirmVisible] = useState(false);
+  const [currentFortuneContext, setCurrentFortuneContext] = useState(null);
   const [lockedTomorrowMessage, setLockedTomorrowMessage] = useState(() => (
     pickRandomLockedTomorrowMessage()
   ));
@@ -130,6 +139,7 @@ export default function App() {
   const paperRevealTimer = useRef(null);
   const isOpeningRef = useRef(false);
   const overrideAttemptRef = useRef(0);
+  const replacementAttemptRef = useRef(0);
 
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
@@ -150,6 +160,13 @@ export default function App() {
   const isCurrentFortuneFavorite = Boolean(
     currentFortuneRecord
     && favoriteFortunes.some((favorite) => favorite.id === currentFortuneRecord.id)
+  );
+  const streakLabel = streakCount === 1 ? '1-day streak' : streakCount > 1 ? `${streakCount}-day streak` : 'Start a streak';
+  const canReplaceCurrentFortune = Boolean(
+    currentFortuneRecord
+    && isPaperVisible
+    && !hasUsedReplacement
+    && !isAnimating
   );
   const cookieCueText = isOverrideLoopActive || isShowingOverrideFortune
     ? 'Ready for another fortune?'
@@ -172,7 +189,11 @@ export default function App() {
     setStoredTodaySelection(null);
     setIsShowingOverrideFortune(false);
     setIsOverrideLoopActive(false);
+    setHasUsedReplacement(false);
+    setIsReplaceConfirmVisible(false);
+    setCurrentFortuneContext(null);
     overrideAttemptRef.current = 0;
+    replacementAttemptRef.current = 0;
     setMoodInput('');
     setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
     resetCookiePresentation();
@@ -195,13 +216,41 @@ export default function App() {
     paperProgress.setValue(0);
   }
 
-  function showSelection(selection) {
+  function beginFortuneSession(sessionContext) {
+    setCurrentFortuneContext(sessionContext);
+    setHasUsedReplacement(false);
+    setIsReplaceConfirmVisible(false);
+    replacementAttemptRef.current = 0;
+  }
+
+  function showSelection(selection, record) {
     setFortuneText(selection.fortuneText);
-    setCurrentFortuneRecord(createSavedFortuneRecord(selection, selection.inputMood || ''));
+    setCurrentFortuneRecord(record || createSavedFortuneRecord(selection, selection.inputMood || ''));
     setSceneKey(selection.sceneKey || getDefaultSceneKey());
     setRevealPhase(REVEAL_PHASE.OPENED);
     shellProgress.setValue(1);
     paperProgress.setValue(1);
+  }
+
+  function presentStoredSelection(selection) {
+    beginFortuneSession({
+      mood: selection.inputMood || selection.analysis?.primaryEmotion || '',
+      isOverride: false,
+    });
+    showSelection(
+      selection,
+      createSavedFortuneRecord(selection, selection.inputMood || '')
+    );
+  }
+
+  function exitOverrideLoop() {
+    setIsShowingOverrideFortune(false);
+    setIsOverrideLoopActive(false);
+    setHasUsedReplacement(false);
+    setIsReplaceConfirmVisible(false);
+    setCurrentFortuneContext(null);
+    replacementAttemptRef.current = 0;
+    resetCookiePresentation();
   }
 
   function applySavedFortunesSnapshot(snapshot) {
@@ -286,9 +335,10 @@ export default function App() {
 
     async function hydrateAppState() {
       try {
-        const [snapshot, storedSelection] = await Promise.all([
+        const [snapshot, storedSelection, storedStreak] = await Promise.all([
           getSavedFortunesSnapshot(),
           getStoredDailyFortuneSelection(),
+          getStoredStreak(),
         ]);
 
         if (!isMounted) {
@@ -296,10 +346,11 @@ export default function App() {
         }
 
         applySavedFortunesSnapshot(snapshot);
+        setStreakCount(storedStreak.count);
 
         if (storedSelection) {
           setStoredTodaySelection(storedSelection);
-          showSelection(storedSelection);
+          presentStoredSelection(storedSelection);
         } else {
           resetCookiePresentation();
         }
@@ -327,10 +378,15 @@ export default function App() {
   }, [isLockedForToday]);
 
   useEffect(() => {
-    if (storedTodaySelection && !isShowingOverrideFortune && !isOverrideInputActive) {
-      showSelection(storedTodaySelection);
+    if (
+      storedTodaySelection
+      && !isShowingOverrideFortune
+      && !isOverrideInputActive
+      && currentFortuneRecord?.id !== storedTodaySelection.id
+    ) {
+      presentStoredSelection(storedTodaySelection);
     }
-  }, [isOverrideInputActive, isShowingOverrideFortune]);
+  }, [currentFortuneRecord?.id, isOverrideInputActive, isShowingOverrideFortune, storedTodaySelection]);
 
   useEffect(() => {
     if (isHydratingSelection) {
@@ -359,21 +415,23 @@ export default function App() {
       }
 
       (async () => {
-        const refreshedSelection = await getStoredDailyFortuneSelection();
+        const [refreshedSelection, storedStreak] = await Promise.all([
+          getStoredDailyFortuneSelection(),
+          getStoredStreak(),
+        ]);
 
+        setStreakCount(storedStreak.count);
         setStoredTodaySelection(refreshedSelection);
 
         if (refreshedSelection) {
           if (!isShowingOverrideFortune && !isOverrideInputActive) {
-            showSelection(refreshedSelection);
+            presentStoredSelection(refreshedSelection);
           }
           return;
         }
 
         if (!isShowingOverrideFortune) {
-          setIsShowingOverrideFortune(false);
-          setIsOverrideLoopActive(false);
-          resetCookiePresentation();
+          exitOverrideLoop();
         }
       })();
     });
@@ -458,12 +516,13 @@ export default function App() {
 
     if (isShowingOverrideFortune) {
       setIsShowingOverrideFortune(false);
+      setIsReplaceConfirmVisible(false);
       setIsOverrideLoopActive(isOverrideInputActive);
 
       if (storedTodaySelection && !isOverrideInputActive) {
-        showSelection(storedTodaySelection);
+        presentStoredSelection(storedTodaySelection);
       } else {
-        resetCookiePresentation();
+        exitOverrideLoop();
       }
 
       return;
@@ -480,23 +539,35 @@ export default function App() {
     isOpeningRef.current = true;
 
     try {
-      const selection = isOverrideInputActive
-        ? await getOverrideFortuneSelection(overrideCommand.mood, overrideAttemptRef.current += 1)
-        : await getDailyFortuneSelection(moodInput);
+      const isOverrideMode = isOverrideInputActive;
+      const sessionMood = isOverrideMode ? overrideCommand.mood : moodInput;
+      const selection = isOverrideMode
+        ? await getOverrideFortuneSelection(sessionMood, overrideAttemptRef.current += 1)
+        : await getDailyFortuneSelection(sessionMood);
       const savedFortuneRecord = createSavedFortuneRecord(
         selection,
-        isOverrideInputActive ? overrideCommand.mood : moodInput
+        sessionMood
       );
+      beginFortuneSession({
+        mood: sessionMood || selection.inputMood || selection.analysis?.primaryEmotion || '',
+        isOverride: isOverrideMode,
+      });
 
-      if (isOverrideInputActive) {
+      if (isOverrideMode) {
         setIsOverrideLoopActive(true);
         setIsShowingOverrideFortune(true);
       } else {
         setStoredTodaySelection(selection);
         setIsOverrideLoopActive(false);
         setIsShowingOverrideFortune(false);
+
+        if (!selection.fromCache) {
+          const streakSnapshot = await registerDailyStreak(selection.dayKey);
+          setStreakCount(streakSnapshot.count);
+        }
       }
 
+      setIsReplaceConfirmVisible(false);
       setCurrentFortuneRecord(savedFortuneRecord);
       runCookieAnimation(selection, () => {
         handleFortuneRevealed(savedFortuneRecord);
@@ -519,6 +590,59 @@ export default function App() {
     await openFortune();
   }
 
+  function handleRequestReplace() {
+    if (!canReplaceCurrentFortune) {
+      return;
+    }
+
+    setIsReplaceConfirmVisible(true);
+  }
+
+  function handleCancelReplace() {
+    setIsReplaceConfirmVisible(false);
+  }
+
+  async function handleConfirmReplace() {
+    if (
+      !currentFortuneRecord
+      || !currentFortuneContext
+      || hasUsedReplacement
+      || isAnimating
+      || isOpeningRef.current
+      || isHydratingSelection
+    ) {
+      return;
+    }
+
+    isOpeningRef.current = true;
+
+    try {
+      const replacementMood = currentFortuneContext.mood
+        || currentFortuneRecord.mood
+        || currentFortuneRecord.category
+        || '';
+      const replacementSelection = await getReplacementFortuneSelection(replacementMood, {
+        mode: currentFortuneContext.isOverride ? 'override' : 'daily',
+        replacementKey: replacementAttemptRef.current += 1,
+        excludeFortuneText: currentFortuneRecord.text,
+      });
+      const replacementRecord = createSavedFortuneRecord(replacementSelection, replacementMood);
+
+      if (!currentFortuneContext.isOverride) {
+        setStoredTodaySelection(replacementSelection);
+      }
+
+      setHasUsedReplacement(true);
+      setIsReplaceConfirmVisible(false);
+      setCurrentFortuneRecord(replacementRecord);
+      runCookieAnimation(replacementSelection, () => {
+        handleFortuneRevealed(replacementRecord);
+      });
+    } finally {
+      isOpeningRef.current = false;
+    }
+  }
+
   return (
     <View style={[styles.appRoot, { backgroundColor: scene.sky }]}>
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: scene.sky }]} />
@@ -537,17 +661,23 @@ export default function App() {
             isCookieOpened={isCookieOpened}
             isHydratingSelection={isHydratingSelection}
             isPaperVisible={isPaperVisible}
+            isReplaceConfirmVisible={isReplaceConfirmVisible}
             isTapDisabled={isCookieInteractionDisabled}
             moodInput={moodInput}
+            onCancelReplace={handleCancelReplace}
+            onConfirmReplace={handleConfirmReplace}
             onMoodChange={(nextValue) => setMoodInput(normalizeMoodInput(nextValue))}
             onRemoveFavorite={handleRemoveFavorite}
             onOpenFortune={openFortune}
+            onRequestReplace={handleRequestReplace}
             onShareFortune={handleShareFortune}
             onSubmitMoodInput={submitMoodInput}
             onToggleFavorite={handleToggleFavorite}
             paperProgress={paperProgress}
             scene={scene}
             shellProgress={shellProgress}
+            streakLabel={streakLabel}
+            canReplaceCurrentFortune={canReplaceCurrentFortune}
           />
         ) : (
           <View style={styles.loadingScreen} />

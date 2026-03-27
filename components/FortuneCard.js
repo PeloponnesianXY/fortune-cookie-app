@@ -107,6 +107,7 @@ const CookieStage = memo(function CookieStage({
 });
 
 export default function FortuneCard({
+  canReplaceCurrentFortune,
   currentFortuneIsFavorite,
   cookieCueText,
   favoriteFortunes,
@@ -116,22 +117,27 @@ export default function FortuneCard({
   isCookieOpened,
   isHydratingSelection,
   isPaperVisible,
+  isReplaceConfirmVisible,
   isTapDisabled,
   moodInput,
+  onCancelReplace,
+  onConfirmReplace,
   onMoodChange,
   onRemoveFavorite,
   onOpenFortune,
+  onRequestReplace,
   onShareFortune,
   onSubmitMoodInput,
   onToggleFavorite,
   paperProgress,
   scene,
   shellProgress,
+  streakLabel,
 }) {
   const [activeLibrary, setActiveLibrary] = useState(null);
   const { height: viewportHeight } = useWindowDimensions();
-  const topPadding = Math.max(Math.round(viewportHeight * 0.3), 232);
-  const gapAfterInput = Math.max(Math.round(viewportHeight * 0.04), 28);
+  const topPadding = Math.max(Math.round(viewportHeight * 0.15), 86);
+  const gapAfterInput = Math.max(Math.round(viewportHeight * 0.035), 24);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
 
   function openLibrary(library) {
@@ -143,24 +149,44 @@ export default function FortuneCard({
       <SceneBackdrop scene={scene} />
 
       <View style={styles.contentFrame}>
-        <View style={styles.topControls}>
-          <Pressable
-            onPress={() => openLibrary('history')}
-            style={[styles.libraryButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-          >
-            <Text style={[styles.libraryButtonText, { color: scene.textPrimary }]}>
-              History
-            </Text>
-          </Pressable>
+        <View
+          style={[
+            styles.topBar,
+            { backgroundColor: scene.panel, borderColor: scene.panelBorder },
+          ]}
+        >
+          <Text style={[styles.streakText, { color: scene.textSecondary || scene.textPrimary }]}>
+            {streakLabel}
+          </Text>
 
-          <Pressable
-            onPress={() => openLibrary('favorites')}
-            style={[styles.libraryButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+          <View
+            style={[
+              styles.libraryGroup,
+              { backgroundColor: scene.input, borderColor: scene.inputBorder },
+            ]}
           >
-            <Text style={[styles.libraryButtonText, { color: scene.textPrimary }]}>
-              Favorites
-            </Text>
-          </Pressable>
+            <Pressable
+              hitSlop={6}
+              onPress={() => openLibrary('history')}
+              style={styles.topBarButton}
+            >
+              <Text style={[styles.topBarButtonText, { color: scene.textPrimary }]}>
+                History
+              </Text>
+            </Pressable>
+
+            <View style={[styles.topBarDivider, { backgroundColor: scene.panelBorder }]} />
+
+            <Pressable
+              hitSlop={6}
+              onPress={() => openLibrary('favorites')}
+              style={styles.topBarButton}
+            >
+              <Text style={[styles.topBarButtonText, { color: scene.textPrimary }]}>
+                Favorites
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <View style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder, marginTop: topPadding }]}>
@@ -201,25 +227,66 @@ export default function FortuneCard({
         />
 
         {isFortuneRevealed ? (
-          <View style={styles.actionRow}>
-            <Pressable
-              onPress={onToggleFavorite}
-              style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-            >
-              <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
-                {currentFortuneIsFavorite ? 'Unfavorite' : 'Favorite'}
-              </Text>
-            </Pressable>
+          <>
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={onToggleFavorite}
+                style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+              >
+                <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
+                  {currentFortuneIsFavorite ? 'Unfavorite' : 'Favorite'}
+                </Text>
+              </Pressable>
 
-            <Pressable
-              onPress={onShareFortune}
-              style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-            >
-              <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
-                Share
-              </Text>
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={onShareFortune}
+                style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+              >
+                <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
+                  Share
+                </Text>
+              </Pressable>
+
+              {canReplaceCurrentFortune ? (
+                <Pressable
+                  onPress={onRequestReplace}
+                  style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+                >
+                  <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
+                    Replace
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            {isReplaceConfirmVisible ? (
+              <View style={[styles.replaceConfirmCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
+                <Text style={[styles.replaceConfirmText, { color: scene.textPrimary }]}>
+                  A new fortune will replace this one.
+                </Text>
+
+                <View style={styles.replaceConfirmActions}>
+                  <Pressable
+                    onPress={onCancelReplace}
+                    style={[styles.replaceConfirmButton, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
+                  >
+                    <Text style={[styles.replaceConfirmButtonText, { color: scene.textPrimary }]}>
+                      Keep this one
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={onConfirmReplace}
+                    style={[styles.replaceConfirmButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+                  >
+                    <Text style={[styles.replaceConfirmButtonText, { color: scene.textPrimary }]}>
+                      Replace it
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
+          </>
         ) : null}
       </View>
 
@@ -245,27 +312,48 @@ const styles = StyleSheet.create({
   contentFrame: {
     flex: 1,
     paddingHorizontal: 22,
+    paddingTop: 12,
   },
-  topControls: {
-    position: 'absolute',
-    top: 14,
-    right: 22,
-    zIndex: 10,
+  topBar: {
     flexDirection: 'row',
-    gap: 10,
-  },
-  libraryButton: {
-    minHeight: 38,
-    borderRadius: 999,
-    borderWidth: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
     paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 18,
+    zIndex: 10,
   },
-  libraryButtonText: {
+  streakText: {
+    flexShrink: 1,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     letterSpacing: -0.1,
+  },
+  libraryGroup: {
+    minHeight: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 4,
+  },
+  topBarButton: {
+    minHeight: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  topBarButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  topBarDivider: {
+    width: 1,
+    height: 16,
+    opacity: 0.75,
   },
   topGlow: {
     position: 'absolute',
@@ -407,21 +495,59 @@ const styles = StyleSheet.create({
     maxWidth: 540,
     alignSelf: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
     marginTop: 22,
   },
   actionButton: {
-    flex: 1,
-    minHeight: 48,
+    minHeight: 44,
+    minWidth: 110,
     borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 14,
+    flexGrow: 1,
   },
   actionButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     letterSpacing: -0.15,
+  },
+  replaceConfirmCard: {
+    width: '100%',
+    maxWidth: 540,
+    alignSelf: 'center',
+    marginTop: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  replaceConfirmText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  replaceConfirmActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 12,
+  },
+  replaceConfirmButton: {
+    minHeight: 40,
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    flexGrow: 1,
+  },
+  replaceConfirmButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: -0.12,
   },
 });
