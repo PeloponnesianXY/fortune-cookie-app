@@ -38,15 +38,17 @@ const LEGACY_EMOTION_WEIGHTS = {
 };
 
 const MOOD_BUCKET_KEYS = [
-  'angry',
-  'hopeful',
-  'confused',
-  'averse',
-  'anxious',
   'happy',
-  'sad',
-  'surprised',
+  'hopeful',
   'calm',
+  'tired',
+  'lonely',
+  'sad',
+  'anxious',
+  'angry',
+  'confused',
+  'surprised',
+  'averse',
   'weird',
 ];
 
@@ -54,22 +56,20 @@ const MOOD_BUCKET_PRIORITY = [
   'happy',
   'hopeful',
   'calm',
+  'tired',
+  'lonely',
   'sad',
   'anxious',
   'angry',
-  'averse',
-  'surprised',
   'confused',
+  'surprised',
+  'averse',
   'weird',
 ];
 
 const STRONG_MOOD_HINTS = {
-  angry: ['angry', 'furious', 'irritated', 'mad', 'resentful'],
-  hopeful: ['hopeful', 'eager', 'expectant', 'optimistic'],
-  confused: ['confused', 'unclear', 'lost', 'blank', 'unsure', 'puzzled'],
-  averse: ['disgusted', 'grossed', 'repulsed'],
-  anxious: ['afraid', 'fearful', 'scared', 'terrified', 'panicked', 'anxious'],
   happy: ['happy', 'joyful', 'excited', 'glad', 'delighted'],
+  hopeful: ['hopeful', 'eager', 'expectant', 'optimistic'],
   sad: [
     'depressed',
     'depression',
@@ -79,18 +79,23 @@ const STRONG_MOOD_HINTS = {
     'hopeless',
     'heartbroken',
     'grieving',
-    'lonely',
     'miserable',
     'numb',
   ],
+  calm: ['calm', 'safe', 'steady', 'secure', 'grounded', 'tender'],
+  tired: ['tired', 'drained', 'exhausted', 'spent', 'weary', 'fatigued', 'sleepy', 'heavy', 'foggy'],
+  lonely: ['lonely', 'alone', 'isolated', 'abandoned', 'unseen', 'disconnected'],
+  anxious: ['afraid', 'fearful', 'scared', 'terrified', 'panicked', 'anxious', 'restless', 'watchful'],
+  angry: ['angry', 'furious', 'irritated', 'mad', 'resentful'],
+  averse: ['disgusted', 'grossed', 'repulsed'],
   surprised: ['surprised', 'shocked', 'startled', 'stunned', 'unexpected'],
-  calm: ['calm', 'safe', 'steady', 'secure', 'grounded'],
+  confused: ['confused', 'unclear', 'lost', 'blank', 'unsure', 'puzzled'],
 };
 
 const CURATED_MOOD_WORDS = {
   angry: [
     'angry', 'annoyed', 'bitter', 'defensive', 'enraged', 'frustrated', 'furious', 'heated',
-    'irritated', 'mad', 'outraged', 'resentful', 'upset', 'agitated', 'aggravated',
+    'irritated', 'mad', 'outraged', 'resentful', 'agitated', 'aggravated',
     'antagonistic', 'argumentative', 'belligerent', 'bothered', 'combative', 'confrontational',
     'cranky', 'cross', 'exasperated', 'fuming', 'grumpy', 'huffy', 'hostile', 'impatient',
     'incensed', 'indignant', 'inflamed', 'irate', 'livid', 'offended', 'peeved', 'petty',
@@ -98,18 +103,18 @@ const CURATED_MOOD_WORDS = {
     'testy', 'touchy', 'vengeful', 'volatile', 'wrathful',
   ],
   hopeful: [
-    'eager', 'excited', 'expectant', 'hopeful', 'optimistic', 'ready', 'restless', 'alert',
+    'eager', 'excited', 'expectant', 'hopeful', 'optimistic', 'ready', 'alert',
     'ambitious', 'anticipatory', 'aspiring', 'attentive', 'awake', 'buoyant', 'charged',
     'confident', 'craving', 'curious', 'determined', 'driven', 'encouraged', 'energized',
     'enthusiastic', 'game', 'hungry', 'inspired', 'interested', 'intrigued', 'invested',
-    'keyed', 'keen', 'longing', 'looking', 'motivated', 'open', 'prepared', 'primed',
+    'keyed', 'keen', 'longing', 'motivated', 'prepared', 'primed',
     'pumped', 'receptive', 'refreshed', 'revived', 'searching', 'seeking', 'striving',
-    'yearning', 'adventurous', 'forward', 'watchful', 'awaiting', 'enterprising',
+    'yearning', 'adventurous', 'awaiting', 'enterprising',
   ],
   confused: [
-    'baffled', 'conflicted', 'confused', 'foggy', 'jumbled', 'lost', 'mixed', 'puzzled',
+    'baffled', 'conflicted', 'confused', 'jumbled', 'lost', 'mixed', 'puzzled',
     'torn', 'unclear', 'uncertain', 'unsure', 'ambivalent', 'bewildered', 'discombobulated',
-    'disoriented', 'doubtful', 'drifting', 'hazy', 'hesitant', 'indecisive', 'indifferent',
+    'disoriented', 'doubtful', 'drifting', 'hazy', 'hesitant', 'indecisive',
     'incoherent', 'muddled', 'murky', 'perplexed', 'questioning', 'scattered', 'scrambled',
     'split', 'stuck', 'unconvinced', 'undecided', 'unfocused', 'ungrounded', 'unresolved',
     'unsorted', 'vague', 'wavering', 'wondering', 'adrift', 'disjointed', 'floating',
@@ -135,7 +140,7 @@ const CURATED_MOOD_WORDS = {
     'threatened', 'timid', 'twitchy', 'unnerved', 'unsafe', 'unsteady', 'vulnerable',
     'wary', 'panicky', 'frantic', 'haunted', 'petrified', 'trembling', 'foreboding',
     'frozen', 'shaken', 'hunted', 'exposed', 'skittish', 'selfconscious', 'suspicious',
-    'edgy',
+    'edgy', 'restless', 'watchful',
   ],
   happy: [
     'cheerful', 'delighted', 'glad', 'grateful', 'happy', 'joyful', 'light', 'sexy',
@@ -147,13 +152,21 @@ const CURATED_MOOD_WORDS = {
     'rosy', 'upbeat', 'blessed',
   ],
   sad: [
-    'depressed', 'down', 'drained', 'empty', 'grieving', 'heartbroken', 'lonely', 'low',
-    'melancholy', 'miserable', 'numb', 'sad', 'stupid', 'tired', 'troubled', 'ashamed',
-    'blue', 'broken', 'defeated', 'deflated', 'depleted', 'despairing', 'discouraged',
-    'exhausted', 'heavy', 'homesick', 'hopeless', 'hurt', 'inadequate', 'isolated',
+    'depressed', 'down', 'empty', 'grieving', 'heartbroken', 'low',
+    'melancholy', 'miserable', 'numb', 'sad', 'troubled', 'ashamed',
+    'blue', 'broken', 'defeated', 'deflated', 'despairing', 'discouraged',
+    'homesick', 'hopeless', 'hurt', 'inadequate',
     'languishing', 'pained', 'raw', 'regretful', 'rejected', 'rueful', 'small', 'sorrowful',
-    'sorry', 'spent', 'tender', 'unworthy', 'weary', 'weepy', 'wounded', 'worthless',
+    'sorry', 'weepy', 'wounded', 'worthless',
     'bleak', 'crestfallen', 'hollow', 'forlorn', 'meh', 'blah',
+  ],
+  tired: [
+    'tired', 'drained', 'depleted', 'exhausted', 'spent', 'weary', 'fatigued', 'burntout',
+    'burnedout', 'wornout', 'sleepy', 'drowsy', 'heavy', 'foggy',
+  ],
+  lonely: [
+    'lonely', 'alone', 'isolated', 'abandoned', 'unseen', 'leftout', 'unloved', 'unwanted',
+    'forsaken', 'excluded', 'disconnected',
   ],
   surprised: [
     'shocked', 'startled', 'stunned', 'surprised', 'amazed', 'astonished', 'awed',
@@ -173,18 +186,19 @@ const CURATED_MOOD_WORDS = {
     'supported', 'whole', 'capable', 'certain', 'cushioned', 'eased', 'fortified',
     'gentle', 'harmonious', 'homey', 'intact', 'mellow', 'nourished', 'openhearted',
     'patient', 'quiet', 'resilient', 'rested', 'sheltered', 'steadying',
+    'tender',
   ],
   weird: [
     'off', 'odd', 'strange', 'weird', 'blank', 'bored', 'dull', 'neutral',
     'abstract', 'absent', 'aloof', 'ambiguous', 'anonymous', 'bizarre', 'cloudy',
-    'detached', 'disconnected', 'distant', 'flat', 'funky', 'gray', 'indescribable',
+    'detached', 'distant', 'flat', 'funky', 'gray', 'indescribable',
     'intangible', 'liminal', 'muted', 'nebulous', 'obscure', 'offcenter', 'opaque',
     'peculiar', 'plain', 'random', 'shapeless', 'surreal', 'undefined', 'unmarked',
     'unnamed', 'unreadable', 'untitled', 'vacant', 'void', 'whatever', 'airy',
     'unclassifiable', 'floaty', 'neither', 'elsewhere', 'miscellaneous', 'wonky', 'eerie',
     'dreamy', 'hazyblank', 'nondescript', 'fuzzy', 'drifty', 'spacey', 'diffuse', 'untethered',
     'unplaceable', 'inexplicable', 'peculiarish', 'outofbody', 'unusual', 'idiosyncratic', 'vibey',
-    'offbeat', 'leftfield', 'otherworldly', 'inbetweeny',
+    'offbeat', 'leftfield', 'otherworldly', 'inbetweeny', 'indifferent',
   ],
 };
 
@@ -194,11 +208,28 @@ const COMMON_MOOD_BUCKETS = Object.fromEntries(
   ))
 );
 
+const NRC_BUCKET_OVERRIDES = {
+  abandoned: 'lonely',
+  alone: 'lonely',
+  disconnected: 'lonely',
+  exhausted: 'tired',
+  fatigued: 'tired',
+  isolated: 'lonely',
+  lonely: 'lonely',
+  sleepy: 'tired',
+  spent: 'tired',
+  tired: 'tired',
+  weary: 'tired',
+};
+
 const NRC_WORD_TO_MOOD_BUCKET = Object.fromEntries(
-  Object.entries(EMOTION_LEXICON).map(([word, legacyEmotions]) => [
-    word,
-    pickMoodBucketFromLegacyEmotions(legacyEmotions),
-  ])
+  Object.entries(EMOTION_LEXICON).map(([word, legacyEmotions]) => {
+    const overriddenBucket = NRC_BUCKET_OVERRIDES[word];
+    return [
+      word,
+      overriddenBucket || pickMoodBucketFromLegacyEmotions(legacyEmotions),
+    ];
+  })
 );
 
 const NRC_WORDS_BY_FIRST_LETTER = Object.keys(NRC_WORD_TO_MOOD_BUCKET).reduce((accumulator, word) => {
@@ -455,6 +486,8 @@ function isSimilarWord(inputWord, keyword) {
 function guessMoodFromTone(tokens) {
   const calmWords = ['tender', 'gentle', 'soft', 'safe', 'settled'];
   const happyWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
+  const tiredWords = ['tired', 'drained', 'exhausted', 'spent', 'weary', 'fatigued', 'heavy', 'sleepy'];
+  const lonelyWords = ['lonely', 'alone', 'isolated', 'abandoned', 'unseen', 'disconnected'];
   const angryWords = ['fraught', 'combative', 'heated'];
   const confusedWords = ['murky', 'foggy', 'unclear', 'jumbled', 'strange', 'mixed', 'scrambled'];
   const surprisedWords = ['shocked', 'startled', 'sudden', 'abrupt', 'unexpected'];
@@ -468,6 +501,14 @@ function guessMoodFromTone(tokens) {
 
   if (tokens.some((token) => happyWords.includes(token))) {
     return 'happy';
+  }
+
+  if (tokens.some((token) => tiredWords.includes(token))) {
+    return 'tired';
+  }
+
+  if (tokens.some((token) => lonelyWords.includes(token))) {
+    return 'lonely';
   }
 
   if (tokens.some((token) => angryWords.includes(token))) {

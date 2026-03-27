@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HISTORY_STORAGE_KEY = '@fortune-cookie-daily/history';
 const FAVORITES_STORAGE_KEY = '@fortune-cookie-daily/favorites';
-const MAX_HISTORY_ITEMS = 25;
+const MAX_HISTORY_ITEMS = 30;
 const MAX_RECENT_HISTORY_ITEMS = 10;
 
 function parseStoredList(rawValue) {

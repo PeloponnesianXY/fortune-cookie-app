@@ -110,6 +110,8 @@ const MOOD_SCENE_KEYS = {
   happy: 'sunriseBloom',
   hopeful: 'sunriseBloom',
   calm: 'sunriseBloom',
+  tired: 'silverHush',
+  lonely: 'opalMist',
   sad: 'silverHush',
   anxious: 'silverHush',
   angry: 'emberMesa',

@@ -595,6 +595,7 @@ export default function App() {
       return;
     }
 
+    Keyboard.dismiss();
     setIsReplaceConfirmVisible(true);
   }
 
@@ -617,6 +618,7 @@ export default function App() {
     isOpeningRef.current = true;
 
     try {
+      Keyboard.dismiss();
       const replacementMood = currentFortuneContext.mood
         || currentFortuneRecord.mood
         || currentFortuneRecord.category

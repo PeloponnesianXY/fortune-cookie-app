@@ -1,7 +1,12 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Easing,
+  InputAccessoryView,
+  PanResponder,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,6 +17,8 @@ import {
 
 import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
 import FortuneLibrarySheet from './FortuneLibrarySheet';
+
+const KEYBOARD_ACCESSORY_ID = 'fortune-mood-keyboard-accessory';
 
 const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
   return (
@@ -53,6 +60,7 @@ const CookieStage = memo(function CookieStage({
   paperProgress,
   scene,
   shellProgress,
+  stageMinHeight,
 }) {
   const cookieLiftStyle = {
     transform: [
@@ -78,7 +86,7 @@ const CookieStage = memo(function CookieStage({
       onPress={onPress}
       style={styles.cookieTapArea}
     >
-      <View style={styles.cookieStage}>
+      <View style={[styles.cookieStage, { minHeight: stageMinHeight }]}>
         <Animated.View style={[styles.cookieImageFrame, cookieLiftStyle]}>
           <CookieShell
             fortuneText={fortuneText}
@@ -135,59 +143,309 @@ export default function FortuneCard({
   streakLabel,
 }) {
   const [activeLibrary, setActiveLibrary] = useState(null);
+  const [isTopBarVisible, setIsTopBarVisible] = useState(true);
+  const [areActionsVisible, setAreActionsVisible] = useState(true);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const { height: viewportHeight } = useWindowDimensions();
-  const topPadding = Math.max(Math.round(viewportHeight * 0.15), 86);
-  const gapAfterInput = Math.max(Math.round(viewportHeight * 0.035), 24);
+  const topBarProgress = useRef(new Animated.Value(1)).current;
+  const actionBarProgress = useRef(new Animated.Value(1)).current;
+  const hideTopBarTimerRef = useRef(null);
+  const hideActionsTimerRef = useRef(null);
+  const idleKeyboardTimerRef = useRef(null);
+  const inputRef = useRef(null);
+  const keyboardAccessoryPanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => (
+        Math.abs(gestureState.dy) > 4 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
+      ),
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 18) {
+          inputRef.current?.blur();
+        }
+      },
+    })
+  ).current;
+  const topPadding = Math.min(Math.max(Math.round(viewportHeight * 0.24), 176), 220);
+  const gapAfterInput = Math.max(Math.round(viewportHeight * 0.02), 14);
+  const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.24), 210), 268);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
 
+  function clearTopBarHideTimer() {
+    if (hideTopBarTimerRef.current) {
+      clearTimeout(hideTopBarTimerRef.current);
+      hideTopBarTimerRef.current = null;
+    }
+  }
+
+  function clearActionHideTimer() {
+    if (hideActionsTimerRef.current) {
+      clearTimeout(hideActionsTimerRef.current);
+      hideActionsTimerRef.current = null;
+    }
+  }
+
+  function clearIdleKeyboardTimer() {
+    if (idleKeyboardTimerRef.current) {
+      clearTimeout(idleKeyboardTimerRef.current);
+      idleKeyboardTimerRef.current = null;
+    }
+  }
+
+  function animateTopBarVisibility(nextVisible) {
+    setIsTopBarVisible(nextVisible);
+    Animated.timing(topBarProgress, {
+      toValue: nextVisible ? 1 : 0,
+      duration: nextVisible ? 320 : 380,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }
+
+  function animateActionVisibility(nextVisible) {
+    setAreActionsVisible(nextVisible);
+    Animated.timing(actionBarProgress, {
+      toValue: nextVisible ? 1 : 0,
+      duration: nextVisible ? 320 : 380,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }
+
+  function scheduleTopBarHide() {
+    clearTopBarHideTimer();
+
+    if (activeLibrary) {
+      return;
+    }
+
+    hideTopBarTimerRef.current = setTimeout(() => {
+      animateTopBarVisibility(false);
+    }, 5000);
+  }
+
+  function showTopBar() {
+    animateTopBarVisibility(true);
+    scheduleTopBarHide();
+  }
+
+  function scheduleActionHide() {
+    clearActionHideTimer();
+
+    if (!isFortuneRevealed || isReplaceConfirmVisible) {
+      return;
+    }
+
+    hideActionsTimerRef.current = setTimeout(() => {
+      animateActionVisibility(false);
+    }, 5000);
+  }
+
+  function showActions() {
+    animateActionVisibility(true);
+    scheduleActionHide();
+  }
+
+  function handleTopBarInteraction() {
+    if (!isTopBarVisible) {
+      showTopBar();
+      return;
+    }
+
+    scheduleTopBarHide();
+  }
+
+  function handleActionInteraction() {
+    if (!areActionsVisible) {
+      showActions();
+      return;
+    }
+
+    scheduleActionHide();
+  }
+
   function openLibrary(library) {
+    clearTopBarHideTimer();
+    animateTopBarVisibility(true);
     setActiveLibrary(library);
   }
+
+  function scheduleIdleKeyboardDismiss(nextValue = moodInput) {
+    clearIdleKeyboardTimer();
+
+    if (!isInputFocused || nextValue.trim()) {
+      return;
+    }
+
+    idleKeyboardTimerRef.current = setTimeout(() => {
+      inputRef.current?.blur();
+    }, 10000);
+  }
+
+  useEffect(() => {
+    if (activeLibrary) {
+      clearTopBarHideTimer();
+      animateTopBarVisibility(true);
+      return;
+    }
+
+    if (isTopBarVisible) {
+      scheduleTopBarHide();
+    }
+  }, [activeLibrary, isTopBarVisible]);
+
+  useEffect(() => {
+    if (!isFortuneRevealed || isReplaceConfirmVisible) {
+      clearActionHideTimer();
+      animateActionVisibility(true);
+      return;
+    }
+
+    if (areActionsVisible) {
+      scheduleActionHide();
+    }
+  }, [areActionsVisible, isFortuneRevealed, isReplaceConfirmVisible]);
+
+  useEffect(() => () => {
+    clearTopBarHideTimer();
+    clearActionHideTimer();
+    clearIdleKeyboardTimer();
+  }, []);
+
+  useEffect(() => {
+    scheduleIdleKeyboardDismiss(moodInput);
+  }, [isInputFocused, moodInput]);
+
+  const topBarAnimatedStyle = {
+    opacity: topBarProgress,
+    transform: [
+      {
+        translateY: topBarProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-18, 0],
+        }),
+      },
+    ],
+  };
+
+  const topHandleAnimatedStyle = {
+    opacity: topBarProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1, 0],
+    }),
+    transform: [
+      {
+        translateY: topBarProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -6],
+        }),
+      },
+    ],
+  };
+
+  const actionRowAnimatedStyle = {
+    opacity: actionBarProgress,
+    transform: [
+      {
+        translateY: actionBarProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [12, 0],
+        }),
+      },
+    ],
+  };
+
+  const actionHandleAnimatedStyle = {
+    opacity: actionBarProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.98, 0],
+    }),
+    transform: [
+      {
+        translateY: actionBarProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 10],
+        }),
+      },
+    ],
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop scene={scene} />
 
-      <View style={styles.contentFrame}>
-        <View
+      <ScrollView
+        alwaysBounceVertical={isInputFocused}
+        bounces={isInputFocused}
+        contentContainerStyle={styles.contentFrame}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View
           style={[
-            styles.topBar,
-            { backgroundColor: scene.panel, borderColor: scene.panelBorder },
+            styles.topChrome,
+            topBarAnimatedStyle,
           ]}
+          pointerEvents={isTopBarVisible ? 'auto' : 'none'}
         >
-          <Text style={[styles.streakText, { color: scene.textSecondary || scene.textPrimary }]}>
-            {streakLabel}
-          </Text>
-
           <View
             style={[
-              styles.libraryGroup,
-              { backgroundColor: scene.input, borderColor: scene.inputBorder },
+              styles.topBar,
+              { backgroundColor: scene.panel, borderColor: scene.panelBorder },
             ]}
           >
-            <Pressable
-              hitSlop={6}
-              onPress={() => openLibrary('history')}
-              style={styles.topBarButton}
-            >
-              <Text style={[styles.topBarButtonText, { color: scene.textPrimary }]}>
-                History
-              </Text>
-            </Pressable>
+            <Text style={[styles.streakText, { color: scene.textSecondary || scene.textPrimary }]}>
+              {streakLabel}
+            </Text>
 
-            <View style={[styles.topBarDivider, { backgroundColor: scene.panelBorder }]} />
-
-            <Pressable
-              hitSlop={6}
-              onPress={() => openLibrary('favorites')}
-              style={styles.topBarButton}
+            <View
+              style={[
+                styles.libraryGroup,
+                { backgroundColor: scene.input, borderColor: scene.inputBorder },
+              ]}
             >
-              <Text style={[styles.topBarButtonText, { color: scene.textPrimary }]}>
-                Favorites
-              </Text>
-            </Pressable>
+              <Pressable
+                hitSlop={6}
+                onPress={() => openLibrary('history')}
+                onPressIn={handleTopBarInteraction}
+                style={styles.topBarButton}
+              >
+                <Text style={[styles.topBarButtonText, { color: scene.textPrimary }]}>
+                  History
+                </Text>
+              </Pressable>
+
+              <View style={[styles.topBarDivider, { backgroundColor: scene.panelBorder }]} />
+
+              <Pressable
+                hitSlop={6}
+                onPress={() => openLibrary('favorites')}
+                onPressIn={handleTopBarInteraction}
+                style={styles.topBarButton}
+              >
+                <Text style={[styles.topBarButtonText, { color: scene.textPrimary }]}>
+                  Favorites
+                </Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
+        </Animated.View>
+
+        <Animated.View
+          pointerEvents={isTopBarVisible ? 'none' : 'auto'}
+          style={[
+            styles.topHandleWrap,
+            topHandleAnimatedStyle,
+          ]}
+        >
+          <Pressable
+            hitSlop={{ top: 8, bottom: 8, left: 24, right: 24 }}
+            onPress={showTopBar}
+            style={styles.topHandlePressable}
+          >
+            <View style={[styles.topHandle, { backgroundColor: scene.panelBorder }]} />
+          </Pressable>
+        </Animated.View>
 
         <View style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder, marginTop: topPadding }]}>
           <Text style={[styles.inputLabel, { color: scene.accent }]}>
@@ -199,7 +457,20 @@ export default function FortuneCard({
               autoCorrect={false}
               blurOnSubmit={false}
               editable={!isHydratingSelection}
-              onChangeText={onMoodChange}
+              inputAccessoryViewID={Platform.OS === 'ios' ? KEYBOARD_ACCESSORY_ID : undefined}
+              ref={inputRef}
+              onBlur={() => {
+                setIsInputFocused(false);
+                clearIdleKeyboardTimer();
+              }}
+              onChangeText={(nextValue) => {
+                onMoodChange(nextValue);
+                scheduleIdleKeyboardDismiss(nextValue);
+              }}
+              onFocus={() => {
+                setIsInputFocused(true);
+                scheduleIdleKeyboardDismiss(moodInput);
+              }}
               onSubmitEditing={onSubmitMoodInput}
               placeholder=""
               placeholderTextColor={scene.accentSoft}
@@ -224,41 +495,11 @@ export default function FortuneCard({
           paperProgress={paperProgress}
           scene={scene}
           shellProgress={shellProgress}
+          stageMinHeight={cookieStageMinHeight}
         />
 
         {isFortuneRevealed ? (
-          <>
-            <View style={styles.actionRow}>
-              <Pressable
-                onPress={onToggleFavorite}
-                style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-              >
-                <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
-                  {currentFortuneIsFavorite ? 'Unfavorite' : 'Favorite'}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={onShareFortune}
-                style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-              >
-                <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
-                  Share
-                </Text>
-              </Pressable>
-
-              {canReplaceCurrentFortune ? (
-                <Pressable
-                  onPress={onRequestReplace}
-                  style={[styles.actionButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-                >
-                  <Text style={[styles.actionButtonText, { color: scene.textPrimary }]}>
-                    Replace
-                  </Text>
-                </Pressable>
-              ) : null}
-            </View>
-
+          <View style={styles.actionZone}>
             {isReplaceConfirmVisible ? (
               <View style={[styles.replaceConfirmCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
                 <Text style={[styles.replaceConfirmText, { color: scene.textPrimary }]}>
@@ -285,10 +526,113 @@ export default function FortuneCard({
                   </Pressable>
                 </View>
               </View>
-            ) : null}
-          </>
+            ) : (
+              <>
+                <Animated.View
+                  pointerEvents={areActionsVisible ? 'auto' : 'none'}
+                  style={[
+                    styles.actionRowWrap,
+                    actionRowAnimatedStyle,
+                  ]}
+                  >
+                    <View
+                      style={[
+                        styles.actionGroup,
+                        { backgroundColor: scene.input, borderColor: scene.inputBorder },
+                      ]}
+                    >
+                      <Pressable
+                        onPress={() => {
+                          handleActionInteraction();
+                          onToggleFavorite();
+                        }}
+                        onPressIn={handleActionInteraction}
+                        style={styles.actionGroupButton}
+                      >
+                        <Text style={[styles.actionGroupButtonText, { color: scene.textPrimary }]}>
+                          {currentFortuneIsFavorite ? 'Unfavorite' : 'Favorite'}
+                        </Text>
+                      </Pressable>
+
+                      <View style={[styles.actionGroupDivider, { backgroundColor: scene.inputBorder }]} />
+
+                      <Pressable
+                        onPress={() => {
+                          handleActionInteraction();
+                          onShareFortune();
+                        }}
+                        onPressIn={handleActionInteraction}
+                        style={styles.actionGroupButton}
+                      >
+                        <Text style={[styles.actionGroupButtonText, { color: scene.textPrimary }]}>
+                          Share
+                        </Text>
+                      </Pressable>
+
+                      {canReplaceCurrentFortune ? (
+                        <>
+                          <View style={[styles.actionGroupDivider, { backgroundColor: scene.inputBorder }]} />
+
+                          <Pressable
+                            onPress={() => {
+                              handleActionInteraction();
+                              onRequestReplace();
+                            }}
+                            onPressIn={handleActionInteraction}
+                            style={styles.actionGroupButton}
+                          >
+                            <Text style={[styles.actionGroupButtonText, { color: scene.textPrimary }]}>
+                              Replace
+                            </Text>
+                          </Pressable>
+                        </>
+                      ) : null}
+                    </View>
+                  </Animated.View>
+
+                <Animated.View
+                  pointerEvents={areActionsVisible ? 'none' : 'auto'}
+                  style={[
+                    styles.actionHandleWrap,
+                    actionHandleAnimatedStyle,
+                  ]}
+                >
+                  <Pressable
+                    hitSlop={{ top: 8, bottom: 8, left: 28, right: 28 }}
+                    onPress={showActions}
+                    style={styles.actionHandlePressable}
+                  >
+                    <View style={[styles.actionHandle, { backgroundColor: scene.panelBorder }]} />
+                  </Pressable>
+                </Animated.View>
+              </>
+            )}
+          </View>
         ) : null}
-      </View>
+      </ScrollView>
+
+      {Platform.OS === 'ios' ? (
+        <InputAccessoryView nativeID={KEYBOARD_ACCESSORY_ID}>
+          <View
+            style={[
+              styles.keyboardAccessory,
+              {
+                backgroundColor: scene.panel,
+                borderTopColor: scene.panelBorder,
+              },
+            ]}
+            {...keyboardAccessoryPanResponder.panHandlers}
+          >
+            <Pressable
+              hitSlop={{ top: 6, bottom: 6, left: 24, right: 24 }}
+              onPress={() => inputRef.current?.blur()}
+              style={styles.keyboardHandlePressable}
+            >
+              <View style={[styles.keyboardHandle, { backgroundColor: scene.panelBorder }]} />
+            </Pressable>
+          </View>
+        </InputAccessoryView>
+      ) : null}
 
       <FortuneLibrarySheet
         activeLibrary={activeLibrary || 'history'}
@@ -310,9 +654,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentFrame: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 22,
     paddingTop: 12,
+    paddingBottom: 20,
+  },
+  topChrome: {
+    position: 'absolute',
+    top: 12,
+    left: 22,
+    right: 22,
+    zIndex: 10,
   },
   topBar: {
     flexDirection: 'row',
@@ -324,6 +676,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 18,
     zIndex: 10,
+  },
+  topHandleWrap: {
+    position: 'absolute',
+    top: 14,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 9,
+  },
+  topHandlePressable: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+  },
+  topHandle: {
+    width: 64,
+    height: 6,
+    borderRadius: 999,
+    opacity: 0.55,
   },
   streakText: {
     flexShrink: 1,
@@ -357,7 +727,7 @@ const styles = StyleSheet.create({
   },
   topGlow: {
     position: 'absolute',
-    top: -110,
+    top: -140,
     left: -40,
     right: -40,
     height: 330,
@@ -367,25 +737,25 @@ const styles = StyleSheet.create({
   },
   sunHalo: {
     position: 'absolute',
-    top: 30,
-    left: 28,
-    width: 156,
-    height: 156,
+    top: 8,
+    left: 30,
+    width: 148,
+    height: 148,
     borderRadius: 999,
-    opacity: 0.52,
+    opacity: 0.44,
   },
   sunDisc: {
     position: 'absolute',
-    top: 72,
-    left: 72,
-    width: 62,
-    height: 62,
+    top: 50,
+    left: 70,
+    width: 58,
+    height: 58,
     borderRadius: 999,
-    opacity: 0.94,
+    opacity: 0.88,
   },
   cloud: {
     position: 'absolute',
-    top: 170,
+    top: 146,
     left: 34,
     width: 156,
     height: 36,
@@ -396,20 +766,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: -30,
     right: -30,
-    bottom: -40,
-    height: 310,
+    bottom: -24,
+    height: 250,
     borderTopLeftRadius: 220,
     borderTopRightRadius: 220,
-    opacity: 0.9,
+    opacity: 0.72,
   },
   bottomMist: {
     position: 'absolute',
     left: 24,
     right: 24,
-    bottom: 118,
-    height: 120,
+    bottom: 96,
+    height: 96,
     borderRadius: 999,
-    opacity: 0.18,
+    opacity: 0.14,
   },
   star: {
     position: 'absolute',
@@ -458,10 +828,10 @@ const styles = StyleSheet.create({
     maxWidth: 540,
     alignSelf: 'center',
     alignItems: 'center',
+    marginTop: 2,
   },
   cookieStage: {
     width: '100%',
-    minHeight: 320,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -476,7 +846,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 540,
     minHeight: 52,
-    marginTop: -64,
+    marginTop: -46,
     borderRadius: 999,
     borderWidth: 1,
     justifyContent: 'center',
@@ -490,39 +860,86 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
     textAlign: 'center',
   },
-  actionRow: {
+  actionGroup: {
+    width: '100%',
+    maxWidth: 540,
+    minHeight: 36,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+  actionRowWrap: {
+    width: '100%',
+  },
+  actionZone: {
     width: '100%',
     maxWidth: 540,
     alignSelf: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 22,
+    marginTop: 6,
+    minHeight: 74,
+    justifyContent: 'flex-start',
   },
-  actionButton: {
-    minHeight: 44,
-    minWidth: 110,
-    borderRadius: 16,
-    borderWidth: 1,
+  actionGroupButton: {
+    minHeight: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     flexGrow: 1,
   },
-  actionButtonText: {
-    fontSize: 14,
+  actionGroupButtonText: {
+    fontSize: 13,
     fontWeight: '600',
-    letterSpacing: -0.15,
+    letterSpacing: -0.1,
+  },
+  actionGroupDivider: {
+    width: 1,
+    height: 16,
+    opacity: 0.75,
   },
   replaceConfirmCard: {
     width: '100%',
     maxWidth: 540,
     alignSelf: 'center',
-    marginTop: 14,
     borderRadius: 18,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 14,
+  },
+  actionHandleWrap: {
+    alignItems: 'center',
+    marginTop: -4,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  actionHandlePressable: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+  },
+  actionHandle: {
+    width: 64,
+    height: 6,
+    borderRadius: 999,
+    opacity: 0.55,
+  },
+  keyboardAccessory: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 10,
+    borderTopWidth: 1,
+  },
+  keyboardHandlePressable: {
+    paddingHorizontal: 24,
+    paddingVertical: 6,
+  },
+  keyboardHandle: {
+    width: 72,
+    height: 5,
+    borderRadius: 999,
+    opacity: 0.58,
   },
   replaceConfirmText: {
     fontSize: 14,
