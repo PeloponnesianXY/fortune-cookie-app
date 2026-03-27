@@ -14,6 +14,7 @@ import { Asset } from 'expo-asset';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
 import FortuneCard from './components/FortuneCard';
+import SafetyLockScreen from './components/SafetyLockScreen';
 import { SCENE_LIBRARY } from './data/scenes';
 import { syncAppBadgeAsync } from './utils/appBadge';
 import {
@@ -52,29 +53,26 @@ const REVEAL_PHASE = {
   OPENED: 'opened',
 };
 
-const LOCKED_TOMORROW_MESSAGES = [
-  'A new fortune awaits you tomorrow',
-  'Return tomorrow for what\u2019s next',
-  'One day, one fortune. See you tomorrow',
-  'Let today\u2019s words settle. Tomorrow brings more',
-  'This fortune is yours for today. Tomorrow, a new one',
-  'The cookie has spoken. Tomorrow, it speaks again',
-  'The cookie is quiet now. Try again tomorrow',
-  'No peeking into the future. One day, one fortune',
-  'Even fortune cookies need rest. See you tomorrow',
-  'The cookie sleeps now. Tomorrow, it whispers again',
-  'Patience\u2026 tomorrow brings a new fortune',
-  'The cookie keeps its secrets until tomorrow',
-  'All in good time. Your next fortune comes tomorrow',
-  'Come back tomorrow \u2014 the cookie will be ready',
-  'Your next fortune is waiting\u2026 just not yet',
-  'The cookie rests now. Tomorrow, it returns',
-];
-
-function pickRandomLockedTomorrowMessage() {
-  const index = Math.floor(Math.random() * LOCKED_TOMORROW_MESSAGES.length);
-  return LOCKED_TOMORROW_MESSAGES[index];
-}
+const HIGH_RISK_WORDS = new Set([
+  'suicide',
+  'suicidal',
+  'selfharm',
+  'unalive',
+  'kms',
+  'killmyself',
+  'overdose',
+  'murder',
+  'murderous',
+  'homicide',
+  'homicidal',
+  'kill',
+  'killing',
+  'stab',
+  'stabbing',
+  'shoot',
+  'shooting',
+  'massacre',
+]);
 
 function parseOverrideCommand(input) {
   const match = input.match(/^\s*override\b(.*)$/i);
@@ -113,6 +111,18 @@ function normalizeMoodInput(input) {
   return firstWord;
 }
 
+function normalizeHighRiskInput(input) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '');
+}
+
+function isHighRiskMoodInput(input) {
+  return HIGH_RISK_WORDS.has(normalizeHighRiskInput(input));
+}
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
@@ -124,15 +134,13 @@ export default function App() {
   const [sceneKey, setSceneKey] = useState(getDefaultSceneKey());
   const [revealPhase, setRevealPhase] = useState(REVEAL_PHASE.IDLE);
   const [assetsReady, setAssetsReady] = useState(false);
+  const [isSafetyLocked, setIsSafetyLocked] = useState(false);
   const [isHydratingSelection, setIsHydratingSelection] = useState(true);
   const [isOverrideLoopActive, setIsOverrideLoopActive] = useState(false);
   const [isShowingOverrideFortune, setIsShowingOverrideFortune] = useState(false);
   const [hasUsedReplacement, setHasUsedReplacement] = useState(false);
   const [isReplaceConfirmVisible, setIsReplaceConfirmVisible] = useState(false);
   const [currentFortuneContext, setCurrentFortuneContext] = useState(null);
-  const [lockedTomorrowMessage, setLockedTomorrowMessage] = useState(() => (
-    pickRandomLockedTomorrowMessage()
-  ));
 
   const shellProgress = useRef(new Animated.Value(0)).current;
   const paperProgress = useRef(new Animated.Value(0)).current;
@@ -168,15 +176,6 @@ export default function App() {
     && !hasUsedReplacement
     && !isAnimating
   );
-  const cookieCueText = isOverrideLoopActive || isShowingOverrideFortune
-    ? 'Ready for another fortune?'
-    : !hasActionableInput
-      ? 'One fortune a day only. Make it count!'
-    : isResetCommandActive
-      ? 'Press enter to reset today'
-    : isLockedForToday
-      ? lockedTomorrowMessage
-      : 'Ready for your fortune?';
   const isCookieInteractionDisabled = (
     isHydratingSelection
     || isLockedForToday
@@ -195,7 +194,6 @@ export default function App() {
     overrideAttemptRef.current = 0;
     replacementAttemptRef.current = 0;
     setMoodInput('');
-    setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
     resetCookiePresentation();
   }
 
@@ -302,7 +300,17 @@ export default function App() {
     }
 
     await Share.share({
-      message: `My fortune from Fortune Cookie Daily: ${currentFortuneRecord.text}`,
+      message: `My fortune from Fortune Cookie for Your Mood: ${currentFortuneRecord.text}`,
+    });
+  }
+
+  async function handleShareSavedFortune(record) {
+    if (!record?.text) {
+      return;
+    }
+
+    await Share.share({
+      message: `My fortune from Fortune Cookie for Your Mood: ${record.text}`,
     });
   }
 
@@ -367,15 +375,6 @@ export default function App() {
       isMounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (isLockedForToday) {
-      setLockedTomorrowMessage((currentMessage) => currentMessage || pickRandomLockedTomorrowMessage());
-      return;
-    }
-
-    setLockedTomorrowMessage(pickRandomLockedTomorrowMessage());
-  }, [isLockedForToday]);
 
   useEffect(() => {
     if (
@@ -498,7 +497,19 @@ export default function App() {
   }
 
   async function openFortune() {
-    if (isAnimating || isOpeningRef.current || isHydratingSelection) {
+    if (isSafetyLocked || isAnimating || isOpeningRef.current || isHydratingSelection) {
+      return;
+    }
+
+    const riskCandidate = isOverrideInputActive ? overrideCommand.mood : moodInput;
+    if (isHighRiskMoodInput(riskCandidate)) {
+      Keyboard.dismiss();
+      clearPaperRevealTimer();
+      setIsReplaceConfirmVisible(false);
+      setIsShowingOverrideFortune(false);
+      setIsOverrideLoopActive(false);
+      setCurrentFortuneContext(null);
+      setIsSafetyLocked(true);
       return;
     }
 
@@ -578,7 +589,7 @@ export default function App() {
   }
 
   async function submitMoodInput() {
-    if (isOpeningRef.current || isHydratingSelection) {
+    if (isSafetyLocked || isOpeningRef.current || isHydratingSelection) {
       return;
     }
 
@@ -648,43 +659,47 @@ export default function App() {
   return (
     <View style={[styles.appRoot, { backgroundColor: scene.sky }]}>
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: scene.sky }]} />
-      <ExpoStatusBar style={scene.statusBar} />
-      <StatusBar barStyle={scene.statusBar === 'light' ? 'light-content' : 'dark-content'} />
+      <ExpoStatusBar style={isSafetyLocked ? 'dark' : scene.statusBar} />
+      <StatusBar barStyle={isSafetyLocked || scene.statusBar !== 'light' ? 'dark-content' : 'light-content'} />
 
-      <SafeAreaView style={styles.safeArea}>
-        {assetsReady ? (
-          <FortuneCard
-            currentFortuneIsFavorite={isCurrentFortuneFavorite}
-            cookieCueText={cookieCueText}
-            favoriteFortunes={favoriteFortunes}
-            fortuneText={fortuneText}
-            historyFortunes={collapsedHistoryFortunes}
-            isAnimating={isAnimating}
-            isCookieOpened={isCookieOpened}
-            isHydratingSelection={isHydratingSelection}
-            isPaperVisible={isPaperVisible}
-            isReplaceConfirmVisible={isReplaceConfirmVisible}
-            isTapDisabled={isCookieInteractionDisabled}
-            moodInput={moodInput}
-            onCancelReplace={handleCancelReplace}
-            onConfirmReplace={handleConfirmReplace}
-            onMoodChange={(nextValue) => setMoodInput(normalizeMoodInput(nextValue))}
-            onRemoveFavorite={handleRemoveFavorite}
-            onOpenFortune={openFortune}
-            onRequestReplace={handleRequestReplace}
-            onShareFortune={handleShareFortune}
-            onSubmitMoodInput={submitMoodInput}
-            onToggleFavorite={handleToggleFavorite}
-            paperProgress={paperProgress}
-            scene={scene}
-            shellProgress={shellProgress}
-            streakLabel={streakLabel}
-            canReplaceCurrentFortune={canReplaceCurrentFortune}
-          />
-        ) : (
-          <View style={styles.loadingScreen} />
-        )}
-      </SafeAreaView>
+      {isSafetyLocked ? (
+        <SafetyLockScreen />
+      ) : (
+        <SafeAreaView style={styles.safeArea}>
+          {assetsReady ? (
+            <FortuneCard
+              currentFortuneIsFavorite={isCurrentFortuneFavorite}
+              favoriteFortunes={favoriteFortunes}
+              fortuneText={fortuneText}
+              historyFortunes={collapsedHistoryFortunes}
+              isAnimating={isAnimating}
+              isCookieOpened={isCookieOpened}
+              isHydratingSelection={isHydratingSelection}
+              isPaperVisible={isPaperVisible}
+              isReplaceConfirmVisible={isReplaceConfirmVisible}
+              isTapDisabled={isCookieInteractionDisabled}
+              moodInput={moodInput}
+              onCancelReplace={handleCancelReplace}
+              onConfirmReplace={handleConfirmReplace}
+              onMoodChange={(nextValue) => setMoodInput(normalizeMoodInput(nextValue))}
+              onRemoveFavorite={handleRemoveFavorite}
+              onOpenFortune={openFortune}
+              onRequestReplace={handleRequestReplace}
+              onShareSavedFortune={handleShareSavedFortune}
+              onShareFortune={handleShareFortune}
+              onSubmitMoodInput={submitMoodInput}
+              onToggleFavorite={handleToggleFavorite}
+              paperProgress={paperProgress}
+              scene={scene}
+              shellProgress={shellProgress}
+              streakLabel={streakLabel}
+              canReplaceCurrentFortune={canReplaceCurrentFortune}
+            />
+          ) : (
+            <View style={styles.loadingScreen} />
+          )}
+        </SafeAreaView>
+      )}
     </View>
   );
 }

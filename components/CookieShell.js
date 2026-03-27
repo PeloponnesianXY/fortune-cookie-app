@@ -24,14 +24,14 @@ const CLOSED_COOKIE_FIT = {
   width: 330,
   height: 220,
   translateX: -14,
-  translateY: 34,
+  translateY: 36,
 };
 
 const OPEN_COOKIE_FIT = {
-  width: 428,
-  height: 282,
+  width: 392,
+  height: 258,
   translateX: -2,
-  translateY: 14,
+  translateY: 38,
 };
 
 const PAPER_SIZE = {

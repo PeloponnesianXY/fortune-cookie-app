@@ -1,4 +1,4 @@
-# Fortune Cookie Daily
+# Fortune Cookie for Your Mood
 
 Small Expo app that:
 

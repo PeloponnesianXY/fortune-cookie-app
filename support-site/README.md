@@ -1,4 +1,4 @@
-# Fortune Cookie Daily Support Site
+# Fortune Cookie for Your Mood Support Site
 
 This folder contains the standalone static support site for Netlify upload or deployment.
 

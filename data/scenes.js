@@ -8,8 +8,6 @@ const BASE_SCENE = {
   panelBorder: 'rgba(146, 111, 83, 0.15)',
   input: 'rgba(255, 255, 252, 0.99)',
   inputBorder: 'rgba(149, 114, 85, 0.16)',
-  cueSurface: 'rgba(244, 231, 213, 0.94)',
-  cueBorder: 'rgba(138, 105, 78, 0.1)',
   statusBar: 'dark',
   stars: [],
 };
@@ -20,11 +18,6 @@ const WARM_LIGHT_SCENE = {
   celestial: '#f8bf67',
   celestialHalo: 'rgba(249, 201, 115, 0.54)',
   cloud: 'rgba(255, 248, 234, 0.42)',
-  mist: 'rgba(252, 241, 224, 0.44)',
-  field: '#e8c49d',
-  shadow: '#a36e42',
-  cueSurface: 'rgba(243, 221, 191, 0.94)',
-  cueBorder: 'rgba(151, 104, 66, 0.1)',
 };
 
 const QUIET_SOFT_SCENE = {
@@ -33,11 +26,6 @@ const QUIET_SOFT_SCENE = {
   celestial: '#dcb9cd',
   celestialHalo: 'rgba(221, 189, 209, 0.42)',
   cloud: 'rgba(245, 241, 248, 0.38)',
-  mist: 'rgba(236, 230, 241, 0.42)',
-  field: '#cfbdd0',
-  shadow: '#7d677f',
-  cueSurface: 'rgba(228, 217, 229, 0.94)',
-  cueBorder: 'rgba(104, 86, 106, 0.1)',
 };
 
 const COPPER_HAZE_SCENE = {
@@ -46,11 +34,6 @@ const COPPER_HAZE_SCENE = {
   celestial: '#df806b',
   celestialHalo: 'rgba(226, 125, 103, 0.48)',
   cloud: 'rgba(255, 241, 238, 0.4)',
-  mist: 'rgba(243, 225, 222, 0.4)',
-  field: '#dbb1a8',
-  shadow: '#8d4f49',
-  cueSurface: 'rgba(235, 206, 201, 0.94)',
-  cueBorder: 'rgba(130, 72, 67, 0.1)',
 };
 
 const STONE_VEIL_SCENE = {
@@ -59,11 +42,6 @@ const STONE_VEIL_SCENE = {
   celestial: '#dacbb6',
   celestialHalo: 'rgba(220, 204, 184, 0.34)',
   cloud: 'rgba(246, 243, 239, 0.38)',
-  mist: 'rgba(238, 235, 231, 0.38)',
-  field: '#d1c6bb',
-  shadow: '#7f7368',
-  cueSurface: 'rgba(230, 223, 215, 0.94)',
-  cueBorder: 'rgba(106, 97, 87, 0.1)',
 };
 
 const OPAL_DAY_SCENE = {
@@ -72,11 +50,6 @@ const OPAL_DAY_SCENE = {
   celestial: '#efc9b7',
   celestialHalo: 'rgba(241, 214, 195, 0.44)',
   cloud: 'rgba(251, 248, 248, 0.4)',
-  mist: 'rgba(244, 239, 240, 0.4)',
-  field: '#ddccc6',
-  shadow: '#8b756d',
-  cueSurface: 'rgba(235, 225, 221, 0.94)',
-  cueBorder: 'rgba(110, 95, 90, 0.1)',
 };
 
 const SCENE_LIBRARY = {

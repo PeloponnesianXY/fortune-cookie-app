@@ -40,9 +40,9 @@ function formatMeta(item, library) {
   return detailParts.join(' | ');
 }
 
-function LibraryItem({ item, library, onRemoveFavorite }) {
+function LibraryItem({ item, library, onRemoveFavorite, onShareItem }) {
   return (
-    <View style={styles.itemCard}>
+    <Pressable onPress={() => onShareItem(item)} style={styles.itemCard}>
       <View style={styles.itemHeader}>
         <Text style={styles.itemMeta}>{formatMeta(item, library)}</Text>
         {item.repeatCount > 1 ? (
@@ -59,18 +59,17 @@ function LibraryItem({ item, library, onRemoveFavorite }) {
           <Text style={styles.inlineActionText}>Remove</Text>
         </Pressable>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
 export default function FortuneLibrarySheet({
   activeLibrary,
-  favoriteCount,
   favorites,
   history,
-  historyCount,
   onClose,
   onRemoveFavorite,
+  onShareItem,
   onSelectLibrary,
   visible,
 }) {
@@ -83,7 +82,7 @@ export default function FortuneLibrarySheet({
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.sheet}>
             <View style={styles.topRow}>
-              <Text style={styles.title}>Your fortunes</Text>
+              <Text style={styles.title}>Your fortunes - click to share</Text>
               <Pressable hitSlop={8} onPress={onClose}>
                 <Text style={styles.closeText}>Close</Text>
               </Pressable>
@@ -95,7 +94,7 @@ export default function FortuneLibrarySheet({
                 style={[styles.switcherButton, !isFavorites && styles.switcherButtonActive]}
               >
                 <Text style={[styles.switcherText, !isFavorites && styles.switcherTextActive]}>
-                  History ({historyCount})
+                  History
                 </Text>
               </Pressable>
 
@@ -104,7 +103,7 @@ export default function FortuneLibrarySheet({
                 style={[styles.switcherButton, isFavorites && styles.switcherButtonActive]}
               >
                 <Text style={[styles.switcherText, isFavorites && styles.switcherTextActive]}>
-                  Favorites ({favoriteCount})
+                  Favorites
                 </Text>
               </Pressable>
             </View>
@@ -115,7 +114,12 @@ export default function FortuneLibrarySheet({
               initialNumToRender={8}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <LibraryItem item={item} library={activeLibrary} onRemoveFavorite={onRemoveFavorite} />
+                <LibraryItem
+                  item={item}
+                  library={activeLibrary}
+                  onRemoveFavorite={onRemoveFavorite}
+                  onShareItem={onShareItem}
+                />
               )}
               removeClippedSubviews
               ListEmptyComponent={(
@@ -238,39 +242,40 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5e4ca',
   },
   repeatBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    color: '#8a5b2b',
+    color: '#845b36',
   },
   itemText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: '#3c2b1f',
+    fontSize: 17,
+    lineHeight: 24,
+    color: '#3f3023',
+    fontWeight: '600',
   },
   inlineAction: {
     alignSelf: 'flex-start',
     marginTop: 10,
-    paddingVertical: 4,
   },
   inlineActionText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#a24c3f',
+    color: '#a0612f',
   },
   emptyState: {
     alignItems: 'center',
-    paddingHorizontal: 18,
+    paddingHorizontal: 28,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#5c432d',
+    color: '#5b412d',
     marginBottom: 8,
+    textAlign: 'center',
   },
   emptyText: {
-    fontSize: 15,
-    lineHeight: 21,
-    color: '#7b634c',
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#8b6c50',
     textAlign: 'center',
   },
 });
