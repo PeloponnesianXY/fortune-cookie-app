@@ -4,7 +4,7 @@ Small Expo app that:
 
 - takes a one-word mood input
 - maps it to one detected emotion locally
-- routes that emotion into one of 9 runtime fortune buckets
+- routes that emotion into one of 12 runtime fortune buckets
 - reveals one saved fortune per day
 
 ## Project structure
@@ -15,6 +15,7 @@ components/
   CookieShell.js
   FortuneCard.js
   FortuneLibrarySheet.js
+  SafetyLockScreen.js
 data/
   fortunes.js
   scenes.js
@@ -35,11 +36,12 @@ assets/
 - `assets/cookie/closed-2.png`: closed cookie image
 - `assets/cookie/open.png`: broken/open cookie image
 - `components/CookieShell.js`: cookie image swap + paper overlay
-- `components/FortuneCard.js`: main single-screen layout, streak chrome, reveal actions
-- `components/FortuneLibrarySheet.js`: lightweight history/favorites sheet
-- `data/fortunes.js`: merged 10-bucket runtime fortune library
+- `components/FortuneCard.js`: main single-screen layout, drawer chrome, prompt, and cookie presentation
+- `components/FortuneLibrarySheet.js`: lightweight history/favorites sheet with tap-to-share fortune cards
+- `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
+- `data/fortunes.js`: merged 12-bucket runtime fortune library
 - `data/scenes.js`: dedicated scene per detected emotion bucket
-- `utils/fortuneLogic.js`: emotion analysis, moderation, scene selection, daily and replacement selection
+- `utils/fortuneLogic.js`: emotion analysis, high-level moderation hooks, scene selection, daily and replacement selection
 - `utils/savedFortunes.js`: local history/favorites persistence
 - `utils/streaks.js`: local daily streak persistence
 
@@ -91,6 +93,13 @@ These are development shortcuts for testing the app without waiting for the next
   - Clears the saved daily fortune from local storage.
   - Press Enter to reset the app back to a fresh closed-cookie state for today.
 
+## Safety lock
+
+- Exact-match high-risk words now bypass the fortune flow and immediately show a locked safety screen.
+- The lock is session-only and cannot be dismissed from inside the app.
+- Restarting the app clears the lock.
+- The safety path does not create a fortune and does not save to history or favorites.
+
 ## iOS release path
 
 1. Create an Expo account.
@@ -119,10 +128,12 @@ eas submit --platform ios
 - Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - The classifier now uses a mood-first path: a curated 500-word dictionary runs first, then the bundled NRC lexicon is flattened to one runtime mood bucket per word as fallback coverage.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
-- The runtime fortune system now uses 10 mood buckets:
+- The runtime fortune system now uses 12 mood buckets:
   - `happy`
   - `hopeful`
   - `calm`
+  - `tired`
+  - `lonely`
   - `sad`
   - `anxious`
   - `angry`
@@ -130,7 +141,7 @@ eas submit --platform ios
   - `surprised`
   - `averse`
   - `weird`
-- Older emotion-taxonomy writing was merged into those 10 runtime mood buckets so the content model matches the live taxonomy.
+- Older emotion-taxonomy writing was merged into those 12 runtime mood buckets so the content model matches the live taxonomy.
 - Unknown or unmapped inputs fall back to the `weird` path instead of generating a separate generic bucket.
 - Each detected emotion now maps to its own dedicated scene instead of drawing from broader positive/negative/neutral scene groups.
 - The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.

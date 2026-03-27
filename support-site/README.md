@@ -10,3 +10,7 @@ Contents:
 - `assets/appicon_B2.png`
 
 For Netlify manual upload, upload this `support-site` folder only.
+
+The live support URL currently used by the app is:
+
+- `https://fortunecookieappsupport.netlify.app/`
