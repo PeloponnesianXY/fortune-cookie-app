@@ -11,44 +11,95 @@
   <link rel="stylesheet" href="support.css">
 </head>
 <body>
-  <main class="support-shell">
-    <section class="support-card">
-      <div class="support-badge">Apple Review Ready</div>
+  <div class="page-glow page-glow-left" aria-hidden="true"></div>
+  <div class="page-glow page-glow-right" aria-hidden="true"></div>
 
-      <div class="support-hero">
-        <div class="support-icon-wrap" aria-hidden="true">
-          <img
-            class="support-app-icon"
-            src="assets/appicon_B2.png"
-            alt="Fortune Cookie Daily app icon"
-          >
-        </div>
+  <main class="support-page">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="support-badge">Fortune Cookie - Daily Mood</p>
+        <h1>Support that feels as calm as the app.</h1>
+        <p class="hero-lede">
+          Questions, bug reports, and privacy details all live here in one place.
+          This page is the official support landing page for the App Store review and for users.
+        </p>
 
-        <div class="support-hero-copy">
-          <p class="support-kicker">Fortune Cookie Daily</p>
-          <p class="support-subtitle">Support, privacy, and contact information</p>
+        <div class="hero-highlights" aria-label="Highlights">
+          <article class="highlight-card">
+            <p class="highlight-label">Direct support</p>
+            <p class="highlight-value">
+              <a href="mailto:fortunecookieappsupport@gmail.com">fortunecookieappsupport@gmail.com</a>
+            </p>
+          </article>
+          <article class="highlight-card">
+            <p class="highlight-label">Privacy</p>
+            <p class="highlight-value">No personal data collection</p>
+          </article>
+          <article class="highlight-card">
+            <p class="highlight-label">Response path</p>
+            <p class="highlight-value">Use the form below or email directly</p>
+          </article>
         </div>
       </div>
 
-      <section class="support-policy" aria-labelledby="privacy-policy-title">
-        <h1 class="support-title">Support</h1>
-        <p class="support-copy">
-          If you need help with the app, have a bug report, or want to ask a question,
-          send a message below and it will be forwarded to the app admin.
-        </p>
+      <aside class="hero-visual" aria-label="App summary">
+        <div class="visual-orb"></div>
+        <div class="app-showcase">
+          <div class="showcase-topline">Daily fortune support</div>
+          <div class="app-icon-frame">
+            <img
+              class="support-app-icon"
+              src="assets/appicon_B2.png"
+              alt="Fortune Cookie Daily app icon"
+            >
+          </div>
+          <p class="showcase-title">Fortune Cookie - Daily Mood</p>
+          <p class="showcase-copy">
+            A warm, simple experience for one daily fortune, with support that is easy to find.
+          </p>
+          <div class="fortune-chip-row">
+            <span class="fortune-chip">Support</span>
+            <span class="fortune-chip">Privacy</span>
+            <span class="fortune-chip">Contact</span>
+          </div>
+        </div>
+      </aside>
+    </section>
 
-        <h2 class="support-policy-title" id="privacy-policy-title">Privacy Policy</h2>
-        <p class="support-policy-copy">
+    <section class="content-grid">
+      <section class="info-card" aria-labelledby="privacy-policy-title">
+        <p class="section-kicker">Privacy Policy</p>
+        <h2 id="privacy-policy-title">Private by design.</h2>
+        <p class="section-copy">
           Fortune Cookie Daily does not collect, store, or share personal data.
         </p>
-        <p class="support-policy-copy">
-          The app lets you enter a mood locally on your device and receive a daily fortune.
+        <p class="section-copy">
+          The app lets users enter a mood locally on their device and receive a daily fortune.
           That information stays on the device and is not transmitted to a server.
         </p>
+
+        <div class="trust-list" aria-label="Privacy details">
+          <div class="trust-item">
+            <span class="trust-dot" aria-hidden="true"></span>
+            <span>No account creation required</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-dot" aria-hidden="true"></span>
+            <span>No analytics or personal profile storage</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-dot" aria-hidden="true"></span>
+            <span>Mood input remains local to the device experience</span>
+          </div>
+        </div>
       </section>
 
-      <section aria-labelledby="contact-support-title">
-        <h2 class="support-section-title" id="contact-support-title">Contact Support</h2>
+      <section class="contact-card" aria-labelledby="contact-support-title">
+        <p class="section-kicker">Contact Support</p>
+        <h2 id="contact-support-title">Send a message.</h2>
+        <p class="section-copy">
+          Report a bug, ask a question, or request help using the app.
+        </p>
 
         <form
           class="support-form"
@@ -60,32 +111,37 @@
           <input type="hidden" name="_captcha" value="false">
           <input type="hidden" name="_template" value="table">
 
-          <label class="sr-only" for="support-email">Email</label>
+          <label class="support-label" for="support-email">Your email</label>
           <input
             id="support-email"
             name="email"
             type="email"
             class="support-input"
-            placeholder="Your email"
+            placeholder="name@example.com"
             required
           >
 
-          <label class="sr-only" for="support-message">Support message</label>
+          <label class="support-label" for="support-message">How can we help?</label>
           <textarea
             id="support-message"
             name="message"
             class="support-input support-textarea"
             rows="7"
-            placeholder="Describe the issue or question..."
+            placeholder="Describe the issue, device, or question..."
             required
           ></textarea>
 
-          <button type="submit" class="support-submit" id="support-submit">Submit</button>
+          <div class="form-actions">
+            <button type="submit" class="support-submit" id="support-submit">Send support request</button>
+            <p class="support-footnote">
+              Or email
+              <a href="mailto:fortunecookieappsupport@gmail.com">fortunecookieappsupport@gmail.com</a>
+            </p>
+          </div>
         </form>
 
         <p class="support-confirmation" id="support-confirmation" hidden>Your note is on its way.</p>
         <p class="support-error" id="support-error" hidden>Something went wrong. Please try again later.</p>
-        <p class="support-footnote">Direct contact: <a href="mailto:fortunecookieappsupport@gmail.com">fortunecookieappsupport@gmail.com</a></p>
       </section>
     </section>
   </main>
@@ -123,7 +179,7 @@
           errorMessage.hidden = false;
         } finally {
           submitButton.disabled = false;
-          submitButton.textContent = 'Submit';
+          submitButton.textContent = 'Send support request';
         }
       });
     }
