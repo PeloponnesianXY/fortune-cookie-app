@@ -211,7 +211,7 @@ export default function App() {
     }
   }
 
-  function resetCookiePresentation({ clearDelayed = true } = {}) {
+  function resetCookiePresentation() {
     revealSessionRef.current += 1;
     clearPaperRevealTimer();
     shellProgress.stopAnimation();

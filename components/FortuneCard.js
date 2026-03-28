@@ -58,7 +58,6 @@ const CookieStage = memo(function CookieStage({
   isTapDisabled,
   onPress,
   paperProgress,
-  scene,
   shellProgress,
   stageMinHeight,
 }) {
@@ -390,7 +389,6 @@ export default function FortuneCard({
           isTapDisabled={isTapDisabled || isPromptTemporarilyLocked}
           onPress={onOpenFortune}
           paperProgress={paperProgress}
-          scene={scene}
           shellProgress={shellProgress}
           stageMinHeight={cookieStageMinHeight}
         />
