@@ -153,6 +153,7 @@ export default function App() {
   const isOpeningRef = useRef(false);
   const overrideAttemptRef = useRef(0);
   const replacementAttemptRef = useRef(0);
+  const revealSessionRef = useRef(0);
 
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
@@ -161,8 +162,12 @@ export default function App() {
   const isOverrideInputActive = overrideCommand.isOverride;
   const hasActionableInput = Boolean(moodInput.trim());
   const dailyFortuneCount = getDailyFortuneCount(storedTodaySelection);
-  const isCookieOpened = revealPhase !== REVEAL_PHASE.IDLE;
-  const isPaperVisible = revealPhase !== REVEAL_PHASE.IDLE;
+  const hasActiveFortuneVisual = Boolean(
+    fortuneText
+    || currentFortuneRecord?.text
+  );
+  const isCookieOpened = hasActiveFortuneVisual && revealPhase !== REVEAL_PHASE.IDLE;
+  const isPaperVisible = hasActiveFortuneVisual && revealPhase !== REVEAL_PHASE.IDLE;
   const collapsedHistoryFortunes = collapseFortuneRuns(historyFortunes, 10);
   const isCurrentFortuneFavorite = Boolean(
     currentFortuneRecord
@@ -207,7 +212,10 @@ export default function App() {
   }
 
   function resetCookiePresentation({ clearDelayed = true } = {}) {
+    revealSessionRef.current += 1;
     clearPaperRevealTimer();
+    shellProgress.stopAnimation();
+    paperProgress.stopAnimation();
     setFortuneText('');
     setCurrentFortuneRecord(null);
     setSceneKey(getDefaultSceneKey());
@@ -450,10 +458,12 @@ export default function App() {
   }, [isOverrideInputActive, isShowingOverrideFortune]);
 
   function runCookieAnimation(selection, onReveal) {
+    const revealSessionId = revealSessionRef.current + 1;
+    revealSessionRef.current = revealSessionId;
     let didReveal = false;
 
     function revealOnce() {
-      if (didReveal) {
+      if (didReveal || revealSessionRef.current !== revealSessionId) {
         return;
       }
 
@@ -494,7 +504,11 @@ export default function App() {
           useNativeDriver: true,
         }),
       ]),
-    ]).start(() => {
+    ]).start(({ finished }) => {
+      if (!finished || revealSessionRef.current !== revealSessionId) {
+        return;
+      }
+
       revealOnce();
     });
   }

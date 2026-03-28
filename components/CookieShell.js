@@ -46,20 +46,11 @@ function CookieShell({
   paperProgress,
   shellProgress,
 }) {
-  const closedCookieStyle = shellProgress
-    ? {
-        opacity: shellProgress.interpolate({
-          inputRange: [0, 0.42, 1],
-          outputRange: [1, 0.78, 0],
-        }),
-      }
-    : null;
-
   const openCookieStyle = shellProgress
     ? {
         opacity: shellProgress.interpolate({
-          inputRange: [0, 0.24, 0.62, 1],
-          outputRange: [0, 0.08, 0.72, 1],
+          inputRange: [0, 0.18, 0.5, 1],
+          outputRange: [0.18, 0.44, 0.82, 1],
         }),
       }
     : null;
@@ -113,26 +104,27 @@ function CookieShell({
   return (
     <View style={styles.cookieShellFrame}>
       <View style={styles.frameWrap}>
-        <Animated.Image
-          resizeMode="contain"
-          source={COOKIE_CLOSED_IMAGE}
-          style={[
-            styles.frameImage,
-            styles.closedImageFit,
-            isOpened ? styles.imageLayerHidden : styles.imageLayerVisible,
-            isOpened ? styles.imageOff : closedCookieStyle,
-          ]}
-        />
-        <Animated.Image
-          resizeMode="contain"
-          source={COOKIE_OPEN_IMAGE}
-          style={[
-            styles.frameImage,
-            styles.openImageFit,
-            isOpened ? openCookieStyle : styles.imageOff,
-            isOpened ? styles.imageLayerVisible : styles.imageLayerHidden,
-          ]}
-        />
+        {isOpened ? (
+          <Animated.Image
+            resizeMode="contain"
+            source={COOKIE_OPEN_IMAGE}
+            style={[
+              styles.frameImage,
+              styles.openImageFit,
+              openCookieStyle,
+              styles.openImageLayer,
+            ]}
+          />
+        ) : (
+          <Image
+            resizeMode="contain"
+            source={COOKIE_CLOSED_IMAGE}
+            style={[
+              styles.frameImage,
+              styles.closedImageFit,
+            ]}
+          />
+        )}
       </View>
 
       <Animated.View pointerEvents="none" style={[styles.paperShadow, paperShadowStyle]} />
@@ -179,14 +171,8 @@ const styles = StyleSheet.create({
   frameImage: {
     position: 'absolute',
   },
-  imageLayerVisible: {
-    zIndex: 2,
-  },
-  imageLayerHidden: {
-    zIndex: 1,
-  },
-  imageOff: {
-    opacity: 0,
+  openImageLayer: {
+    zIndex: 3,
   },
   closedImageFit: {
     width: CLOSED_COOKIE_FIT.width,

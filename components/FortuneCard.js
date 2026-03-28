@@ -358,11 +358,9 @@ export default function FortuneCard({
               { backgroundColor: '#ffd77a', borderColor: '#f5bc37' },
             ]}
           >
-            <Text style={styles.streakSparkle}>+</Text>
             <Text style={[styles.streakText, styles.streakTextCentered, styles.streakTextCelebratory]}>
               {celebratoryStreakLabel}
             </Text>
-            <Text style={styles.streakSparkle}>+</Text>
           </View>
         </View>
 
@@ -696,11 +694,6 @@ const styles = StyleSheet.create({
   },
   streakTextCelebratory: {
     color: '#8a5a17',
-  },
-  streakSparkle: {
-    color: '#c79a3a',
-    fontSize: 12,
-    fontWeight: '800',
   },
   topGlow: {
     position: 'absolute',
