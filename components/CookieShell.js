@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, View } from 'react-native';
 
 const COOKIE_CLOSED_IMAGE = require('../assets/cookie/closed-2.png');
-const COOKIE_OPEN_IMAGE = require('../assets/cookie/open.png');
+const COOKIE_OPEN_IMAGE = require('../assets/cookie/open-new.png');
 
 const FORTUNE_FONT_FAMILY = Platform.select({
   ios: 'Georgia',
@@ -43,6 +43,7 @@ function CookieShell({
   fortuneText,
   isOpened,
   isPaperVisible,
+  paperCueProgress,
   paperProgress,
   shellProgress,
 }) {
@@ -74,6 +75,22 @@ function CookieShell({
               outputRange: ['-0.5deg', '-3deg'],
             }),
           },
+          ...(paperCueProgress
+            ? [
+                {
+                  translateX: paperCueProgress.interpolate({
+                    inputRange: [-1, 0, 1],
+                    outputRange: [-7, 0, 7],
+                  }),
+                },
+                {
+                  rotate: paperCueProgress.interpolate({
+                    inputRange: [-1, 0, 1],
+                    outputRange: ['-1.8deg', '0deg', '1.8deg'],
+                  }),
+                },
+              ]
+            : []),
         ],
       }
     : { opacity: 0 };

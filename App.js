@@ -37,7 +37,7 @@ import {
 } from './utils/streaks';
 
 const COOKIE_CLOSED_IMAGE = require('./assets/cookie/closed-2.png');
-const COOKIE_OPEN_IMAGE = require('./assets/cookie/open.png');
+const COOKIE_OPEN_IMAGE = require('./assets/cookie/open-new.png');
 
 const COOKIE_TIMINGS = {
   shell: 1320,
@@ -105,16 +105,12 @@ function isHighRiskMoodInput(input) {
   return HIGH_RISK_WORDS.has(normalizeHighRiskInput(input));
 }
 
-function getDailyFortuneCount(selection) {
-  return Math.max(selection?.dailyFortuneCount || 0, 0);
-}
-
-function getDailyWisdomLockSeconds(dailyFortuneCount) {
-  if (dailyFortuneCount < 3) {
+function getDailyWisdomLockSeconds(fortuneCount) {
+  if (fortuneCount < 3) {
     return 0;
   }
 
-  return Math.min(2 ** (dailyFortuneCount - 1), 64);
+  return Math.min(2 ** (fortuneCount - 1), 64);
 }
 
 function getStreakTierTitle(streakCount) {
@@ -141,10 +137,35 @@ function getStreakTierTitle(streakCount) {
   return null;
 }
 
+function getNextStreakTier(streakCount) {
+  if (streakCount < 2) {
+    return { title: 'Crumb Collector', minDays: 2 };
+  }
+
+  if (streakCount < 5) {
+    return { title: 'Cookie Regular', minDays: 5 };
+  }
+
+  if (streakCount < 10) {
+    return { title: 'Fortune Chaser', minDays: 10 };
+  }
+
+  if (streakCount < 20) {
+    return { title: 'Snack Prophet', minDays: 20 };
+  }
+
+  if (streakCount < 50) {
+    return { title: 'Oracle of Crumbs', minDays: 50 };
+  }
+
+  return null;
+}
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
   const [storedDayState, setStoredDayState] = useState(null);
+  const [sessionFortuneCount, setSessionFortuneCount] = useState(0);
   const [currentFortuneRecord, setCurrentFortuneRecord] = useState(null);
   const [historyFortunes, setHistoryFortunes] = useState([]);
   const [favoriteFortunes, setFavoriteFortunes] = useState([]);
@@ -159,6 +180,8 @@ export default function App() {
   const [hasUsedReplacement, setHasUsedReplacement] = useState(false);
   const [isReplaceConfirmVisible, setIsReplaceConfirmVisible] = useState(false);
   const [currentFortuneContext, setCurrentFortuneContext] = useState(null);
+  const [dailyWisdomNotice, setDailyWisdomNotice] = useState(null);
+  const [streakCelebrationToken, setStreakCelebrationToken] = useState(0);
 
   const shellProgress = useRef(new Animated.Value(0)).current;
   const paperProgress = useRef(new Animated.Value(0)).current;
@@ -171,8 +194,6 @@ export default function App() {
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
   const isResetCommandActive = isResetFortuneCommand(moodInput);
   const hasActionableInput = Boolean(moodInput.trim());
-  const dailyFortuneCount = getDailyFortuneCount(storedDayState);
-  const dailyWisdomLockSeconds = getDailyWisdomLockSeconds(dailyFortuneCount);
   const isCookieOpened = cookieShellState === COOKIE_SHELL_STATE.OPEN;
   const isPaperVisible = isCookieOpened && revealPhase !== REVEAL_PHASE.IDLE;
   const collapsedHistoryFortunes = collapseFortuneRuns(historyFortunes, 10);
@@ -181,29 +202,25 @@ export default function App() {
     && favoriteFortunes.some((favorite) => favorite.id === currentFortuneRecord.id)
   );
   const streakTierTitle = getStreakTierTitle(streakCount);
-  const streakLabel = streakCount <= 0
-    ? 'Start your streak!'
-    : streakTierTitle
-      ? `${streakCount}-day streak! You're now a ${streakTierTitle}`
-      : '1-day streak!';
+  const nextStreakTier = getNextStreakTier(streakCount);
+  const daysToNextStreakTier = nextStreakTier
+    ? Math.max(nextStreakTier.minDays - streakCount, 0)
+    : 0;
   const canReplaceCurrentFortune = Boolean(
     currentFortuneRecord
     && isPaperVisible
     && !hasUsedReplacement
     && !isAnimating
   );
-  const isCookieInteractionDisabled = (
-    isHydratingSelection
-    || !hasActionableInput
-  );
-  const dailyWisdomMessage = dailyWisdomLockSeconds > 0
-    ? `The cookie is getting tired. It will now rest for ${dailyWisdomLockSeconds} seconds`
-    : null;
+  const dailyWisdomLockSeconds = dailyWisdomNotice?.seconds || 0;
+  const dailyWisdomMessage = dailyWisdomNotice?.message || null;
 
   async function resetTodayFortune() {
     Keyboard.dismiss();
     await clearAllStoredFortuneState();
     setStoredDayState(null);
+    setSessionFortuneCount(0);
+    setDailyWisdomNotice(null);
     setIsPreparingNextFortune(false);
     setHasUsedReplacement(false);
     setIsReplaceConfirmVisible(false);
@@ -356,6 +373,8 @@ export default function App() {
         applySavedFortunesSnapshot(snapshot);
         setStreakCount(storedStreak.count);
         setStoredDayState(storedSelection);
+        setSessionFortuneCount(0);
+        setDailyWisdomNotice(null);
         resetCookiePresentation();
       } finally {
         if (isMounted) {
@@ -405,6 +424,7 @@ export default function App() {
 
         setStreakCount(storedStreak.count);
         setStoredDayState(refreshedSelection);
+        setDailyWisdomNotice(null);
       })();
     });
 
@@ -512,6 +532,7 @@ export default function App() {
       setIsPreparingNextFortune(true);
       const sessionMood = moodInput;
       const selection = await getDailyFortuneSelection(sessionMood);
+      const nextFortuneCount = sessionFortuneCount + 1;
       const savedFortuneRecord = createSavedFortuneRecord(
         selection,
         sessionMood
@@ -522,7 +543,27 @@ export default function App() {
       setStoredDayState(selection);
 
       const streakSnapshot = await registerDailyStreak(selection.dayKey);
+      const previousTierTitle = getStreakTierTitle(streakCount);
+      const nextTierTitle = getStreakTierTitle(streakSnapshot.count);
       setStreakCount(streakSnapshot.count);
+      if (
+        streakSnapshot.didAdvance
+        && nextTierTitle
+        && nextTierTitle !== previousTierTitle
+      ) {
+        setStreakCelebrationToken(Date.now());
+      }
+      setSessionFortuneCount(nextFortuneCount);
+      const nextLockSeconds = getDailyWisdomLockSeconds(nextFortuneCount);
+      setDailyWisdomNotice(
+        nextLockSeconds > 0
+          ? {
+              id: Date.now(),
+              seconds: nextLockSeconds,
+              message: `The cookie is getting tired. It will now rest for ${nextLockSeconds} seconds`,
+            }
+          : null
+      );
 
       setIsReplaceConfirmVisible(false);
       const revealFortune = () => {
@@ -553,6 +594,7 @@ export default function App() {
 
   function handleBeginMoodEntry() {
     setMoodInput('');
+    setDailyWisdomNotice(null);
     setIsPreparingNextFortune(true);
     setIsReplaceConfirmVisible(false);
     setCurrentFortuneContext(null);
@@ -565,12 +607,7 @@ export default function App() {
       return;
     }
 
-    Keyboard.dismiss();
-    setIsReplaceConfirmVisible(true);
-  }
-
-  function handleCancelReplace() {
-    setIsReplaceConfirmVisible(false);
+    handleConfirmReplace();
   }
 
   async function handleConfirmReplace() {
@@ -600,6 +637,7 @@ export default function App() {
       const replacementRecord = createSavedFortuneRecord(replacementSelection, replacementMood);
 
       setStoredDayState(replacementSelection);
+      setDailyWisdomNotice(null);
 
       setHasUsedReplacement(true);
       setIsReplaceConfirmVisible(false);
@@ -633,14 +671,11 @@ export default function App() {
               isHydratingSelection={isHydratingSelection}
               isPaperVisible={isPaperVisible}
               isReplaceConfirmVisible={isReplaceConfirmVisible}
-              isTapDisabled={isCookieInteractionDisabled}
               moodInput={moodInput}
               onBeginMoodEntry={handleBeginMoodEntry}
-              onCancelReplace={handleCancelReplace}
               onConfirmReplace={handleConfirmReplace}
               onMoodChange={(nextValue) => setMoodInput(normalizeMoodInput(nextValue))}
               onRemoveFavorite={handleRemoveFavorite}
-              onOpenFortune={openFortune}
               onRequestReplace={handleRequestReplace}
               onShareSavedFortune={handleShareSavedFortune}
               onShareFortune={handleShareFortune}
@@ -649,10 +684,15 @@ export default function App() {
               paperProgress={paperProgress}
               scene={scene}
               shellProgress={shellProgress}
-              streakLabel={streakLabel}
+              streakCelebrationToken={streakCelebrationToken}
+              streakCount={streakCount}
+              streakDaysToNextTier={daysToNextStreakTier}
+              streakNextTierTitle={nextStreakTier?.title || null}
+              streakTierTitle={streakTierTitle}
               canReplaceCurrentFortune={canReplaceCurrentFortune}
               dailyWisdomLockSeconds={dailyWisdomLockSeconds}
               dailyWisdomMessage={dailyWisdomMessage}
+              dailyWisdomNoticeToken={dailyWisdomNotice?.id || 0}
             />
           ) : (
             <View style={styles.loadingScreen} />

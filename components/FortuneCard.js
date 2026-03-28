@@ -2,25 +2,24 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
-  InputAccessoryView,
-  Keyboard,
   KeyboardAvoidingView,
   Linking,
-  PanResponder,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native';
 
 import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
+import DrawerItem from './DrawerItem';
+import DrawerSection from './DrawerSection';
+import FortuneActionTray from './FortuneActionTray';
 import FortuneLibrarySheet from './FortuneLibrarySheet';
+import StreakStatus from './StreakStatus';
 
-const KEYBOARD_ACCESSORY_ID = 'fortune-mood-keyboard-accessory';
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 
 const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
@@ -52,11 +51,10 @@ const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
 
 const CookieStage = memo(function CookieStage({
   fortuneText,
-  isAnimating,
   isCookieOpened,
   isPaperVisible,
-  isTapDisabled,
   onPress,
+  paperCueProgress,
   paperProgress,
   shellProgress,
   stageMinHeight,
@@ -79,10 +77,9 @@ const CookieStage = memo(function CookieStage({
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.94}
-      disabled={isAnimating || isTapDisabled}
-      onPress={onPress}
+    <Pressable
+      accessibilityRole={isPaperVisible ? 'button' : undefined}
+      onPress={isPaperVisible ? onPress : undefined}
       style={styles.cookieTapArea}
     >
       <View style={[styles.cookieStage, { minHeight: stageMinHeight }]}>
@@ -91,12 +88,13 @@ const CookieStage = memo(function CookieStage({
             fortuneText={fortuneText}
             isOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
+            paperCueProgress={paperCueProgress}
             paperProgress={paperProgress}
             shellProgress={shellProgress}
           />
         </Animated.View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 });
 
@@ -105,22 +103,17 @@ export default function FortuneCard({
   currentFortuneIsFavorite,
   dailyWisdomLockSeconds,
   dailyWisdomMessage,
+  dailyWisdomNoticeToken,
   favoriteFortunes,
   fortuneText,
   historyFortunes,
-  isAnimating,
   isCookieOpened,
   isHydratingSelection,
   isPaperVisible,
-  isReplaceConfirmVisible,
-  isTapDisabled,
   moodInput,
   onBeginMoodEntry,
-  onCancelReplace,
-  onConfirmReplace,
   onMoodChange,
   onRemoveFavorite,
-  onOpenFortune,
   onRequestReplace,
   onShareSavedFortune,
   onShareFortune,
@@ -129,37 +122,57 @@ export default function FortuneCard({
   paperProgress,
   scene,
   shellProgress,
-  streakLabel,
+  streakCelebrationToken,
+  streakCount,
+  streakDaysToNextTier,
+  streakNextTierTitle,
+  streakTierTitle,
 }) {
   const [activeLibrary, setActiveLibrary] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isDailyWisdomLockActive, setIsDailyWisdomLockActive] = useState(false);
   const [isDailyWisdomVisible, setIsDailyWisdomVisible] = useState(Boolean(dailyWisdomMessage));
-  const { height: viewportHeight } = useWindowDimensions();
+  const [isActionTrayVisible, setIsActionTrayVisible] = useState(false);
+  const { height: viewportHeight, width: viewportWidth } = useWindowDimensions();
   const drawerProgress = useRef(new Animated.Value(0)).current;
   const dailyWisdomProgress = useRef(new Animated.Value(dailyWisdomMessage ? 1 : 0)).current;
+  const paperCueProgress = useRef(new Animated.Value(0)).current;
   const idleKeyboardTimerRef = useRef(null);
   const dailyWisdomTimerRef = useRef(null);
   const dailyWisdomShowTimerRef = useRef(null);
+  const actionTrayTimerRef = useRef(null);
+  const paperCueLoopRef = useRef(null);
   const inputRef = useRef(null);
-  const keyboardAccessoryPanResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => (
-        Math.abs(gestureState.dy) > 4 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
-      ),
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 18) {
-          inputRef.current?.blur();
-        }
-      },
-    })
-  ).current;
   const cookieTopPadding = Math.min(Math.max(Math.round(viewportHeight * 0.235), 176), 224);
   const promptTopGap = Math.max(Math.round(viewportHeight * 0.002), 0);
   const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.15), 142), 184);
+  const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
+  const drawerPalette = {
+    panel: '#fff8f1',
+    border: 'rgba(111, 75, 48, 0.18)',
+    title: 'rgba(91, 63, 41, 0.72)',
+    itemFill: '#fffdf9',
+    itemBorder: 'rgba(128, 89, 58, 0.18)',
+    text: '#3f2c20',
+    detail: '#75543d',
+    motif: 'rgba(159, 114, 80, 0.22)',
+  };
+  const actionTrayPalette = {
+    card: 'rgba(255, 250, 243, 0.96)',
+    cardBorder: 'rgba(138, 98, 67, 0.18)',
+    label: scene.accent,
+    text: scene.textPrimary,
+    strongText: '#4c331f',
+    buttonFill: scene.input,
+    buttonBorder: 'rgba(140, 104, 76, 0.18)',
+    primaryFill: '#f6d8b4',
+    primaryBorder: '#ddb17a',
+    accentFill: '#f4e7da',
+    accentBorder: 'rgba(163, 117, 80, 0.22)',
+  };
   function clearIdleKeyboardTimer() {
     if (idleKeyboardTimerRef.current) {
       clearTimeout(idleKeyboardTimerRef.current);
@@ -179,6 +192,27 @@ export default function FortuneCard({
       clearTimeout(dailyWisdomShowTimerRef.current);
       dailyWisdomShowTimerRef.current = null;
     }
+  }
+
+  function clearActionTrayTimer() {
+    if (actionTrayTimerRef.current) {
+      clearTimeout(actionTrayTimerRef.current);
+      actionTrayTimerRef.current = null;
+    }
+  }
+
+  function hideActionTray() {
+    clearActionTrayTimer();
+    setIsActionTrayVisible(false);
+  }
+
+  function showActionTrayTemporarily() {
+    clearActionTrayTimer();
+    setIsActionTrayVisible(true);
+    actionTrayTimerRef.current = setTimeout(() => {
+      setIsActionTrayVisible(false);
+      actionTrayTimerRef.current = null;
+    }, 2000);
   }
 
   function openLibrary(library) {
@@ -240,7 +274,76 @@ export default function FortuneCard({
     clearIdleKeyboardTimer();
     clearDailyWisdomTimer();
     clearDailyWisdomShowTimer();
+    clearActionTrayTimer();
+    paperCueLoopRef.current?.stop();
+    paperCueProgress.stopAnimation();
   }, []);
+
+  useEffect(() => {
+    if (!isFortuneRevealed) {
+      clearActionTrayTimer();
+      setIsActionTrayVisible(false);
+      paperCueLoopRef.current?.stop();
+      paperCueProgress.stopAnimation();
+      paperCueProgress.setValue(0);
+      return undefined;
+    }
+
+    if (isActionTrayVisible) {
+      paperCueLoopRef.current?.stop();
+      paperCueProgress.stopAnimation();
+      paperCueProgress.setValue(0);
+      return undefined;
+    }
+
+    const cueLoop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(250),
+        Animated.sequence([
+          Animated.timing(paperCueProgress, {
+            toValue: 1,
+            duration: 70,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(paperCueProgress, {
+            toValue: -1,
+            duration: 70,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(paperCueProgress, {
+            toValue: 1,
+            duration: 70,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(paperCueProgress, {
+            toValue: -1,
+            duration: 70,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(paperCueProgress, {
+            toValue: 0,
+            duration: 90,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.delay(5000),
+      ])
+    );
+
+    paperCueLoopRef.current = cueLoop;
+    cueLoop.start();
+
+    return () => {
+      cueLoop.stop();
+      paperCueProgress.stopAnimation();
+      paperCueProgress.setValue(0);
+    };
+  }, [isActionTrayVisible, isFortuneRevealed, paperCueProgress]);
 
   useEffect(() => {
     scheduleIdleKeyboardDismiss(moodInput);
@@ -298,7 +401,7 @@ export default function FortuneCard({
     return () => {
       clearDailyWisdomTimer();
     };
-  }, [dailyWisdomLockSeconds, dailyWisdomMessage, dailyWisdomProgress]);
+  }, [dailyWisdomLockSeconds, dailyWisdomMessage, dailyWisdomNoticeToken, dailyWisdomProgress]);
 
   useEffect(() => {
     if (isPromptTemporarilyLocked && isInputFocused) {
@@ -323,7 +426,7 @@ export default function FortuneCard({
       {
         translateX: drawerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [-280, 0],
+          outputRange: [-drawerWidth - 24, 0],
         }),
       },
     ],
@@ -332,16 +435,24 @@ export default function FortuneCard({
   const drawerBackdropAnimatedStyle = {
     opacity: drawerProgress.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 0.26],
+      outputRange: [0, 0.44],
     }),
   };
+  const shouldPrepareFreshEntry = Boolean(
+    moodInput
+    || isCookieOpened
+    || isPaperVisible
+  );
 
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop scene={scene} />
 
       <View style={styles.contentFrame}>
-        <View style={styles.menuChrome} pointerEvents="box-none">
+        <View
+          pointerEvents="box-none"
+          style={styles.headerChrome}
+        >
           <Pressable
             hitSlop={8}
             onPress={openDrawer}
@@ -351,22 +462,16 @@ export default function FortuneCard({
             <View style={[styles.menuLine, { backgroundColor: scene.textPrimary }]} />
             <View style={[styles.menuLine, { backgroundColor: scene.textPrimary }]} />
           </Pressable>
+          <StreakStatus
+            celebrationToken={streakCelebrationToken}
+            daysToNextTier={streakDaysToNextTier}
+            nextTierTitle={streakNextTierTitle}
+            streakCount={streakCount}
+            tierTitle={streakTierTitle}
+          />
         </View>
 
-        <View style={styles.topChrome} pointerEvents="none">
-          <View
-            style={[
-              styles.topBar,
-              styles.streakBar,
-              { backgroundColor: '#ffd77a', borderColor: '#f5bc37' },
-            ]}
-          >
-            <Text style={[styles.streakText, styles.streakTextCentered, styles.streakTextCelebratory]}>
-              {streakLabel}
-            </Text>
-          </View>
-        </View>
-
+        <View style={styles.mainFlow}>
         <View style={{ height: cookieTopPadding }} />
 
         <View style={styles.dailyWisdomSlot}>
@@ -392,11 +497,10 @@ export default function FortuneCard({
 
         <CookieStage
           fortuneText={fortuneText}
-          isAnimating={isAnimating}
           isCookieOpened={isCookieOpened}
           isPaperVisible={isPaperVisible}
-          isTapDisabled={isTapDisabled || isPromptTemporarilyLocked}
-          onPress={onOpenFortune}
+          onPress={showActionTrayTemporarily}
+          paperCueProgress={paperCueProgress}
           paperProgress={paperProgress}
           shellProgress={shellProgress}
           stageMinHeight={cookieStageMinHeight}
@@ -406,12 +510,11 @@ export default function FortuneCard({
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'position' : undefined}
-          enabled={Platform.OS === 'ios'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 52 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 132 : 0}
           style={styles.promptSection}
         >
           <View
-          style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+            style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
           >
             <Text style={[
               styles.inputLabel,
@@ -436,7 +539,6 @@ export default function FortuneCard({
                 autoCorrect={false}
                 blurOnSubmit={false}
                 editable={!isHydratingSelection && !isPromptTemporarilyLocked}
-                inputAccessoryViewID={Platform.OS === 'ios' ? KEYBOARD_ACCESSORY_ID : undefined}
                 ref={inputRef}
                 onBlur={() => {
                   setIsInputFocused(false);
@@ -452,8 +554,10 @@ export default function FortuneCard({
                     return;
                   }
 
-                  onBeginMoodEntry?.();
                   setIsInputFocused(true);
+                  if (shouldPrepareFreshEntry) {
+                    onBeginMoodEntry?.();
+                  }
                   scheduleIdleKeyboardDismiss('');
                 }}
                 onSubmitEditing={() => {
@@ -474,38 +578,28 @@ export default function FortuneCard({
             </View>
           </View>
         </KeyboardAvoidingView>
-
         {isFortuneRevealed ? (
-          <View style={styles.actionZone}>
-            {isReplaceConfirmVisible ? (
-              <View style={[styles.replaceConfirmCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
-                <Text style={[styles.replaceConfirmText, { color: scene.textPrimary }]}>
-                  A new fortune will replace this one.
-                </Text>
-
-                <View style={styles.replaceConfirmActions}>
-                  <Pressable
-                    onPress={onCancelReplace}
-                    style={[styles.replaceConfirmButton, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
-                  >
-                    <Text style={[styles.replaceConfirmButtonText, { color: scene.textPrimary }]}>
-                      Keep this one
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    onPress={onConfirmReplace}
-                    style={[styles.replaceConfirmButton, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-                  >
-                    <Text style={[styles.replaceConfirmButtonText, { color: scene.textPrimary }]}>
-                      Replace it
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : null}
+          <View
+            style={[
+              styles.actionZone,
+              {
+                position: 'absolute',
+                top: cookieTopPadding + 116 + cookieStageMinHeight + 52,
+              },
+            ]}
+          >
+            <FortuneActionTray
+              canReplace={canReplaceCurrentFortune}
+              isFavorite={currentFortuneIsFavorite}
+              onReplace={onRequestReplace}
+              onShare={onShareFortune}
+              onToggleFavorite={onToggleFavorite}
+              palette={actionTrayPalette}
+              visible={isActionTrayVisible}
+            />
           </View>
         ) : null}
+        </View>
       </View>
 
       {isDrawerOpen ? (
@@ -518,99 +612,49 @@ export default function FortuneCard({
             style={[
               styles.drawerPanel,
               drawerPanelAnimatedStyle,
-              { backgroundColor: scene.panel, borderColor: scene.panelBorder },
+              {
+                width: drawerWidth,
+                backgroundColor: drawerPalette.panel,
+                borderColor: drawerPalette.border,
+              },
             ]}
           >
-            <Text style={[styles.drawerTitle, { color: scene.textPrimary }]}>Menu</Text>
+            <Text style={[styles.drawerTitle, { color: drawerPalette.title }]}>Menu</Text>
 
-            <Pressable
-              onPress={() => handleDrawerSelect(() => openLibrary('history'))}
-              style={[styles.drawerItem, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
-            >
-              <Text style={[styles.drawerItemText, { color: scene.textPrimary }]}>History</Text>
-            </Pressable>
+            <DrawerSection label="Browse" labelColor={drawerPalette.title}>
+              <DrawerItem
+                backgroundColor={drawerPalette.itemFill}
+                borderColor={drawerPalette.itemBorder}
+                label="History"
+                onPress={() => handleDrawerSelect(() => openLibrary('history'))}
+                textColor={drawerPalette.text}
+              />
+              <DrawerItem
+                backgroundColor={drawerPalette.itemFill}
+                borderColor={drawerPalette.itemBorder}
+                label="Favorites"
+                onPress={() => handleDrawerSelect(() => openLibrary('favorites'))}
+                textColor={drawerPalette.text}
+              />
+              <DrawerItem
+                backgroundColor={drawerPalette.itemFill}
+                borderColor={drawerPalette.itemBorder}
+                detail="Questions, feedback, or help"
+                label="Support"
+                onPress={handleOpenSupport}
+                textColor={drawerPalette.text}
+              />
+            </DrawerSection>
 
-            <Pressable
-              onPress={() => handleDrawerSelect(() => openLibrary('favorites'))}
-              style={[styles.drawerItem, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
-            >
-              <Text style={[styles.drawerItemText, { color: scene.textPrimary }]}>Favorites</Text>
-            </Pressable>
-
-            <View style={[styles.drawerDivider, { backgroundColor: scene.panelBorder }]} />
-
-            <Pressable
-              disabled={!isFortuneRevealed}
-              onPress={() => handleDrawerSelect(onShareFortune)}
-              style={[
-                styles.drawerItem,
-                { backgroundColor: scene.input, borderColor: scene.inputBorder },
-                !isFortuneRevealed && styles.drawerItemDisabled,
-              ]}
-            >
-              <Text style={[styles.drawerItemText, { color: scene.textPrimary }, !isFortuneRevealed && styles.drawerItemTextDisabled]}>
-                Share
-              </Text>
-            </Pressable>
-
-            <Pressable
-              disabled={!isFortuneRevealed}
-              onPress={() => handleDrawerSelect(onToggleFavorite)}
-              style={[
-                styles.drawerItem,
-                { backgroundColor: scene.input, borderColor: scene.inputBorder },
-                !isFortuneRevealed && styles.drawerItemDisabled,
-              ]}
-            >
-              <Text style={[styles.drawerItemText, { color: scene.textPrimary }, !isFortuneRevealed && styles.drawerItemTextDisabled]}>
-                {currentFortuneIsFavorite ? 'Unfavorite' : 'Favorite'}
-              </Text>
-            </Pressable>
-
-            {canReplaceCurrentFortune ? (
-              <Pressable
-                onPress={() => handleDrawerSelect(onRequestReplace)}
-                style={[styles.drawerItem, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
-              >
-                <Text style={[styles.drawerItemText, { color: scene.textPrimary }]}>Replace</Text>
-              </Pressable>
-            ) : null}
-
-            <View style={[styles.drawerDivider, { backgroundColor: scene.panelBorder }]} />
-
-            <Pressable
-              onPress={handleOpenSupport}
-              style={[styles.drawerItem, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
-            >
-              <Text style={[styles.drawerItemText, { color: scene.textPrimary }]}>Support</Text>
-            </Pressable>
+            <View style={styles.drawerCalmSpace} />
+            <View style={styles.drawerMotif} pointerEvents="none">
+              <View style={[styles.drawerMotifLine, { backgroundColor: drawerPalette.motif }]} />
+              <View style={[styles.drawerMotifDot, { backgroundColor: drawerPalette.motif }]} />
+              <View style={[styles.drawerMotifLineShort, { backgroundColor: drawerPalette.motif }]} />
+            </View>
           </Animated.View>
         </View>
       ) : null}
-
-      {Platform.OS === 'ios' ? (
-        <InputAccessoryView nativeID={KEYBOARD_ACCESSORY_ID}>
-          <View
-            style={[
-              styles.keyboardAccessory,
-              {
-                backgroundColor: scene.panel,
-                borderTopColor: scene.panelBorder,
-              },
-            ]}
-            {...keyboardAccessoryPanResponder.panHandlers}
-          >
-            <Pressable
-              hitSlop={{ top: 6, bottom: 6, left: 24, right: 24 }}
-              onPress={() => inputRef.current?.blur()}
-              style={styles.keyboardHandlePressable}
-            >
-              <View style={[styles.keyboardHandle, { backgroundColor: scene.panelBorder }]} />
-            </Pressable>
-          </View>
-        </InputAccessoryView>
-      ) : null}
-
       <FortuneLibrarySheet
         activeLibrary={activeLibrary || 'history'}
         favorites={favoriteFortunes}
@@ -635,44 +679,18 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 20,
   },
-  menuChrome: {
+  headerChrome: {
     position: 'absolute',
     top: 18,
     left: 22,
     right: 22,
+    flexDirection: 'row',
     alignItems: 'flex-start',
+    justifyContent: 'space-between',
     zIndex: 12,
   },
-  topChrome: {
-    position: 'absolute',
-    top: 18,
-    left: 22,
-    right: 22,
-    alignItems: 'flex-end',
-    zIndex: 10,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderRadius: 999,
-    zIndex: 10,
-    shadowColor: '#e5ba65',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  streakBar: {
-    minHeight: 32,
-    minWidth: 148,
-    maxWidth: 320,
-    paddingVertical: 7,
-    paddingHorizontal: 13,
+  mainFlow: {
+    flexGrow: 1,
   },
   menuButton: {
     width: 38,
@@ -692,18 +710,6 @@ const styles = StyleSheet.create({
     width: 16,
     height: 1.5,
     borderRadius: 999,
-  },
-  streakText: {
-    flexShrink: 1,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: -0.15,
-  },
-  streakTextCentered: {
-    textAlign: 'center',
-  },
-  streakTextCelebratory: {
-    color: '#8a5a17',
   },
   topGlow: {
     position: 'absolute',
@@ -756,8 +762,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     paddingHorizontal: 16,
-    paddingTop: 13,
-    paddingBottom: 11,
+    paddingTop: 10,
+    paddingBottom: 9,
     shadowColor: '#6d4e37',
     shadowOpacity: 0.045,
     shadowRadius: 10,
@@ -766,9 +772,12 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     marginBottom: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: -0.1,
+    marginLeft: 2,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    opacity: 0.7,
   },
   inputLabelLocked: {
     opacity: 0.45,
@@ -776,7 +785,7 @@ const styles = StyleSheet.create({
   inputRow: {
     borderRadius: 16,
     borderWidth: 1,
-    minHeight: 42,
+    minHeight: 38,
     paddingHorizontal: 14,
     justifyContent: 'center',
     zIndex: 3,
@@ -795,7 +804,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 2,
     fontSize: 16,
-    paddingVertical: 7,
+    paddingVertical: 5,
   },
   inputLocked: {
     opacity: 0.5,
@@ -839,7 +848,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   promptSection: {
-    marginTop: -14,
+    marginTop: 16,
   },
   dailyWisdomText: {
     fontSize: 12.5,
@@ -852,18 +861,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 540,
     alignSelf: 'center',
-    marginTop: 16,
-    minHeight: 12,
+    marginTop: 14,
+    minHeight: 8,
     justifyContent: 'flex-start',
-  },
-  replaceConfirmCard: {
-    width: '100%',
-    maxWidth: 540,
-    alignSelf: 'center',
-    borderRadius: 18,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
   },
   drawerLayer: {
     ...StyleSheet.absoluteFillObject,
@@ -875,93 +875,51 @@ const styles = StyleSheet.create({
     backgroundColor: '#201715',
   },
   drawerPanel: {
-    width: 286,
-    maxWidth: '80%',
     minHeight: '100%',
     borderRightWidth: 1,
-    paddingTop: 84,
-    paddingHorizontal: 16,
-    paddingBottom: 30,
+    paddingTop: 78,
+    paddingHorizontal: 12,
+    paddingBottom: 24,
     shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 26,
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
     shadowOffset: { width: 10, height: 0 },
-    elevation: 10,
+    elevation: 14,
   },
   drawerTitle: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    opacity: 0.45,
-    marginBottom: 16,
-    marginLeft: 6,
+    marginBottom: 14,
+    marginLeft: 4,
   },
-  drawerItem: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderRadius: 16,
-    marginBottom: 8,
+  drawerCalmSpace: {
+    flex: 1,
+    minHeight: 28,
   },
-  drawerItemDisabled: {
-    opacity: 0.36,
+  drawerMotif: {
+    alignItems: 'flex-start',
+    paddingHorizontal: 4,
+    paddingBottom: 6,
   },
-  drawerItemText: {
-    fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: -0.12,
-  },
-  drawerItemTextDisabled: {
-    opacity: 0.82,
-  },
-  drawerDivider: {
-    height: 1,
-    opacity: 0.24,
-    marginVertical: 12,
-    marginHorizontal: 6,
-  },
-  keyboardAccessory: {
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 10,
-    borderTopWidth: 1,
-  },
-  keyboardHandlePressable: {
-    paddingHorizontal: 24,
-    paddingVertical: 6,
-  },
-  keyboardHandle: {
-    width: 72,
-    height: 5,
+  drawerMotifLine: {
+    width: 54,
+    height: 1.5,
     borderRadius: 999,
-    opacity: 0.58,
+    marginBottom: 10,
   },
-  replaceConfirmText: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '600',
-    letterSpacing: -0.1,
+  drawerMotifDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    marginBottom: 10,
+    marginLeft: 10,
   },
-  replaceConfirmActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 12,
-  },
-  replaceConfirmButton: {
-    minHeight: 40,
-    borderRadius: 14,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    flexGrow: 1,
-  },
-  replaceConfirmButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: -0.12,
+  drawerMotifLineShort: {
+    width: 28,
+    height: 1.5,
+    borderRadius: 999,
+    marginLeft: 18,
   },
 });
