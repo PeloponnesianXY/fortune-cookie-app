@@ -114,7 +114,31 @@ function getDailyWisdomLockSeconds(dailyFortuneCount) {
     return 0;
   }
 
-  return Math.min(2 ** (dailyFortuneCount - 2), 64);
+  return Math.min(2 ** (dailyFortuneCount - 1), 64);
+}
+
+function getStreakTierTitle(streakCount) {
+  if (streakCount >= 50) {
+    return 'Oracle of Crumbs';
+  }
+
+  if (streakCount >= 20) {
+    return 'Snack Prophet';
+  }
+
+  if (streakCount >= 10) {
+    return 'Fortune Chaser';
+  }
+
+  if (streakCount >= 5) {
+    return 'Cookie Regular';
+  }
+
+  if (streakCount >= 2) {
+    return 'Crumb Collector';
+  }
+
+  return null;
 }
 
 export default function App() {
@@ -156,7 +180,12 @@ export default function App() {
     currentFortuneRecord
     && favoriteFortunes.some((favorite) => favorite.id === currentFortuneRecord.id)
   );
-  const streakLabel = streakCount === 1 ? '1-day streak' : streakCount > 1 ? `${streakCount}-day streak` : 'Start a streak';
+  const streakTierTitle = getStreakTierTitle(streakCount);
+  const streakLabel = streakCount <= 0
+    ? 'Start your streak!'
+    : streakTierTitle
+      ? `${streakCount}-day streak! You're now a ${streakTierTitle}`
+      : '1-day streak!';
   const canReplaceCurrentFortune = Boolean(
     currentFortuneRecord
     && isPaperVisible
@@ -168,7 +197,7 @@ export default function App() {
     || !hasActionableInput
   );
   const dailyWisdomMessage = dailyWisdomLockSeconds > 0
-    ? `A cookie can only offer so much wisdom in a day. Let this one settle for ${dailyWisdomLockSeconds} seconds.`
+    ? `The cookie is getting tired. It will now rest for ${dailyWisdomLockSeconds} seconds`
     : null;
 
   async function resetTodayFortune() {

@@ -160,8 +160,6 @@ export default function FortuneCard({
   const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.15), 142), 184);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
-  const celebratoryStreakLabel = streakLabel === 'Start a streak' ? 'Start your streak!' : `${streakLabel}!`;
-
   function clearIdleKeyboardTimer() {
     if (idleKeyboardTimerRef.current) {
       clearTimeout(idleKeyboardTimerRef.current);
@@ -364,7 +362,7 @@ export default function FortuneCard({
             ]}
           >
             <Text style={[styles.streakText, styles.streakTextCentered, styles.streakTextCelebratory]}>
-              {celebratoryStreakLabel}
+              {streakLabel}
             </Text>
           </View>
         </View>
@@ -380,7 +378,12 @@ export default function FortuneCard({
                 { backgroundColor: scene.panel, borderColor: scene.panelBorder },
               ]}
             >
-              <Text style={[styles.dailyWisdomText, { color: scene.accent }]}>
+              <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
+                numberOfLines={1}
+                style={[styles.dailyWisdomText, { color: scene.accent }]}
+              >
                 {dailyWisdomMessage}
               </Text>
             </Animated.View>
@@ -636,14 +639,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 18,
     left: 22,
+    right: 22,
+    alignItems: 'flex-start',
     zIndex: 12,
   },
   topChrome: {
     position: 'absolute',
     top: 18,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
+    left: 22,
+    right: 22,
+    alignItems: 'flex-end',
     zIndex: 10,
   },
   topBar: {
@@ -664,9 +669,10 @@ const styles = StyleSheet.create({
   },
   streakBar: {
     minHeight: 32,
-    minWidth: 172,
+    minWidth: 148,
+    maxWidth: 320,
     paddingVertical: 7,
-    paddingHorizontal: 16,
+    paddingHorizontal: 13,
   },
   menuButton: {
     width: 38,
@@ -815,7 +821,7 @@ const styles = StyleSheet.create({
   },
   dailyWisdomSlot: {
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 540,
     alignSelf: 'center',
     height: 116,
     justifyContent: 'flex-end',
@@ -836,10 +842,10 @@ const styles = StyleSheet.create({
     marginTop: -14,
   },
   dailyWisdomText: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 16,
     fontWeight: '600',
-    letterSpacing: -0.1,
+    letterSpacing: -0.15,
     textAlign: 'center',
   },
   actionZone: {
@@ -866,53 +872,55 @@ const styles = StyleSheet.create({
   },
   drawerBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#150f0d',
+    backgroundColor: '#201715',
   },
   drawerPanel: {
-    width: 272,
-    maxWidth: '78%',
+    width: 286,
+    maxWidth: '80%',
     minHeight: '100%',
     borderRightWidth: 1,
-    paddingTop: 88,
-    paddingHorizontal: 18,
-    paddingBottom: 28,
+    paddingTop: 84,
+    paddingHorizontal: 16,
+    paddingBottom: 30,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 22,
-    shadowOffset: { width: 8, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 26,
+    shadowOffset: { width: 10, height: 0 },
     elevation: 10,
   },
   drawerTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    opacity: 0.6,
-    marginBottom: 14,
+    opacity: 0.45,
+    marginBottom: 16,
+    marginLeft: 6,
   },
   drawerItem: {
-    minHeight: 46,
+    minHeight: 44,
     justifyContent: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderRadius: 14,
-    marginBottom: 6,
+    borderRadius: 16,
+    marginBottom: 8,
   },
   drawerItemDisabled: {
-    opacity: 0.4,
+    opacity: 0.36,
   },
   drawerItemText: {
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: '600',
-    letterSpacing: -0.2,
+    letterSpacing: -0.12,
   },
   drawerItemTextDisabled: {
-    opacity: 0.88,
+    opacity: 0.82,
   },
   drawerDivider: {
     height: 1,
-    opacity: 0.45,
-    marginVertical: 10,
+    opacity: 0.24,
+    marginVertical: 12,
+    marginHorizontal: 6,
   },
   keyboardAccessory: {
     alignItems: 'center',
