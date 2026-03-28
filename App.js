@@ -21,9 +21,8 @@ import {
   clearAllStoredFortuneState,
   getDailyFortuneSelection,
   getDefaultSceneKey,
-  getOverrideFortuneSelection,
   getReplacementFortuneSelection,
-  getStoredDailyFortuneSelection,
+  getStoredFortuneDayState,
 } from './utils/fortuneLogic';
 import {
   collapseFortuneRuns,
@@ -79,22 +78,6 @@ const HIGH_RISK_WORDS = new Set([
   'massacre',
 ]);
 
-function parseOverrideCommand(input) {
-  const match = input.match(/^\s*override\b(.*)$/i);
-
-  if (!match) {
-    return {
-      isOverride: false,
-      mood: input,
-    };
-  }
-
-  return {
-    isOverride: true,
-    mood: match[1].trim(),
-  };
-}
-
 function isResetFortuneCommand(input) {
   return /^\s*reset\s*$/i.test(input);
 }
@@ -104,12 +87,6 @@ function normalizeMoodInput(input) {
 
   if (!normalized) {
     return '';
-  }
-
-  const overrideMatch = normalized.match(/^override(?:\s+([^\s]+)?)?/i);
-  if (overrideMatch) {
-    const overrideMood = overrideMatch[1] || '';
-    return overrideMood ? `override ${overrideMood}` : 'override';
   }
 
   const [firstWord = ''] = normalized.split(' ');
@@ -132,10 +109,18 @@ function getDailyFortuneCount(selection) {
   return Math.max(selection?.dailyFortuneCount || 0, 0);
 }
 
+function getDailyWisdomLockSeconds(dailyFortuneCount) {
+  if (dailyFortuneCount < 3) {
+    return 0;
+  }
+
+  return Math.min(2 ** (dailyFortuneCount - 2), 64);
+}
+
 export default function App() {
   const [moodInput, setMoodInput] = useState('');
   const [fortuneText, setFortuneText] = useState('');
-  const [storedTodaySelection, setStoredTodaySelection] = useState(null);
+  const [storedDayState, setStoredDayState] = useState(null);
   const [currentFortuneRecord, setCurrentFortuneRecord] = useState(null);
   const [historyFortunes, setHistoryFortunes] = useState([]);
   const [favoriteFortunes, setFavoriteFortunes] = useState([]);
@@ -147,8 +132,6 @@ export default function App() {
   const [isSafetyLocked, setIsSafetyLocked] = useState(false);
   const [isHydratingSelection, setIsHydratingSelection] = useState(true);
   const [isPreparingNextFortune, setIsPreparingNextFortune] = useState(false);
-  const [isOverrideLoopActive, setIsOverrideLoopActive] = useState(false);
-  const [isShowingOverrideFortune, setIsShowingOverrideFortune] = useState(false);
   const [hasUsedReplacement, setHasUsedReplacement] = useState(false);
   const [isReplaceConfirmVisible, setIsReplaceConfirmVisible] = useState(false);
   const [currentFortuneContext, setCurrentFortuneContext] = useState(null);
@@ -157,17 +140,15 @@ export default function App() {
   const paperProgress = useRef(new Animated.Value(0)).current;
   const paperRevealTimer = useRef(null);
   const isOpeningRef = useRef(false);
-  const overrideAttemptRef = useRef(0);
   const replacementAttemptRef = useRef(0);
   const revealSessionRef = useRef(0);
 
   const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
-  const overrideCommand = parseOverrideCommand(moodInput);
   const isResetCommandActive = isResetFortuneCommand(moodInput);
-  const isOverrideInputActive = overrideCommand.isOverride;
   const hasActionableInput = Boolean(moodInput.trim());
-  const dailyFortuneCount = getDailyFortuneCount(storedTodaySelection);
+  const dailyFortuneCount = getDailyFortuneCount(storedDayState);
+  const dailyWisdomLockSeconds = getDailyWisdomLockSeconds(dailyFortuneCount);
   const isCookieOpened = cookieShellState === COOKIE_SHELL_STATE.OPEN;
   const isPaperVisible = isCookieOpened && revealPhase !== REVEAL_PHASE.IDLE;
   const collapsedHistoryFortunes = collapseFortuneRuns(historyFortunes, 10);
@@ -184,23 +165,20 @@ export default function App() {
   );
   const isCookieInteractionDisabled = (
     isHydratingSelection
-    || (!hasActionableInput && !isShowingOverrideFortune && !isOverrideLoopActive)
+    || !hasActionableInput
   );
-  const dailyWisdomMessage = dailyFortuneCount >= 3
-    ? 'A cookie can only offer so much wisdom in a day. The next ones will arrive a little more slowly.'
+  const dailyWisdomMessage = dailyWisdomLockSeconds > 0
+    ? `A cookie can only offer so much wisdom in a day. Let this one settle for ${dailyWisdomLockSeconds} seconds.`
     : null;
 
   async function resetTodayFortune() {
     Keyboard.dismiss();
     await clearAllStoredFortuneState();
-    setStoredTodaySelection(null);
-    setIsShowingOverrideFortune(false);
-    setIsOverrideLoopActive(false);
+    setStoredDayState(null);
     setIsPreparingNextFortune(false);
     setHasUsedReplacement(false);
     setIsReplaceConfirmVisible(false);
     setCurrentFortuneContext(null);
-    overrideAttemptRef.current = 0;
     replacementAttemptRef.current = 0;
     setMoodInput('');
     resetCookiePresentation();
@@ -242,27 +220,6 @@ export default function App() {
     setRevealPhase(REVEAL_PHASE.OPENED);
     shellProgress.setValue(1);
     paperProgress.setValue(1);
-  }
-
-  function presentStoredSelection(selection) {
-    beginFortuneSession({
-      mood: selection.inputMood || selection.analysis?.primaryEmotion || '',
-      isOverride: false,
-    });
-    showSelection(
-      selection,
-      createSavedFortuneRecord(selection, selection.inputMood || '')
-    );
-  }
-
-  function exitOverrideLoop() {
-    setIsShowingOverrideFortune(false);
-    setIsOverrideLoopActive(false);
-    setHasUsedReplacement(false);
-    setIsReplaceConfirmVisible(false);
-    setCurrentFortuneContext(null);
-    replacementAttemptRef.current = 0;
-    resetCookiePresentation();
   }
 
   function applySavedFortunesSnapshot(snapshot) {
@@ -359,7 +316,7 @@ export default function App() {
       try {
         const [snapshot, storedSelection, storedStreak] = await Promise.all([
           getSavedFortunesSnapshot(),
-          getStoredDailyFortuneSelection(),
+          getStoredFortuneDayState(),
           getStoredStreak(),
         ]);
 
@@ -369,13 +326,8 @@ export default function App() {
 
         applySavedFortunesSnapshot(snapshot);
         setStreakCount(storedStreak.count);
-
-        if (storedSelection) {
-          setStoredTodaySelection(storedSelection);
-          presentStoredSelection(storedSelection);
-        } else {
-          resetCookiePresentation();
-        }
+        setStoredDayState(storedSelection);
+        resetCookiePresentation();
       } finally {
         if (isMounted) {
           setIsHydratingSelection(false);
@@ -391,18 +343,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (
-      storedTodaySelection
-      && !isPreparingNextFortune
-      && !isShowingOverrideFortune
-      && !isOverrideInputActive
-      && currentFortuneRecord?.id !== storedTodaySelection.id
-    ) {
-      presentStoredSelection(storedTodaySelection);
-    }
-  }, [currentFortuneRecord?.id, isOverrideInputActive, isPreparingNextFortune, isShowingOverrideFortune, storedTodaySelection]);
-
-  useEffect(() => {
     if (isHydratingSelection) {
       return undefined;
     }
@@ -410,7 +350,7 @@ export default function App() {
     let isMounted = true;
 
     async function syncBadge() {
-      await syncAppBadgeAsync(Boolean(storedTodaySelection));
+      await syncAppBadgeAsync(Boolean(storedDayState));
     }
 
     if (isMounted) {
@@ -420,7 +360,7 @@ export default function App() {
     return () => {
       isMounted = false;
     };
-  }, [isHydratingSelection, storedTodaySelection]);
+  }, [isHydratingSelection, storedDayState]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -430,36 +370,19 @@ export default function App() {
 
       (async () => {
         const [refreshedSelection, storedStreak] = await Promise.all([
-          getStoredDailyFortuneSelection(),
+          getStoredFortuneDayState(),
           getStoredStreak(),
         ]);
 
         setStreakCount(storedStreak.count);
-        setStoredTodaySelection(refreshedSelection);
-
-        if (refreshedSelection) {
-          if (!isPreparingNextFortune && !isShowingOverrideFortune && !isOverrideInputActive) {
-            presentStoredSelection(refreshedSelection);
-          }
-          return;
-        }
-
-        if (!isShowingOverrideFortune) {
-          exitOverrideLoop();
-        }
+        setStoredDayState(refreshedSelection);
       })();
     });
 
     return () => {
       subscription.remove();
     };
-  }, [isOverrideInputActive, isPreparingNextFortune, isShowingOverrideFortune]);
-
-  useEffect(() => {
-    if (!isOverrideInputActive && !isShowingOverrideFortune) {
-      setIsOverrideLoopActive(false);
-    }
-  }, [isOverrideInputActive, isShowingOverrideFortune]);
+  }, []);
 
   function runCookieAnimation(selection, onReveal) {
     const revealSessionId = revealSessionRef.current + 1;
@@ -529,13 +452,10 @@ export default function App() {
       return;
     }
 
-    const riskCandidate = isOverrideInputActive ? overrideCommand.mood : moodInput;
-    if (isHighRiskMoodInput(riskCandidate)) {
+    if (isHighRiskMoodInput(moodInput)) {
       Keyboard.dismiss();
       clearPaperRevealTimer();
       setIsReplaceConfirmVisible(false);
-      setIsShowingOverrideFortune(false);
-      setIsOverrideLoopActive(false);
       setCurrentFortuneContext(null);
       setIsSafetyLocked(true);
       return;
@@ -553,20 +473,6 @@ export default function App() {
       return;
     }
 
-    if (isShowingOverrideFortune) {
-      setIsShowingOverrideFortune(false);
-      setIsReplaceConfirmVisible(false);
-      setIsOverrideLoopActive(isOverrideInputActive);
-
-      if (storedTodaySelection && !isOverrideInputActive) {
-        presentStoredSelection(storedTodaySelection);
-      } else {
-        exitOverrideLoop();
-      }
-
-      return;
-    }
-
     if (!hasActionableInput) {
       return;
     }
@@ -574,37 +480,26 @@ export default function App() {
     isOpeningRef.current = true;
 
     try {
-      setIsPreparingNextFortune(false);
-      const isOverrideMode = isOverrideInputActive;
-      const sessionMood = isOverrideMode ? overrideCommand.mood : moodInput;
-      const selection = isOverrideMode
-        ? await getOverrideFortuneSelection(sessionMood, overrideAttemptRef.current += 1)
-        : await getDailyFortuneSelection(sessionMood);
+      setIsPreparingNextFortune(true);
+      const sessionMood = moodInput;
+      const selection = await getDailyFortuneSelection(sessionMood);
       const savedFortuneRecord = createSavedFortuneRecord(
         selection,
         sessionMood
       );
       beginFortuneSession({
         mood: sessionMood || selection.inputMood || selection.analysis?.primaryEmotion || '',
-        isOverride: isOverrideMode,
       });
+      setStoredDayState(selection);
 
-      if (isOverrideMode) {
-        setIsOverrideLoopActive(true);
-        setIsShowingOverrideFortune(true);
-      } else {
-        setStoredTodaySelection(selection);
-        setIsOverrideLoopActive(false);
-        setIsShowingOverrideFortune(false);
-
-        const streakSnapshot = await registerDailyStreak(selection.dayKey);
-        setStreakCount(streakSnapshot.count);
-      }
+      const streakSnapshot = await registerDailyStreak(selection.dayKey);
+      setStreakCount(streakSnapshot.count);
 
       setIsReplaceConfirmVisible(false);
       const revealFortune = () => {
         setCurrentFortuneRecord(savedFortuneRecord);
         runCookieAnimation(selection, () => {
+          setIsPreparingNextFortune(false);
           handleFortuneRevealed(savedFortuneRecord);
         });
       };
@@ -619,7 +514,7 @@ export default function App() {
       return;
     }
 
-    if (!hasActionableInput && !isShowingOverrideFortune && !isOverrideLoopActive) {
+    if (!hasActionableInput) {
       return;
     }
 
@@ -632,8 +527,6 @@ export default function App() {
     setIsPreparingNextFortune(true);
     setIsReplaceConfirmVisible(false);
     setCurrentFortuneContext(null);
-    setIsShowingOverrideFortune(false);
-    setIsOverrideLoopActive(false);
     setHasUsedReplacement(false);
     resetCookiePresentation();
   }
@@ -672,15 +565,12 @@ export default function App() {
         || currentFortuneRecord.category
         || '';
       const replacementSelection = await getReplacementFortuneSelection(replacementMood, {
-        mode: currentFortuneContext.isOverride ? 'override' : 'daily',
         replacementKey: replacementAttemptRef.current += 1,
         excludeFortuneText: currentFortuneRecord.text,
       });
       const replacementRecord = createSavedFortuneRecord(replacementSelection, replacementMood);
 
-      if (!currentFortuneContext.isOverride) {
-        setStoredTodaySelection(replacementSelection);
-      }
+      setStoredDayState(replacementSelection);
 
       setHasUsedReplacement(true);
       setIsReplaceConfirmVisible(false);
@@ -732,6 +622,7 @@ export default function App() {
               shellProgress={shellProgress}
               streakLabel={streakLabel}
               canReplaceCurrentFortune={canReplaceCurrentFortune}
+              dailyWisdomLockSeconds={dailyWisdomLockSeconds}
               dailyWisdomMessage={dailyWisdomMessage}
             />
           ) : (

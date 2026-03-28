@@ -103,6 +103,7 @@ const CookieStage = memo(function CookieStage({
 export default function FortuneCard({
   canReplaceCurrentFortune,
   currentFortuneIsFavorite,
+  dailyWisdomLockSeconds,
   dailyWisdomMessage,
   favoriteFortunes,
   fortuneText,
@@ -133,6 +134,7 @@ export default function FortuneCard({
   const [activeLibrary, setActiveLibrary] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isDailyWisdomLockActive, setIsDailyWisdomLockActive] = useState(false);
   const [isDailyWisdomVisible, setIsDailyWisdomVisible] = useState(Boolean(dailyWisdomMessage));
   const { height: viewportHeight } = useWindowDimensions();
   const drawerProgress = useRef(new Animated.Value(0)).current;
@@ -157,7 +159,7 @@ export default function FortuneCard({
   const promptTopGap = Math.max(Math.round(viewportHeight * 0.002), 0);
   const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.15), 142), 184);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
-  const isPromptTemporarilyLocked = Boolean(dailyWisdomMessage && isDailyWisdomVisible);
+  const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const celebratoryStreakLabel = streakLabel === 'Start a streak' ? 'Start your streak!' : `${streakLabel}!`;
 
   function clearIdleKeyboardTimer() {
@@ -250,7 +252,8 @@ export default function FortuneCard({
     clearDailyWisdomShowTimer();
     clearDailyWisdomTimer();
 
-    if (!dailyWisdomMessage) {
+    if (!dailyWisdomMessage || dailyWisdomLockSeconds <= 0) {
+      setIsDailyWisdomLockActive(false);
       Animated.timing(dailyWisdomProgress, {
         toValue: 0,
         duration: 420,
@@ -264,37 +267,40 @@ export default function FortuneCard({
       return undefined;
     }
 
+    setIsDailyWisdomLockActive(true);
+    setIsDailyWisdomVisible(false);
     dailyWisdomProgress.setValue(0);
     dailyWisdomShowTimerRef.current = setTimeout(() => {
       setIsDailyWisdomVisible(true);
       Animated.timing(dailyWisdomProgress, {
         toValue: 1,
-        duration: 560,
+        duration: 520,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }).start();
       dailyWisdomShowTimerRef.current = null;
+    }, 1000);
 
-      dailyWisdomTimerRef.current = setTimeout(() => {
-        Animated.timing(dailyWisdomProgress, {
-          toValue: 0,
-          duration: 520,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }).start(({ finished }) => {
-          if (finished) {
-            setIsDailyWisdomVisible(false);
-          }
-        });
-        dailyWisdomTimerRef.current = null;
-      }, 3600);
-    }, 2000);
+    dailyWisdomTimerRef.current = setTimeout(() => {
+      clearDailyWisdomShowTimer();
+      Animated.timing(dailyWisdomProgress, {
+        toValue: 0,
+        duration: 480,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) {
+          setIsDailyWisdomVisible(false);
+          setIsDailyWisdomLockActive(false);
+        }
+      });
+      dailyWisdomTimerRef.current = null;
+    }, dailyWisdomLockSeconds * 1000);
 
     return () => {
-      clearDailyWisdomShowTimer();
       clearDailyWisdomTimer();
     };
-  }, [dailyWisdomMessage, dailyWisdomProgress]);
+  }, [dailyWisdomLockSeconds, dailyWisdomMessage, dailyWisdomProgress]);
 
   useEffect(() => {
     if (isPromptTemporarilyLocked && isInputFocused) {

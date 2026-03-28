@@ -12,7 +12,7 @@ import EMOTION_LEXICON from '../data/nrcEmotionLexicon.json';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
-const DAILY_SELECTION_STORAGE_KEY = '@fortune-cookie-daily/daily-selection';
+const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
 const DEFAULT_SCENE_KEY = 'apricotMorning';
 
 const LEGACY_EMOTION_TO_MOOD_BUCKET = {
@@ -282,8 +282,8 @@ async function getOrCreateUserId() {
   return nextId;
 }
 
-async function loadDailySelection() {
-  const raw = await AsyncStorage.getItem(DAILY_SELECTION_STORAGE_KEY);
+async function loadDayState() {
+  const raw = await AsyncStorage.getItem(DAY_STATE_STORAGE_KEY);
   if (!raw) {
     return null;
   }
@@ -295,9 +295,9 @@ async function loadDailySelection() {
   }
 }
 
-async function saveDailySelection(selection) {
+async function saveDayState(selection) {
   const nextSelection = ensureSelectionMetadata(selection);
-  await AsyncStorage.setItem(DAILY_SELECTION_STORAGE_KEY, JSON.stringify(nextSelection));
+  await AsyncStorage.setItem(DAY_STATE_STORAGE_KEY, JSON.stringify(nextSelection));
   return nextSelection;
 }
 
@@ -609,7 +609,7 @@ async function buildFortuneSelection(input, {
     };
 
     if (persistSelection) {
-      const storedSelection = await saveDailySelection(blockedSelection);
+      const storedSelection = await saveDayState(blockedSelection);
       return {
         ...storedSelection,
         fromCache: false,
@@ -643,7 +643,7 @@ async function buildFortuneSelection(input, {
   };
 
   if (persistSelection) {
-    const storedSelection = await saveDailySelection(selection);
+    const storedSelection = await saveDayState(selection);
     return {
       ...storedSelection,
       fromCache: false,
@@ -658,7 +658,7 @@ async function buildFortuneSelection(input, {
 
 export async function getDailyFortuneSelection(input) {
   const dayKey = getLocalDayKey();
-  const existingSelection = await loadDailySelection();
+  const existingSelection = await loadDayState();
   const nextDailyFortuneCount = existingSelection?.dayKey === dayKey
     ? Math.max(existingSelection.dailyFortuneCount || 0, 0) + 1
     : 1;
@@ -669,7 +669,7 @@ export async function getDailyFortuneSelection(input) {
     persistSelection: true,
   });
 
-  return saveDailySelection({
+  return saveDayState({
     ...nextSelection,
     dayKey,
     dailyFortuneCount: nextDailyFortuneCount,
@@ -678,39 +678,21 @@ export async function getDailyFortuneSelection(input) {
   });
 }
 
-export async function getOverrideFortuneSelection(input, overrideKey, options = {}) {
-  const dayKey = getLocalDayKey();
-
-  return buildFortuneSelection(input, {
-    dayKey,
-    seedKey: `${dayKey}|override|${overrideKey}`,
-    persistSelection: false,
-    excludeFortuneText: options.excludeFortuneText || null,
-  });
-}
-
 export async function getReplacementFortuneSelection(input, {
-  mode = 'daily',
   replacementKey = 1,
   excludeFortuneText = null,
 } = {}) {
   const dayKey = getLocalDayKey();
-  const existingSelection = mode === 'daily' ? await loadDailySelection() : null;
+  const existingSelection = await loadDayState();
 
   const replacementSelection = await buildFortuneSelection(input, {
     dayKey,
-    seedKey: mode === 'override'
-      ? `${dayKey}|override-replace|${replacementKey}`
-      : `${dayKey}|replace|${replacementKey}`,
-    persistSelection: mode !== 'override',
+    seedKey: `${dayKey}|replace|${replacementKey}`,
+    persistSelection: true,
     excludeFortuneText,
   });
 
-  if (mode !== 'daily') {
-    return replacementSelection;
-  }
-
-  return saveDailySelection({
+  return saveDayState({
     ...replacementSelection,
     dayKey,
     dailyFortuneCount: existingSelection?.dayKey === dayKey
@@ -721,9 +703,9 @@ export async function getReplacementFortuneSelection(input, {
   });
 }
 
-export async function getStoredDailyFortuneSelection() {
+export async function getStoredFortuneDayState() {
   const dayKey = getLocalDayKey();
-  const selection = await loadDailySelection();
+  const selection = await loadDayState();
 
   if (!selection) {
     return null;
@@ -738,21 +720,21 @@ export async function getStoredDailyFortuneSelection() {
 
     return hasSelectionMetadata(normalizedSelection)
       ? normalizedSelection
-      : saveDailySelection(normalizedSelection);
+      : saveDayState(normalizedSelection);
   }
 
-  await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);
+  await AsyncStorage.removeItem(DAY_STATE_STORAGE_KEY);
   return null;
 }
 
-export async function clearStoredDailyFortuneSelection() {
-  await AsyncStorage.removeItem(DAILY_SELECTION_STORAGE_KEY);
+export async function clearStoredFortuneDayState() {
+  await AsyncStorage.removeItem(DAY_STATE_STORAGE_KEY);
 }
 
 export async function clearAllStoredFortuneState() {
   await AsyncStorage.multiRemove([
     USER_ID_STORAGE_KEY,
-    DAILY_SELECTION_STORAGE_KEY,
+    DAY_STATE_STORAGE_KEY,
   ]);
 }
 

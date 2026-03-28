@@ -76,11 +76,11 @@ async function ensureDailyBadgeScheduleAsync() {
   return true;
 }
 
-export async function syncAppBadgeAsync(hasOpenedToday) {
+export async function syncAppBadgeAsync(hasFortuneStateToday) {
   const ready = await ensureDailyBadgeScheduleAsync();
   if (!ready) {
     return false;
   }
 
-  return Notifications.setBadgeCountAsync(hasOpenedToday ? 0 : 1);
+  return Notifications.setBadgeCountAsync(hasFortuneStateToday ? 0 : 1);
 }

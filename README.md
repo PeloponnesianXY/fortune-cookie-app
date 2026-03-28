@@ -5,7 +5,7 @@ Small Expo app that:
 - takes a one-word mood input
 - maps it to one detected emotion locally
 - routes that emotion into one of 12 runtime fortune buckets
-- reveals one saved fortune per day
+- reveals fortunes locally on device, with pacing that changes as the day goes on
 
 ## Project structure
 
@@ -41,7 +41,7 @@ assets/
 - `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
 - `data/fortunes.js`: merged 12-bucket runtime fortune library
 - `data/scenes.js`: dedicated scene per detected emotion bucket
-- `utils/fortuneLogic.js`: emotion analysis, high-level moderation hooks, scene selection, daily and replacement selection
+- `utils/fortuneLogic.js`: emotion analysis, high-level moderation hooks, scene selection, day-state tracking, and replacement selection
 - `utils/savedFortunes.js`: local history/favorites persistence
 - `utils/streaks.js`: local daily streak persistence
 
@@ -81,16 +81,10 @@ If you host this repo as a static site, the root URL will open the support page 
 
 ## Hidden test commands
 
-These are development shortcuts for testing the app without waiting for the next calendar day:
-
-- `override <word>`
-  - Bypasses the once-per-day lock.
-  - Uses the text after `override` as the actual one-word input.
-- Examples: `override happy`, `override weird`
-  - After an override fortune is shown, the bottom cue becomes `Ready for another fortune?`, and tapping the cookie resets the UI for another immediate test run.
+These are development shortcuts for testing the app state:
 
 - `reset`
-  - Clears the saved daily fortune from local storage.
+  - Clears the current day state from local storage.
   - Press Enter to reset the app back to a fresh closed-cookie state for today.
 
 ## Safety lock
@@ -124,7 +118,7 @@ eas submit --platform ios
 
 ## Notes
 
-- The app uses local persistence via `AsyncStorage` to keep exactly one normal fortune per calendar day on the device.
+- The app uses local persistence via `AsyncStorage` to keep the current day state on device, including pacing/count information and replacement continuity.
 - Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - The classifier now uses a mood-first path: a curated 500-word dictionary runs first, then the bundled NRC lexicon is flattened to one runtime mood bucket per word as fallback coverage.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
