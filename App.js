@@ -53,6 +53,11 @@ const REVEAL_PHASE = {
   OPENED: 'opened',
 };
 
+const COOKIE_SHELL_STATE = {
+  CLOSED: 'closed',
+  OPEN: 'open',
+};
+
 const HIGH_RISK_WORDS = new Set([
   'suicide',
   'suicidal',
@@ -137,6 +142,7 @@ export default function App() {
   const [streakCount, setStreakCount] = useState(0);
   const [sceneKey, setSceneKey] = useState(getDefaultSceneKey());
   const [revealPhase, setRevealPhase] = useState(REVEAL_PHASE.IDLE);
+  const [cookieShellState, setCookieShellState] = useState(COOKIE_SHELL_STATE.CLOSED);
   const [assetsReady, setAssetsReady] = useState(false);
   const [isSafetyLocked, setIsSafetyLocked] = useState(false);
   const [isHydratingSelection, setIsHydratingSelection] = useState(true);
@@ -162,12 +168,8 @@ export default function App() {
   const isOverrideInputActive = overrideCommand.isOverride;
   const hasActionableInput = Boolean(moodInput.trim());
   const dailyFortuneCount = getDailyFortuneCount(storedTodaySelection);
-  const hasActiveFortuneVisual = Boolean(
-    fortuneText
-    || currentFortuneRecord?.text
-  );
-  const isCookieOpened = hasActiveFortuneVisual && revealPhase !== REVEAL_PHASE.IDLE;
-  const isPaperVisible = hasActiveFortuneVisual && revealPhase !== REVEAL_PHASE.IDLE;
+  const isCookieOpened = cookieShellState === COOKIE_SHELL_STATE.OPEN;
+  const isPaperVisible = isCookieOpened && revealPhase !== REVEAL_PHASE.IDLE;
   const collapsedHistoryFortunes = collapseFortuneRuns(historyFortunes, 10);
   const isCurrentFortuneFavorite = Boolean(
     currentFortuneRecord
@@ -219,6 +221,7 @@ export default function App() {
     setFortuneText('');
     setCurrentFortuneRecord(null);
     setSceneKey(getDefaultSceneKey());
+    setCookieShellState(COOKIE_SHELL_STATE.CLOSED);
     setRevealPhase(REVEAL_PHASE.IDLE);
     shellProgress.setValue(0);
     paperProgress.setValue(0);
@@ -235,6 +238,7 @@ export default function App() {
     setFortuneText(selection.fortuneText);
     setCurrentFortuneRecord(record || createSavedFortuneRecord(selection, selection.inputMood || ''));
     setSceneKey(selection.sceneKey || getDefaultSceneKey());
+    setCookieShellState(COOKIE_SHELL_STATE.OPEN);
     setRevealPhase(REVEAL_PHASE.OPENED);
     shellProgress.setValue(1);
     paperProgress.setValue(1);
@@ -477,11 +481,13 @@ export default function App() {
 
     setFortuneText(selection.fortuneText);
     setSceneKey(selection.sceneKey);
+    setCookieShellState(COOKIE_SHELL_STATE.CLOSED);
     setRevealPhase(REVEAL_PHASE.IDLE);
     shellProgress.setValue(0);
     paperProgress.setValue(0);
     clearPaperRevealTimer();
 
+    setCookieShellState(COOKIE_SHELL_STATE.OPEN);
     setRevealPhase(REVEAL_PHASE.OPENING);
     paperRevealTimer.current = setTimeout(() => {
       revealOnce();
