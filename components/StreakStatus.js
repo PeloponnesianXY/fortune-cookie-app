@@ -10,14 +10,20 @@ import {
 
 const AUTO_COLLAPSE_MS = 4200;
 
+function formatDayLabel(dayCount) {
+  return `${dayCount} ${dayCount === 1 ? 'day' : 'days'}`;
+}
+
 function formatCollapsedLabel(streakCount, tierTitle) {
   if (streakCount <= 0) {
-    return 'Begin streak';
+    return 'Begin your daily streak';
   }
 
-  return tierTitle
-    ? `${streakCount} days · ${tierTitle}`
-    : `${streakCount} days`;
+  if (tierTitle) {
+    return `${formatDayLabel(streakCount)} · ${tierTitle}`;
+  }
+
+  return formatDayLabel(streakCount);
 }
 
 function formatExpandedTitle(streakCount, tierTitle) {
@@ -25,11 +31,13 @@ function formatExpandedTitle(streakCount, tierTitle) {
     return 'Begin your streak';
   }
 
+  const streakHeadline = `${streakCount}-day streak!`;
+
   if (tierTitle) {
-    return `${streakCount}-day streak! You are a ${tierTitle}`;
+    return `${streakHeadline} You are a ${tierTitle}`;
   }
 
-  return `${streakCount}-day streak!`;
+  return streakHeadline;
 }
 
 export default function StreakStatus({
@@ -199,7 +207,7 @@ export default function StreakStatus({
                 ) : streakCount <= 0 ? (
                   <Text style={styles.expandedMeta}>{"Open today's fortune to begin"}</Text>
                 ) : (
-                  <Text style={styles.expandedMeta}>{"You're at the highest tier"}</Text>
+                  <Text style={styles.expandedMeta}>{"You are one of a kind!"}</Text>
                 )}
               </>
             )}
@@ -256,6 +264,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.12,
     lineHeight: 16,
     color: '#5b3d26',
+    textAlign: 'center',
     textAlignVertical: 'center',
   },
   expandedContent: {

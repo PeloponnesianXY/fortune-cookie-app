@@ -82,8 +82,16 @@ function getDailyWisdomLockSeconds(fortuneCount) {
 }
 
 function getStreakTierTitle(streakCount) {
-  if (streakCount >= 50) {
+  if (streakCount >= 1000) {
+    return 'Cookie Emperor';
+  }
+
+  if (streakCount >= 100) {
     return 'Oracle of Crumbs';
+  }
+
+  if (streakCount >= 50) {
+    return 'Cookie Master';
   }
 
   if (streakCount >= 20) {
@@ -98,7 +106,7 @@ function getStreakTierTitle(streakCount) {
     return 'Cookie Regular';
   }
 
-  if (streakCount >= 2) {
+  if (streakCount >= 1) {
     return 'Crumb Collector';
   }
 
@@ -106,8 +114,8 @@ function getStreakTierTitle(streakCount) {
 }
 
 function getNextStreakTier(streakCount) {
-  if (streakCount < 2) {
-    return { title: 'Crumb Collector', minDays: 2 };
+  if (streakCount < 1) {
+    return { title: 'Crumb Collector', minDays: 1 };
   }
 
   if (streakCount < 5) {
@@ -123,7 +131,15 @@ function getNextStreakTier(streakCount) {
   }
 
   if (streakCount < 50) {
-    return { title: 'Oracle of Crumbs', minDays: 50 };
+    return { title: 'Cookie Master', minDays: 50 };
+  }
+
+  if (streakCount < 100) {
+    return { title: 'Oracle of Crumbs', minDays: 100 };
+  }
+
+  if (streakCount < 1000) {
+    return { title: 'Cookie Emperor', minDays: 1000 };
   }
 
   return null;

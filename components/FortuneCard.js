@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
   },
   customFortuneNoticeWrap: {
     position: 'absolute',
-    top: 66,
+    bottom: 398,
     left: 22,
     right: 22,
     alignItems: 'center',

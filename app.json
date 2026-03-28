@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Fortune Cookie for Your Mood",
-    "slug": "fortune-cookie-for-your-mood",
+    "slug": "fortune-cookie-daily",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -28,6 +28,7 @@
       "eas": {
         "projectId": "edfe143a-54d6-43eb-8eb3-a4ca1e1f3df7"
       }
-    }
+    },
+    "owner": "fatoldsun"
   }
 }

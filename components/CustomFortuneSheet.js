@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -39,12 +40,14 @@ export default function CustomFortuneSheet({
   }, [initialFortuneText, initialMoodKey, visible]);
 
   function handleClose() {
+    Keyboard.dismiss();
     setSelectedMood(null);
     setFortuneText('');
     onCancel();
   }
 
   async function handleSave() {
+    Keyboard.dismiss();
     const didSave = await onSave({
       moodKey: selectedMood,
       fortuneText,
