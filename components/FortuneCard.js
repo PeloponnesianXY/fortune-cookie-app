@@ -14,11 +14,22 @@ import {
 } from 'react-native';
 
 import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
+import CreatedFortunesSheet from './CreatedFortunesSheet';
+import CustomFortuneSheet from './CustomFortuneSheet';
 import DrawerItem from './DrawerItem';
 import DrawerSection from './DrawerSection';
 import FortuneActionTray from './FortuneActionTray';
 import FortuneLibrarySheet from './FortuneLibrarySheet';
 import StreakStatus from './StreakStatus';
+import {
+  buildCreatedFortuneSections,
+  deleteCustomFortune,
+  formatMoodBucketLabel,
+  loadCustomFortunes,
+  saveCustomFortune,
+  updateCustomFortune,
+} from '../utils/customFortunes';
+import { MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 
@@ -134,6 +145,13 @@ export default function FortuneCard({
   const [isDailyWisdomLockActive, setIsDailyWisdomLockActive] = useState(false);
   const [isDailyWisdomVisible, setIsDailyWisdomVisible] = useState(Boolean(dailyWisdomMessage));
   const [isActionTrayVisible, setIsActionTrayVisible] = useState(false);
+  const [isCustomFortuneSheetVisible, setIsCustomFortuneSheetVisible] = useState(false);
+  const [isCreatedFortunesSheetVisible, setIsCreatedFortunesSheetVisible] = useState(false);
+  const [customFortuneError, setCustomFortuneError] = useState('');
+  const [isSavingCustomFortune, setIsSavingCustomFortune] = useState(false);
+  const [customFortuneNotice, setCustomFortuneNotice] = useState('');
+  const [createdFortuneSections, setCreatedFortuneSections] = useState([]);
+  const [editingCustomFortune, setEditingCustomFortune] = useState(null);
   const { height: viewportHeight, width: viewportWidth } = useWindowDimensions();
   const drawerProgress = useRef(new Animated.Value(0)).current;
   const dailyWisdomProgress = useRef(new Animated.Value(dailyWisdomMessage ? 1 : 0)).current;
@@ -143,6 +161,7 @@ export default function FortuneCard({
   const dailyWisdomShowTimerRef = useRef(null);
   const actionTrayTimerRef = useRef(null);
   const paperCueLoopRef = useRef(null);
+  const customFortuneNoticeTimerRef = useRef(null);
   const inputRef = useRef(null);
   const cookieTopPadding = Math.min(Math.max(Math.round(viewportHeight * 0.235), 176), 224);
   const promptTopGap = Math.max(Math.round(viewportHeight * 0.002), 0);
@@ -199,6 +218,27 @@ export default function FortuneCard({
       clearTimeout(actionTrayTimerRef.current);
       actionTrayTimerRef.current = null;
     }
+  }
+
+  function clearCustomFortuneNoticeTimer() {
+    if (customFortuneNoticeTimerRef.current) {
+      clearTimeout(customFortuneNoticeTimerRef.current);
+      customFortuneNoticeTimerRef.current = null;
+    }
+  }
+
+  function showCustomFortuneNotice(message) {
+    clearCustomFortuneNoticeTimer();
+    setCustomFortuneNotice(message);
+    customFortuneNoticeTimerRef.current = setTimeout(() => {
+      setCustomFortuneNotice('');
+      customFortuneNoticeTimerRef.current = null;
+    }, 2200);
+  }
+
+  async function refreshCreatedFortunes() {
+    const fortunes = await loadCustomFortunes();
+    setCreatedFortuneSections(buildCreatedFortuneSections(fortunes));
   }
 
   function hideActionTray() {
@@ -275,8 +315,13 @@ export default function FortuneCard({
     clearDailyWisdomTimer();
     clearDailyWisdomShowTimer();
     clearActionTrayTimer();
+    clearCustomFortuneNoticeTimer();
     paperCueLoopRef.current?.stop();
     paperCueProgress.stopAnimation();
+  }, []);
+
+  useEffect(() => {
+    refreshCreatedFortunes();
   }, []);
 
   useEffect(() => {
@@ -438,6 +483,12 @@ export default function FortuneCard({
       outputRange: [0, 0.44],
     }),
   };
+  const moodOptions = [...MOOD_BUCKET_KEYS]
+    .map((key) => ({
+      key,
+      label: formatMoodBucketLabel(key),
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label));
   const shouldPrepareFreshEntry = Boolean(
     moodInput
     || isCookieOpened
@@ -470,6 +521,16 @@ export default function FortuneCard({
             tierTitle={streakTierTitle}
           />
         </View>
+
+        {customFortuneNotice ? (
+          <View style={styles.customFortuneNoticeWrap} pointerEvents="none">
+            <View style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
+              <Text style={[styles.customFortuneNoticeText, { color: scene.textPrimary }]}>
+                {customFortuneNotice}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.mainFlow}>
         <View style={{ height: cookieTopPadding }} />
@@ -639,6 +700,23 @@ export default function FortuneCard({
               <DrawerItem
                 backgroundColor={drawerPalette.itemFill}
                 borderColor={drawerPalette.itemBorder}
+                label="Create your own fortune"
+                onPress={() => handleDrawerSelect(() => {
+                  setEditingCustomFortune(null);
+                  setIsCustomFortuneSheetVisible(true);
+                })}
+                textColor={drawerPalette.text}
+              />
+              <DrawerItem
+                backgroundColor={drawerPalette.itemFill}
+                borderColor={drawerPalette.itemBorder}
+                label="Your created fortunes"
+                onPress={() => handleDrawerSelect(() => setIsCreatedFortunesSheetVisible(true))}
+                textColor={drawerPalette.text}
+              />
+              <DrawerItem
+                backgroundColor={drawerPalette.itemFill}
+                borderColor={drawerPalette.itemBorder}
                 detail="Questions, feedback, or help"
                 label="Support"
                 onPress={handleOpenSupport}
@@ -665,6 +743,78 @@ export default function FortuneCard({
         onSelectLibrary={setActiveLibrary}
         visible={Boolean(activeLibrary)}
       />
+      <CustomFortuneSheet
+        errorMessage={customFortuneError}
+        initialFortuneText={editingCustomFortune?.text || ''}
+        initialMoodKey={editingCustomFortune?.moodKey || null}
+        isEditing={Boolean(editingCustomFortune)}
+        moodOptions={moodOptions}
+        onCancel={() => {
+          setCustomFortuneError('');
+          setEditingCustomFortune(null);
+          setIsCustomFortuneSheetVisible(false);
+        }}
+        onDismissError={() => setCustomFortuneError('')}
+        onSave={async ({ moodKey, fortuneText: nextFortuneText }) => {
+          setIsSavingCustomFortune(true);
+
+          try {
+            const result = editingCustomFortune
+              ? await updateCustomFortune({
+                  previousMoodKey: editingCustomFortune.moodKey,
+                  previousFortuneText: editingCustomFortune.text,
+                  nextMoodKey: moodKey,
+                  nextFortuneText,
+                })
+              : await saveCustomFortune({
+                  moodKey,
+                  fortuneText: nextFortuneText,
+                });
+
+            if (!result.ok) {
+              setCustomFortuneError(result.error);
+              return false;
+            }
+
+            setCustomFortuneError('');
+            setEditingCustomFortune(null);
+            setIsCustomFortuneSheetVisible(false);
+            await refreshCreatedFortunes();
+            showCustomFortuneNotice(
+              editingCustomFortune
+                ? `Updated in ${formatMoodBucketLabel(moodKey)} fortunes`
+                : `Saved to ${formatMoodBucketLabel(moodKey)} fortunes`
+            );
+            return true;
+          } catch {
+            setCustomFortuneError('This fortune could not be saved right now.');
+            return false;
+          } finally {
+            setIsSavingCustomFortune(false);
+          }
+        }}
+        saving={isSavingCustomFortune}
+        visible={isCustomFortuneSheetVisible}
+      />
+      <CreatedFortunesSheet
+        onDeleteFortune={async (item) => {
+          await deleteCustomFortune({
+            moodKey: item.moodKey,
+            fortuneText: item.text,
+          });
+          await refreshCreatedFortunes();
+          showCustomFortuneNotice(`Deleted from ${formatMoodBucketLabel(item.moodKey)} fortunes`);
+        }}
+        onEditFortune={(item) => {
+          setCustomFortuneError('');
+          setEditingCustomFortune(item);
+          setIsCreatedFortunesSheetVisible(false);
+          setIsCustomFortuneSheetVisible(true);
+        }}
+        onClose={() => setIsCreatedFortunesSheetVisible(false)}
+        sections={createdFortuneSections}
+        visible={isCreatedFortunesSheetVisible}
+      />
     </View>
   );
 }
@@ -688,6 +838,30 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     zIndex: 12,
+  },
+  customFortuneNoticeWrap: {
+    position: 'absolute',
+    top: 66,
+    left: 22,
+    right: 22,
+    alignItems: 'center',
+    zIndex: 14,
+  },
+  customFortuneNotice: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    shadowColor: '#6d4e37',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 2,
+  },
+  customFortuneNoticeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: -0.12,
   },
   mainFlow: {
     flexGrow: 1,

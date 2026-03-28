@@ -14,6 +14,26 @@ import { MOOD_SCENE_KEYS } from '../data/scenes';
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
 const DEFAULT_SCENE_KEY = 'apricotMorning';
+const HIGH_RISK_WORDS = new Set([
+  'suicide',
+  'suicidal',
+  'selfharm',
+  'unalive',
+  'kms',
+  'killmyself',
+  'overdose',
+  'murder',
+  'murderous',
+  'homicide',
+  'homicidal',
+  'kill',
+  'killing',
+  'stab',
+  'stabbing',
+  'shoot',
+  'shooting',
+  'massacre',
+]);
 
 const LEGACY_EMOTION_TO_MOOD_BUCKET = {
   anger: 'angry',
@@ -322,6 +342,18 @@ function hashString(value) {
   return hash >>> 0;
 }
 
+function normalizeHighRiskInput(input) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '');
+}
+
+export function isHighRiskMoodInput(input) {
+  return HIGH_RISK_WORDS.has(normalizeHighRiskInput(input));
+}
+
 function createMoodScoreCard() {
   return MOOD_BUCKET_KEYS.reduce((accumulator, bucket) => {
     accumulator[bucket] = 0;
@@ -586,6 +618,72 @@ function buildFortunePool(analysis) {
   return FORTUNE_LIBRARY.weird;
 }
 
+export function moderateCustomFortuneText(input) {
+  const moderationResult = moderateMoodInput(input);
+  if (moderationResult.moderation !== 'clean') {
+    return moderationResult;
+  }
+
+  if (isHighRiskMoodInput(input)) {
+    return {
+      moderation: 'blocked-danger',
+      sanitizedInput: '',
+    };
+  }
+
+  return {
+    moderation: 'clean',
+    sanitizedInput: input.trim(),
+  };
+}
+
+async function loadCustomFortunesModule() {
+  const customFortunesModule = await import('./customFortunes');
+  return customFortunesModule.loadCustomFortunes();
+}
+
+async function buildWeightedFortunePools(analysis) {
+  const builtInPool = buildFortunePool(analysis);
+  const customFortunes = await loadCustomFortunesModule();
+  const customPool = customFortunes[analysis.primaryEmotion] || [];
+
+  return {
+    builtInPool,
+    customPool,
+  };
+}
+
+function pickFortuneTextFromPools({
+  builtInPool,
+  customPool,
+  excludeFortuneText,
+  seed,
+}) {
+  const weightedSource = customPool.length > 0 && seed % 10 < 2 ? 'custom' : 'built-in';
+  const orderedPools = weightedSource === 'custom'
+    ? [customPool, builtInPool]
+    : [builtInPool, customPool];
+
+  for (const pool of orderedPools) {
+    if (!pool || pool.length === 0) {
+      continue;
+    }
+
+    const candidateIndex = seed % pool.length;
+    const candidate = pool[candidateIndex];
+
+    if (excludeFortuneText && pool.length > 1 && candidate === excludeFortuneText) {
+      return pool[(candidateIndex + 1) % pool.length];
+    }
+
+    if (candidate !== excludeFortuneText || pool.length === 1) {
+      return candidate;
+    }
+  }
+
+  return builtInPool[seed % builtInPool.length];
+}
+
 function pickSceneForSelection(analysis) {
   return MOOD_SCENE_KEYS[analysis.primaryEmotion] || MOOD_SCENE_KEYS.weird;
 }
@@ -624,13 +722,14 @@ async function buildFortuneSelection(input, {
 
   const analysis = analyzeMoodInput(moderationResult.sanitizedInput);
   const userId = await getOrCreateUserId();
-  const pool = buildFortunePool(analysis);
+  const { builtInPool, customPool } = await buildWeightedFortunePools(analysis);
   const seed = hashString(`${userId}|${seedKey}`);
-  let fortuneText = pool[seed % pool.length];
-
-  if (excludeFortuneText && pool.length > 1 && fortuneText === excludeFortuneText) {
-    fortuneText = pool[(seed + 1) % pool.length];
-  }
+  const fortuneText = pickFortuneTextFromPools({
+    builtInPool,
+    customPool,
+    excludeFortuneText,
+    seed,
+  });
 
   const sceneKey = pickSceneForSelection(analysis);
   const selection = {
@@ -741,3 +840,5 @@ export async function clearAllStoredFortuneState() {
 export function getDefaultSceneKey() {
   return DEFAULT_SCENE_KEY;
 }
+
+export { MOOD_BUCKET_KEYS };

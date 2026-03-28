@@ -22,6 +22,7 @@ import {
   getDailyFortuneSelection,
   getDefaultSceneKey,
   getReplacementFortuneSelection,
+  isHighRiskMoodInput,
   getStoredFortuneDayState,
 } from './utils/fortuneLogic';
 import {
@@ -57,27 +58,6 @@ const COOKIE_SHELL_STATE = {
   OPEN: 'open',
 };
 
-const HIGH_RISK_WORDS = new Set([
-  'suicide',
-  'suicidal',
-  'selfharm',
-  'unalive',
-  'kms',
-  'killmyself',
-  'overdose',
-  'murder',
-  'murderous',
-  'homicide',
-  'homicidal',
-  'kill',
-  'killing',
-  'stab',
-  'stabbing',
-  'shoot',
-  'shooting',
-  'massacre',
-]);
-
 function isResetFortuneCommand(input) {
   return /^\s*reset\s*$/i.test(input);
 }
@@ -91,18 +71,6 @@ function normalizeMoodInput(input) {
 
   const [firstWord = ''] = normalized.split(' ');
   return firstWord;
-}
-
-function normalizeHighRiskInput(input) {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '');
-}
-
-function isHighRiskMoodInput(input) {
-  return HIGH_RISK_WORDS.has(normalizeHighRiskInput(input));
 }
 
 function getDailyWisdomLockSeconds(fortuneCount) {
