@@ -86,7 +86,9 @@ function createLayoutMetrics(width, height) {
         ? cookieFrameHeight + 34
         : cookieFrameHeight + 24;
   const promptGap = isVeryCompact ? 8 : isCompact ? 10 : isRoomy ? 18 : 14;
-  const actionTrayGap = isVeryCompact ? 8 : isCompact ? 10 : 12;
+  const cookieAttachmentOffset = isVeryCompact ? 94 : isCompact ? 82 : isRoomy ? 60 : 72;
+  const promptFloatClearance = isVeryCompact ? 46 : isCompact ? 52 : isRoomy ? 64 : 58;
+  const actionTrayGap = -cookieAttachmentOffset;
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
@@ -127,6 +129,7 @@ function createLayoutMetrics(width, height) {
   return {
     actionTrayGap,
     contentMaxWidth,
+    cookieAttachmentOffset,
     cookieScale,
     cookieStageMinHeight,
     cookieTopSpacing,
@@ -140,6 +143,7 @@ function createLayoutMetrics(width, height) {
     menuGap,
     menuLineHeight,
     menuLineWidth,
+    promptFloatClearance,
     promptGap,
     scene,
     streakScale,
@@ -623,15 +627,7 @@ export default function FortuneCard({
       outputRange: [0, 0.44],
     }),
   };
-  const promptLiftDistance = metrics.cookieStageMinHeight
-    + metrics.actionTrayGap
-    + (metrics.layoutMode === 'veryCompact'
-      ? 38
-      : metrics.layoutMode === 'compact'
-        ? 44
-        : metrics.layoutMode === 'roomy'
-          ? 54
-          : 48);
+  const promptLiftDistance = metrics.cookieStageMinHeight + metrics.promptFloatClearance;
   const promptDockAnimatedStyle = {
     transform: [
       {
