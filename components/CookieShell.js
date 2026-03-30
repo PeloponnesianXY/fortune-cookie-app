@@ -39,6 +39,10 @@ const PAPER_SIZE = {
   minHeight: 74,
 };
 
+function scaleValue(value, scale) {
+  return Math.round(value * scale * 10) / 10;
+}
+
 function CookieShell({
   fortuneText,
   isOpened,
@@ -46,7 +50,52 @@ function CookieShell({
   paperCueProgress,
   paperProgress,
   shellProgress,
+  scale = 1,
+  paperMaxWidth,
 }) {
+  const shellFrame = {
+    width: scaleValue(COOKIE_SHELL_FRAME.width, scale),
+    height: scaleValue(COOKIE_SHELL_FRAME.height, scale),
+  };
+  const cookieImageFrame = {
+    width: scaleValue(COOKIE_IMAGE_FRAME.width, scale),
+    height: scaleValue(COOKIE_IMAGE_FRAME.height, scale),
+  };
+  const closedCookieFit = {
+    width: scaleValue(CLOSED_COOKIE_FIT.width, scale),
+    height: scaleValue(CLOSED_COOKIE_FIT.height, scale),
+    translateX: scaleValue(CLOSED_COOKIE_FIT.translateX, scale),
+    translateY: scaleValue(CLOSED_COOKIE_FIT.translateY, scale),
+  };
+  const openCookieFit = {
+    width: scaleValue(OPEN_COOKIE_FIT.width, scale),
+    height: scaleValue(OPEN_COOKIE_FIT.height, scale),
+    translateX: scaleValue(OPEN_COOKIE_FIT.translateX, scale),
+    translateY: scaleValue(OPEN_COOKIE_FIT.translateY, scale),
+  };
+  const paperWidth = Math.min(
+    scaleValue(PAPER_SIZE.width, scale),
+    paperMaxWidth || Number.POSITIVE_INFINITY
+  );
+  const paperMinHeight = scaleValue(PAPER_SIZE.minHeight, scale);
+  const paperTop = scaleValue(64, scale);
+  const paperShadowTop = scaleValue(86, scale);
+  const paperShadowWidth = scaleValue(214, scale);
+  const paperShadowHeight = scaleValue(24, scale);
+  const paperShadowRadius = scaleValue(18, scale);
+  const paperPaddingHorizontal = scaleValue(18, scale);
+  const paperPaddingVertical = scaleValue(12, scale);
+  const paperBorderRadius = Math.max(2, scaleValue(2, scale));
+  const paperTextSize = Math.max(10.5, scaleValue(12, scale));
+  const paperTextLineHeight = Math.max(13, scaleValue(15, scale));
+  const paperGrainTop = scaleValue(7, scale);
+  const paperGrainInset = scaleValue(8, scale);
+  const paperCornerTopLeftWidth = scaleValue(26, scale);
+  const paperCornerTopRightWidth = scaleValue(12, scale);
+  const paperCornerBottomLeftWidth = scaleValue(32, scale);
+  const paperCornerBottomLeftHeight = scaleValue(8, scale);
+  const paperCornerBottomRightSize = scaleValue(9, scale);
+
   const openCookieStyle = shellProgress
     ? {
         opacity: shellProgress.interpolate({
@@ -66,7 +115,7 @@ function CookieShell({
       {
         translateY: paperProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [40, 18],
+          outputRange: [scaleValue(40, scale), scaleValue(18, scale)],
         }),
       },
           {
@@ -80,7 +129,7 @@ function CookieShell({
                 {
                   translateX: paperCueProgress.interpolate({
                     inputRange: [-1, 0, 1],
-                    outputRange: [-7, 0, 7],
+                    outputRange: [scaleValue(-7, scale), 0, scaleValue(7, scale)],
                   }),
                 },
                 {
@@ -105,7 +154,7 @@ function CookieShell({
       {
         translateY: paperProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [42, 22],
+          outputRange: [scaleValue(42, scale), scaleValue(22, scale)],
         }),
       },
           {
@@ -119,15 +168,23 @@ function CookieShell({
     : { opacity: 0 };
 
   return (
-    <View style={styles.cookieShellFrame}>
-      <View style={styles.frameWrap}>
+    <View style={[styles.cookieShellFrame, shellFrame]}>
+      <View style={[styles.frameWrap, cookieImageFrame]}>
         {isOpened ? (
           <Animated.Image
             resizeMode="contain"
             source={COOKIE_OPEN_IMAGE}
             style={[
               styles.frameImage,
-              styles.openImageFit,
+              {
+                width: openCookieFit.width,
+                height: openCookieFit.height,
+                transform: [
+                  { translateX: openCookieFit.translateX },
+                  { translateY: openCookieFit.translateY },
+                  { rotate: '-2deg' },
+                ],
+              },
               openCookieStyle,
               styles.openImageLayer,
             ]}
@@ -138,13 +195,33 @@ function CookieShell({
             source={COOKIE_CLOSED_IMAGE}
             style={[
               styles.frameImage,
-              styles.closedImageFit,
+              {
+                width: closedCookieFit.width,
+                height: closedCookieFit.height,
+                transform: [
+                  { translateX: closedCookieFit.translateX },
+                  { translateY: closedCookieFit.translateY },
+                  { rotate: '-8deg' },
+                ],
+              },
             ]}
           />
         )}
       </View>
 
-      <Animated.View pointerEvents="none" style={[styles.paperShadow, paperShadowStyle]} />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.paperShadow,
+          paperShadowStyle,
+          {
+            top: paperShadowTop,
+            width: paperShadowWidth,
+            height: paperShadowHeight,
+            borderRadius: paperShadowRadius,
+          },
+        ]}
+      />
 
       <Animated.View
         pointerEvents="none"
@@ -152,17 +229,72 @@ function CookieShell({
           styles.paperWrap,
           paperWrapStyle,
           {
+            top: paperTop,
+            width: paperWidth,
+            minHeight: paperMinHeight,
+            borderRadius: paperBorderRadius,
+            paddingHorizontal: paperPaddingHorizontal,
+            paddingVertical: paperPaddingVertical,
             backgroundColor: '#fffefb',
             borderColor: '#c7ced8',
           },
         ]}
       >
-        <View style={styles.paperGrain} />
-        <View style={[styles.paperCorner, styles.paperCornerTopLeft]} />
-        <View style={[styles.paperCorner, styles.paperCornerTopRight]} />
-        <View style={[styles.paperCorner, styles.paperCornerBottomLeft]} />
-        <View style={[styles.paperCorner, styles.paperCornerBottomRight]} />
-        <Text style={styles.paperText}>
+        <View
+          style={[
+            styles.paperGrain,
+            {
+              top: paperGrainTop,
+              left: paperGrainInset,
+              right: paperGrainInset,
+            },
+          ]}
+        />
+        <View
+          style={[
+            styles.paperCorner,
+            {
+              top: -1,
+              left: -1,
+              width: paperCornerTopLeftWidth,
+              height: 3,
+            },
+          ]}
+        />
+        <View
+          style={[
+            styles.paperCorner,
+            {
+              top: -1,
+              right: -1,
+              width: paperCornerTopRightWidth,
+              height: 3,
+            },
+          ]}
+        />
+        <View
+          style={[
+            styles.paperCorner,
+            {
+              bottom: -1,
+              left: -1,
+              width: paperCornerBottomLeftWidth,
+              height: paperCornerBottomLeftHeight,
+            },
+          ]}
+        />
+        <View
+          style={[
+            styles.paperCorner,
+            {
+              right: -1,
+              bottom: -1,
+              width: paperCornerBottomRightSize,
+              height: paperCornerBottomRightSize,
+            },
+          ]}
+        />
+        <Text style={[styles.paperText, { fontSize: paperTextSize, lineHeight: paperTextLineHeight }]}>
           {fortuneText || ''}
         </Text>
       </Animated.View>
@@ -175,13 +307,9 @@ export default memo(CookieShell);
 
 const styles = StyleSheet.create({
   cookieShellFrame: {
-    width: COOKIE_SHELL_FRAME.width,
-    height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
   },
   frameWrap: {
-    width: COOKIE_IMAGE_FRAME.width,
-    height: COOKIE_IMAGE_FRAME.height,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -191,42 +319,14 @@ const styles = StyleSheet.create({
   openImageLayer: {
     zIndex: 3,
   },
-  closedImageFit: {
-    width: CLOSED_COOKIE_FIT.width,
-    height: CLOSED_COOKIE_FIT.height,
-    transform: [
-      { translateX: CLOSED_COOKIE_FIT.translateX },
-      { translateY: CLOSED_COOKIE_FIT.translateY },
-      { rotate: '-8deg' },
-    ],
-  },
-  openImageFit: {
-    width: OPEN_COOKIE_FIT.width,
-    height: OPEN_COOKIE_FIT.height,
-    transform: [
-      { translateX: OPEN_COOKIE_FIT.translateX },
-      { translateY: OPEN_COOKIE_FIT.translateY },
-      { rotate: '-2deg' },
-    ],
-  },
   paperShadow: {
     position: 'absolute',
-    top: 86,
-    width: 214,
-    height: 24,
-    borderRadius: 18,
     backgroundColor: 'rgba(70, 78, 92, 0.12)',
     zIndex: 4,
   },
   paperWrap: {
     position: 'absolute',
-    top: 64,
-    width: PAPER_SIZE.width,
-    minHeight: PAPER_SIZE.minHeight,
     borderWidth: 1,
-    borderRadius: 2,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
     justifyContent: 'center',
     shadowColor: '#6a7382',
     shadowOpacity: 0.12,
@@ -236,9 +336,6 @@ const styles = StyleSheet.create({
   },
   paperGrain: {
     position: 'absolute',
-    top: 7,
-    left: 8,
-    right: 8,
     height: 1,
     backgroundColor: 'rgba(140, 152, 168, 0.18)',
   },
@@ -246,34 +343,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: '#1f63b7',
   },
-  paperCornerTopLeft: {
-    top: -1,
-    left: -1,
-    width: 26,
-    height: 3,
-  },
-  paperCornerTopRight: {
-    top: -1,
-    right: -1,
-    width: 12,
-    height: 3,
-  },
-  paperCornerBottomLeft: {
-    bottom: -1,
-    left: -1,
-    width: 32,
-    height: 8,
-  },
-  paperCornerBottomRight: {
-    right: -1,
-    bottom: -1,
-    width: 9,
-    height: 9,
-  },
   paperText: {
     fontFamily: FORTUNE_FONT_FAMILY,
-    fontSize: 12,
-    lineHeight: 15,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: -0.04,

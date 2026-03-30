@@ -2,6 +2,7 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  Keyboard,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -32,14 +33,126 @@ import {
 import { MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
+const BASE_CONTENT_MAX_WIDTH = 540;
 
-const SceneBackdrop = memo(function SceneBackdrop({ scene }) {
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getLayoutMode(width, height) {
+  if (height < 670) {
+    return 'veryCompact';
+  }
+
+  if (height < 720 || width < 375) {
+    return 'compact';
+  }
+
+  if (height > 850) {
+    return 'roomy';
+  }
+
+  return 'standard';
+}
+
+function createLayoutMetrics(width, height) {
+  const layoutMode = getLayoutMode(width, height);
+  const isVeryCompact = layoutMode === 'veryCompact';
+  const isCompact = layoutMode === 'compact' || isVeryCompact;
+  const isRoomy = layoutMode === 'roomy';
+  const horizontalPadding = clamp(Math.round(width * 0.055), 14, 24);
+  const contentMaxWidth = Math.min(BASE_CONTENT_MAX_WIDTH, width - horizontalPadding * 2);
+  const menuButtonSize = isVeryCompact ? 34 : isCompact ? 36 : isRoomy ? 42 : 38;
+  const menuButtonRadius = Math.round(menuButtonSize * 0.37);
+  const menuLineWidth = Math.round(menuButtonSize * 0.42);
+  const menuLineHeight = isVeryCompact ? 1.4 : 1.5;
+  const menuGap = isVeryCompact ? 3 : 4;
+  const streakScale = isVeryCompact ? 0.9 : isCompact ? 0.94 : isRoomy ? 1.04 : 1;
+  const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
+  const cookieScale = isVeryCompact ? 0.72 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
+  const cookieFrameHeight = Math.round(COOKIE_SHELL_FRAME.height * cookieScale);
+  const cookieTopSpacing = isVeryCompact
+    ? 96
+    : isCompact
+      ? 118
+      : isRoomy
+        ? 164
+        : 138;
+  const cookieStageMinHeight = isVeryCompact
+    ? cookieFrameHeight + 10
+    : isCompact
+      ? cookieFrameHeight + 18
+      : isRoomy
+        ? cookieFrameHeight + 34
+        : cookieFrameHeight + 24;
+  const promptGap = isVeryCompact ? 8 : isCompact ? 10 : isRoomy ? 18 : 14;
+  const actionTrayGap = isVeryCompact ? 8 : isCompact ? 10 : 12;
+  const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
+  const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
+  const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
+  const topGlowTop = isVeryCompact ? -56 : isCompact ? -64 : isRoomy ? -92 : -78;
+  const haloSize = isVeryCompact ? 88 : isCompact ? 102 : isRoomy ? 136 : 118;
+  const discSize = isVeryCompact ? 38 : isCompact ? 44 : isRoomy ? 58 : 50;
+  const cloudWidth = isVeryCompact ? 92 : isCompact ? 110 : isRoomy ? 154 : 132;
+  const cloudHeight = Math.round(cloudWidth * 0.2);
+  const scene = {
+    topGlow: {
+      top: topGlowTop,
+      left: -horizontalPadding,
+      right: -horizontalPadding,
+      height: topGlowHeight,
+      borderBottomLeftRadius: Math.round(topGlowHeight * 0.66),
+      borderBottomRightRadius: Math.round(topGlowHeight * 0.66),
+    },
+    sunHalo: {
+      top: isVeryCompact ? 66 : isCompact ? 72 : isRoomy ? 86 : 78,
+      right: isVeryCompact ? 20 : isCompact ? 28 : isRoomy ? 50 : 40,
+      width: haloSize,
+      height: haloSize,
+    },
+    sunDisc: {
+      top: isVeryCompact ? 92 : isCompact ? 104 : isRoomy ? 124 : 114,
+      right: isVeryCompact ? 46 : isCompact ? 56 : isRoomy ? 86 : 76,
+      width: discSize,
+      height: discSize,
+    },
+    cloud: {
+      top: isVeryCompact ? 176 : isCompact ? 194 : isRoomy ? 244 : 216,
+      right: isVeryCompact ? 12 : isCompact ? 20 : isRoomy ? 36 : 28,
+      width: cloudWidth,
+      height: cloudHeight,
+    },
+  };
+
+  return {
+    actionTrayGap,
+    contentMaxWidth,
+    cookieScale,
+    cookieStageMinHeight,
+    cookieTopSpacing,
+    dailyWisdomSlotHeight,
+    headerTop,
+    horizontalPadding,
+    keyboardOffset,
+    layoutMode,
+    menuButtonRadius,
+    menuButtonSize,
+    menuGap,
+    menuLineHeight,
+    menuLineWidth,
+    promptGap,
+    scene,
+    streakScale,
+  };
+}
+
+const SceneBackdrop = memo(function SceneBackdrop({ metrics, scene }) {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <View style={[styles.topGlow, { backgroundColor: scene.wash }]} />
-      <View style={[styles.sunHalo, { backgroundColor: scene.celestialHalo }]} />
-      <View style={[styles.sunDisc, { backgroundColor: scene.celestial }]} />
-      <View style={[styles.cloud, { backgroundColor: scene.cloud }]} />
+      <View style={[styles.topGlow, metrics.scene.topGlow, { backgroundColor: scene.wash }]} />
+      <View style={[styles.sunHalo, metrics.scene.sunHalo, { backgroundColor: scene.celestialHalo }]} />
+      <View style={[styles.sunDisc, metrics.scene.sunDisc, { backgroundColor: scene.celestial }]} />
+      <View style={[styles.cloud, metrics.scene.cloud, { backgroundColor: scene.cloud }]} />
       {scene.stars.map((star, index) => (
         <View
           key={`${star.top}-${index}`}
@@ -68,6 +181,7 @@ const CookieStage = memo(function CookieStage({
   paperCueProgress,
   paperProgress,
   shellProgress,
+  shellScale,
   stageMinHeight,
 }) {
   const cookieLiftStyle = {
@@ -99,6 +213,7 @@ const CookieStage = memo(function CookieStage({
             fortuneText={fortuneText}
             isOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
+            scale={shellScale}
             paperCueProgress={paperCueProgress}
             paperProgress={paperProgress}
             shellProgress={shellProgress}
@@ -147,6 +262,7 @@ export default function FortuneCard({
   const [isActionTrayVisible, setIsActionTrayVisible] = useState(false);
   const [isCustomFortuneSheetVisible, setIsCustomFortuneSheetVisible] = useState(false);
   const [isCreatedFortunesSheetVisible, setIsCreatedFortunesSheetVisible] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [customFortuneError, setCustomFortuneError] = useState('');
   const [isSavingCustomFortune, setIsSavingCustomFortune] = useState(false);
   const [customFortuneNotice, setCustomFortuneNotice] = useState('');
@@ -162,10 +278,9 @@ export default function FortuneCard({
   const actionTrayTimerRef = useRef(null);
   const paperCueLoopRef = useRef(null);
   const customFortuneNoticeTimerRef = useRef(null);
+  const promptLiftProgress = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
-  const cookieTopPadding = Math.min(Math.max(Math.round(viewportHeight * 0.235), 176), 224);
-  const promptTopGap = Math.max(Math.round(viewportHeight * 0.002), 0);
-  const cookieStageMinHeight = Math.min(Math.max(Math.round(viewportHeight * 0.15), 142), 184);
+  const metrics = createLayoutMetrics(viewportWidth, viewportHeight);
   const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
@@ -395,6 +510,31 @@ export default function FortuneCard({
   }, [isInputFocused, moodInput]);
 
   useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSubscription = Keyboard.addListener(showEvent, () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(promptLiftProgress, {
+      toValue: isKeyboardVisible ? 1 : 0,
+      duration: Platform.OS === 'ios' ? 240 : 180,
+      easing: isKeyboardVisible ? Easing.out(Easing.cubic) : Easing.inOut(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [isKeyboardVisible, promptLiftProgress]);
+
+  useEffect(() => {
     clearDailyWisdomShowTimer();
     clearDailyWisdomTimer();
 
@@ -483,6 +623,25 @@ export default function FortuneCard({
       outputRange: [0, 0.44],
     }),
   };
+  const promptLiftDistance = metrics.cookieStageMinHeight
+    + metrics.actionTrayGap
+    + (metrics.layoutMode === 'veryCompact'
+      ? 38
+      : metrics.layoutMode === 'compact'
+        ? 44
+        : metrics.layoutMode === 'roomy'
+          ? 54
+          : 48);
+  const promptDockAnimatedStyle = {
+    transform: [
+      {
+        translateY: promptLiftProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -promptLiftDistance],
+        }),
+      },
+    ],
+  };
   const moodOptions = [...MOOD_BUCKET_KEYS]
     .map((key) => ({
       key,
@@ -497,33 +656,77 @@ export default function FortuneCard({
 
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
-      <SceneBackdrop scene={scene} />
+      <SceneBackdrop metrics={metrics} scene={scene} />
 
-      <View style={styles.contentFrame}>
+      <View
+        style={[
+          styles.contentFrame,
+          { paddingHorizontal: metrics.horizontalPadding },
+        ]}
+      >
         <View
           pointerEvents="box-none"
-          style={styles.headerChrome}
+          style={[
+            styles.headerChrome,
+            {
+              top: metrics.headerTop,
+              left: metrics.horizontalPadding,
+              right: metrics.horizontalPadding,
+            },
+          ]}
         >
           <Pressable
             hitSlop={8}
             onPress={openDrawer}
-            style={[styles.menuButton, { backgroundColor: scene.input, borderColor: scene.inputBorder }]}
+            style={[
+              styles.menuButton,
+              {
+                width: metrics.menuButtonSize,
+                height: metrics.menuButtonSize,
+                borderRadius: metrics.menuButtonRadius,
+                gap: metrics.menuGap,
+                backgroundColor: scene.input,
+                borderColor: scene.inputBorder,
+              },
+            ]}
           >
-            <View style={[styles.menuLine, { backgroundColor: scene.textPrimary }]} />
-            <View style={[styles.menuLine, { backgroundColor: scene.textPrimary }]} />
-            <View style={[styles.menuLine, { backgroundColor: scene.textPrimary }]} />
+            {[0, 1, 2].map((lineIndex) => (
+              <View
+                key={lineIndex}
+                style={[
+                  styles.menuLine,
+                  {
+                    width: metrics.menuLineWidth,
+                    height: metrics.menuLineHeight,
+                    backgroundColor: scene.textPrimary,
+                  },
+                ]}
+              />
+            ))}
           </Pressable>
-          <StreakStatus
-            celebrationToken={streakCelebrationToken}
-            daysToNextTier={streakDaysToNextTier}
-            nextTierTitle={streakNextTierTitle}
-            streakCount={streakCount}
-            tierTitle={streakTierTitle}
-          />
+          <View style={{ transform: [{ scale: metrics.streakScale }] }}>
+            <StreakStatus
+              celebrationToken={streakCelebrationToken}
+              daysToNextTier={streakDaysToNextTier}
+              nextTierTitle={streakNextTierTitle}
+              streakCount={streakCount}
+              tierTitle={streakTierTitle}
+            />
+          </View>
         </View>
 
         {customFortuneNotice ? (
-          <View style={styles.customFortuneNoticeWrap} pointerEvents="none">
+          <View
+            style={[
+              styles.customFortuneNoticeWrap,
+              {
+                left: metrics.horizontalPadding,
+                right: metrics.horizontalPadding,
+                bottom: clamp(Math.round(viewportHeight * 0.5), 244, 398),
+              },
+            ]}
+            pointerEvents="none"
+          >
             <View style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
               <Text style={[styles.customFortuneNoticeText, { color: scene.textPrimary }]}>
                 {customFortuneNotice}
@@ -533,9 +736,9 @@ export default function FortuneCard({
         ) : null}
 
         <View style={styles.mainFlow}>
-        <View style={{ height: cookieTopPadding }} />
+        <View style={{ height: metrics.cookieTopSpacing }} />
 
-        <View style={styles.dailyWisdomSlot}>
+        <View style={[styles.dailyWisdomSlot, { maxWidth: metrics.contentMaxWidth, height: metrics.dailyWisdomSlotHeight }]}>
           {dailyWisdomMessage && isDailyWisdomVisible ? (
             <Animated.View
               style={[
@@ -556,110 +759,122 @@ export default function FortuneCard({
           ) : null}
         </View>
 
-        <CookieStage
-          fortuneText={fortuneText}
-          isCookieOpened={isCookieOpened}
-          isPaperVisible={isPaperVisible}
-          onPress={showActionTrayTemporarily}
-          paperCueProgress={paperCueProgress}
-          paperProgress={paperProgress}
-          shellProgress={shellProgress}
-          stageMinHeight={cookieStageMinHeight}
-        />
+        <View style={[styles.cookieSection, { maxWidth: metrics.contentMaxWidth }]}>
+          <CookieStage
+            fortuneText={fortuneText}
+            isCookieOpened={isCookieOpened}
+            isPaperVisible={isPaperVisible}
+            onPress={showActionTrayTemporarily}
+            paperCueProgress={paperCueProgress}
+            paperProgress={paperProgress}
+            shellProgress={shellProgress}
+            shellScale={metrics.cookieScale}
+            stageMinHeight={metrics.cookieStageMinHeight}
+          />
 
-        <View style={{ height: promptTopGap }} />
-
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'position' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 132 : 0}
-          style={styles.promptSection}
-        >
-          <View
-            style={[styles.inputCard, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-          >
-            <Text style={[
-              styles.inputLabel,
-              { color: scene.accent },
-              isPromptTemporarilyLocked ? styles.inputLabelLocked : null,
-            ]}>
-              Describe your mood in one word
-            </Text>
-            <View
-              style={[
-                styles.inputRow,
-                {
-                  backgroundColor: scene.input,
-                  borderColor: isInputFocused ? scene.accent : scene.inputBorder,
-                },
-                isPromptTemporarilyLocked ? styles.inputRowLocked : null,
-                isInputFocused ? styles.inputRowFocused : null,
-              ]}
-            >
-              <TextInput
-                autoCapitalize="words"
-                autoCorrect={false}
-                blurOnSubmit={false}
-                editable={!isHydratingSelection && !isPromptTemporarilyLocked}
-                ref={inputRef}
-                onBlur={() => {
-                  setIsInputFocused(false);
-                  clearIdleKeyboardTimer();
-                }}
-                onChangeText={(nextValue) => {
-                  onMoodChange(nextValue);
-                  scheduleIdleKeyboardDismiss(nextValue);
-                }}
-                onFocus={() => {
-                  if (isPromptTemporarilyLocked) {
-                    inputRef.current?.blur();
-                    return;
-                  }
-
-                  setIsInputFocused(true);
-                  if (shouldPrepareFreshEntry) {
-                    onBeginMoodEntry?.();
-                  }
-                  scheduleIdleKeyboardDismiss('');
-                }}
-                onSubmitEditing={() => {
-                  inputRef.current?.blur();
-                  onSubmitMoodInput();
-                }}
-                placeholder="tired, excited, restless..."
-                placeholderTextColor={scene.accentSoft}
-                returnKeyType="done"
-                selectionColor={scene.accent}
-                style={[
-                  styles.input,
-                  { color: scene.textPrimary },
-                  isPromptTemporarilyLocked ? styles.inputLocked : null,
-                ]}
-                value={moodInput}
+          {isFortuneRevealed ? (
+            <View style={[styles.actionZone, { marginTop: metrics.actionTrayGap, maxWidth: metrics.contentMaxWidth }]}>
+              <FortuneActionTray
+                canReplace={canReplaceCurrentFortune}
+                isFavorite={currentFortuneIsFavorite}
+                onReplace={onRequestReplace}
+                onShare={onShareFortune}
+                onToggleFavorite={onToggleFavorite}
+                palette={actionTrayPalette}
+                visible={isActionTrayVisible}
               />
             </View>
-          </View>
-        </KeyboardAvoidingView>
-        {isFortuneRevealed ? (
-          <View
-            style={[
-              styles.actionZone,
-              {
-                position: 'absolute',
-                top: cookieTopPadding + 116 + cookieStageMinHeight + 52,
-              },
-            ]}
+          ) : null}
+        </View>
+
+        <Animated.View
+          style={[
+            styles.promptDock,
+            promptDockAnimatedStyle,
+            {
+              paddingTop: metrics.promptGap,
+              justifyContent: isKeyboardVisible ? 'flex-start' : 'flex-end',
+            },
+          ]}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'position' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? metrics.keyboardOffset : 0}
+            style={styles.promptSection}
           >
-            <FortuneActionTray
-              canReplace={canReplaceCurrentFortune}
-              isFavorite={currentFortuneIsFavorite}
-              onReplace={onRequestReplace}
-              onShare={onShareFortune}
-              onToggleFavorite={onToggleFavorite}
-              palette={actionTrayPalette}
-              visible={isActionTrayVisible}
-            />
-          </View>
-        ) : null}
+            <View
+              style={[
+                styles.inputCard,
+                {
+                  maxWidth: metrics.contentMaxWidth,
+                  backgroundColor: scene.panel,
+                  borderColor: scene.panelBorder,
+                },
+              ]}
+            >
+              <Text style={[
+                styles.inputLabel,
+                { color: scene.accent },
+                isPromptTemporarilyLocked ? styles.inputLabelLocked : null,
+              ]}>
+                Describe your mood in one word
+              </Text>
+              <View
+                style={[
+                  styles.inputRow,
+                  {
+                    backgroundColor: scene.input,
+                    borderColor: isInputFocused ? scene.accent : scene.inputBorder,
+                  },
+                  isPromptTemporarilyLocked ? styles.inputRowLocked : null,
+                  isInputFocused ? styles.inputRowFocused : null,
+                ]}
+              >
+                <TextInput
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  blurOnSubmit={false}
+                  editable={!isHydratingSelection && !isPromptTemporarilyLocked}
+                  ref={inputRef}
+                  onBlur={() => {
+                    setIsInputFocused(false);
+                    clearIdleKeyboardTimer();
+                  }}
+                  onChangeText={(nextValue) => {
+                    onMoodChange(nextValue);
+                    scheduleIdleKeyboardDismiss(nextValue);
+                  }}
+                  onFocus={() => {
+                    if (isPromptTemporarilyLocked) {
+                      inputRef.current?.blur();
+                      return;
+                    }
+
+                    setIsInputFocused(true);
+                    if (shouldPrepareFreshEntry) {
+                      onBeginMoodEntry?.();
+                    }
+                    scheduleIdleKeyboardDismiss('');
+                  }}
+                  onSubmitEditing={() => {
+                    inputRef.current?.blur();
+                    onSubmitMoodInput();
+                  }}
+                  placeholder="tired, excited, restless..."
+                  placeholderTextColor={scene.accentSoft}
+                  returnKeyType="done"
+                  selectionColor={scene.accent}
+                  style={[
+                    styles.input,
+                    { color: scene.textPrimary },
+                    isPromptTemporarilyLocked ? styles.inputLocked : null,
+                  ]}
+                  value={moodInput}
+                />
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Animated.View>
         </View>
       </View>
 
@@ -825,15 +1040,11 @@ const styles = StyleSheet.create({
   },
   contentFrame: {
     flexGrow: 1,
-    paddingHorizontal: 22,
     paddingTop: 12,
     paddingBottom: 20,
   },
   headerChrome: {
     position: 'absolute',
-    top: 18,
-    left: 22,
-    right: 22,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
@@ -867,13 +1078,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   menuButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
     shadowColor: '#6d4e37',
     shadowOpacity: 0.09,
     shadowRadius: 12,
@@ -881,44 +1088,24 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   menuLine: {
-    width: 16,
-    height: 1.5,
     borderRadius: 999,
   },
   topGlow: {
     position: 'absolute',
-    top: -88,
-    left: -18,
-    right: -18,
-    height: 332,
-    borderBottomLeftRadius: 220,
-    borderBottomRightRadius: 220,
     opacity: 0.5,
   },
   sunHalo: {
     position: 'absolute',
-    top: 74,
-    right: 46,
-    width: 128,
-    height: 128,
     borderRadius: 999,
     opacity: 0.24,
   },
   sunDisc: {
     position: 'absolute',
-    top: 112,
-    right: 82,
-    width: 52,
-    height: 52,
     borderRadius: 999,
     opacity: 0.68,
   },
   cloud: {
     position: 'absolute',
-    top: 224,
-    right: 34,
-    width: 142,
-    height: 28,
     borderRadius: 999,
     opacity: 0.12,
   },
@@ -985,7 +1172,6 @@ const styles = StyleSheet.create({
   },
   cookieTapArea: {
     width: '100%',
-    maxWidth: 540,
     alignSelf: 'center',
     alignItems: 'center',
     marginTop: 0,
@@ -996,17 +1182,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cookieImageFrame: {
-    width: COOKIE_SHELL_FRAME.width,
-    height: COOKIE_SHELL_FRAME.height,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 14,
+  },
+  cookieSection: {
+    width: '100%',
+    alignSelf: 'center',
   },
   dailyWisdomSlot: {
     width: '100%',
-    maxWidth: 540,
     alignSelf: 'center',
-    height: 116,
     justifyContent: 'flex-end',
     position: 'relative',
   },
@@ -1022,7 +1207,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   promptSection: {
-    marginTop: 16,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  promptDock: {
+    flexGrow: 1,
+    width: '100%',
   },
   dailyWisdomText: {
     fontSize: 12.5,
@@ -1033,9 +1223,7 @@ const styles = StyleSheet.create({
   },
   actionZone: {
     width: '100%',
-    maxWidth: 540,
     alignSelf: 'center',
-    marginTop: 14,
     minHeight: 8,
     justifyContent: 'flex-start',
   },
