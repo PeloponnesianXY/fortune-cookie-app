@@ -35,8 +35,8 @@ const OPEN_COOKIE_FIT = {
 };
 
 const PAPER_SIZE = {
-  width: 250,
-  minHeight: 74,
+  width: 264,
+  minHeight: 80,
 };
 
 function scaleValue(value, scale) {
@@ -86,8 +86,8 @@ function CookieShell({
   const paperPaddingHorizontal = scaleValue(18, scale);
   const paperPaddingVertical = scaleValue(12, scale);
   const paperBorderRadius = Math.max(2, scaleValue(2, scale));
-  const paperTextSize = Math.max(10.5, scaleValue(12, scale));
-  const paperTextLineHeight = Math.max(13, scaleValue(15, scale));
+  const paperTextSize = Math.max(11.5, scaleValue(13, scale));
+  const paperTextLineHeight = Math.max(14, scaleValue(16, scale));
   const paperGrainTop = scaleValue(7, scale);
   const paperGrainInset = scaleValue(8, scale);
   const paperCornerTopLeftWidth = scaleValue(26, scale);

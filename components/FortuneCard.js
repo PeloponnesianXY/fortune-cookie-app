@@ -68,8 +68,9 @@ function createLayoutMetrics(width, height) {
   const menuLineHeight = isVeryCompact ? 1.4 : 1.5;
   const menuGap = isVeryCompact ? 3 : 4;
   const streakScale = isVeryCompact ? 0.9 : isCompact ? 0.94 : isRoomy ? 1.04 : 1;
+  const streakRightNudge = isVeryCompact ? 8 : 0;
   const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
-  const cookieScale = isVeryCompact ? 0.72 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
+  const cookieScale = isVeryCompact ? 0.84 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
   const cookieFrameHeight = Math.round(COOKIE_SHELL_FRAME.height * cookieScale);
   const cookieTopSpacing = isVeryCompact
     ? 96
@@ -86,8 +87,8 @@ function createLayoutMetrics(width, height) {
         ? cookieFrameHeight + 34
         : cookieFrameHeight + 24;
   const promptGap = isVeryCompact ? 8 : isCompact ? 10 : isRoomy ? 18 : 14;
-  const cookieAttachmentOffset = isVeryCompact ? 94 : isCompact ? 82 : isRoomy ? 60 : 72;
-  const promptFloatClearance = isVeryCompact ? 46 : isCompact ? 52 : isRoomy ? 64 : 58;
+  const cookieAttachmentOffset = isVeryCompact ? 64 : isCompact ? 72 : isRoomy ? 50 : 62;
+  const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
   const actionTrayGap = -cookieAttachmentOffset;
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
@@ -147,6 +148,7 @@ function createLayoutMetrics(width, height) {
     promptGap,
     scene,
     streakScale,
+    streakRightNudge,
   };
 }
 
@@ -700,7 +702,7 @@ export default function FortuneCard({
               />
             ))}
           </Pressable>
-          <View style={{ transform: [{ scale: metrics.streakScale }] }}>
+          <View style={{ transform: [{ translateX: metrics.streakRightNudge }, { scale: metrics.streakScale }] }}>
             <StreakStatus
               celebrationToken={streakCelebrationToken}
               daysToNextTier={streakDaysToNextTier}

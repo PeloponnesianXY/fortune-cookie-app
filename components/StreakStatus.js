@@ -201,13 +201,32 @@ export default function StreakStatus({
                   {expandedTitle}
                 </Text>
                 {streakCount > 0 && nextTierTitle && daysToNextTier ? (
-                  <Text style={styles.expandedMeta}>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                    numberOfLines={1}
+                    style={styles.expandedMeta}
+                  >
                     {daysToNextTier} more {daysToNextTier === 1 ? 'day' : 'days'} until {nextTierTitle}
                   </Text>
                 ) : streakCount <= 0 ? (
-                  <Text style={styles.expandedMeta}>{"Open today's fortune to begin"}</Text>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                    numberOfLines={1}
+                    style={styles.expandedMeta}
+                  >
+                    {"Open today's fortune to begin"}
+                  </Text>
                 ) : (
-                  <Text style={styles.expandedMeta}>{"You are one of a kind!"}</Text>
+                  <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                    numberOfLines={1}
+                    style={styles.expandedMeta}
+                  >
+                    {"You are one of a kind!"}
+                  </Text>
                 )}
               </>
             )}
