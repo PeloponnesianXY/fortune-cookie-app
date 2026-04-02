@@ -1,13 +1,14 @@
 import React from 'react';
 import {
   FlatList,
-  Modal,
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+
+import PreviewModal from './PreviewModal';
 
 function formatFortuneTimestamp(value) {
   if (!value) {
@@ -77,7 +78,7 @@ export default function FortuneLibrarySheet({
   const items = isFavorites ? favorites : history;
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+    <PreviewModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.backdrop}>
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.sheet}>
@@ -140,7 +141,7 @@ export default function FortuneLibrarySheet({
           </View>
         </SafeAreaView>
       </View>
-    </Modal>
+    </PreviewModal>
   );
 }
 

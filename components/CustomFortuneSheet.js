@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -12,6 +11,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
+
+import PreviewModal from './PreviewModal';
 
 const MAX_LENGTH = 140;
 
@@ -60,7 +61,7 @@ export default function CustomFortuneSheet({
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={handleClose} transparent visible={visible}>
+    <PreviewModal animationType="slide" onRequestClose={handleClose} transparent visible={visible}>
       <View style={styles.backdrop}>
         <SafeAreaView style={styles.safeArea}>
           <KeyboardAvoidingView
@@ -156,7 +157,7 @@ export default function CustomFortuneSheet({
           </KeyboardAvoidingView>
         </SafeAreaView>
       </View>
-    </Modal>
+    </PreviewModal>
   );
 }
 

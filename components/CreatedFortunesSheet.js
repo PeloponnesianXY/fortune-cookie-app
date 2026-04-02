@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -8,6 +7,8 @@ import {
   Text,
   View,
 } from 'react-native';
+
+import PreviewModal from './PreviewModal';
 
 function MoodSection({ onDelete, onEdit, section }) {
   return (
@@ -42,7 +43,7 @@ export default function CreatedFortunesSheet({
   const hasContent = sections.length > 0;
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+    <PreviewModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.backdrop}>
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.sheet}>
@@ -81,7 +82,7 @@ export default function CreatedFortunesSheet({
           </View>
         </SafeAreaView>
       </View>
-    </Modal>
+    </PreviewModal>
   );
 }
 

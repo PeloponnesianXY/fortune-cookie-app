@@ -30,6 +30,7 @@ export default function PreviewFrame({
               width: width + 18,
               height: height + 18,
               transform: [{ scale: visualScale }],
+              transformOrigin: 'top center',
             },
           ]}
         >
@@ -56,7 +57,7 @@ export default function PreviewFrame({
 
 const styles = StyleSheet.create({
   shell: {
-    gap: 10,
+    gap: 6,
   },
   header: {
     alignItems: 'center',
