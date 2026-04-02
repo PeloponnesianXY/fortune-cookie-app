@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 
-import CookieShell, { COOKIE_SHELL_FRAME } from './CookieShell';
+import CookieShell, { COOKIE_SHELL_FRAME, getOpenedCookieImageBottom } from './CookieShell';
 import CreatedFortunesSheet from './CreatedFortunesSheet';
 import CustomFortuneSheet from './CustomFortuneSheet';
 import DrawerItem from './DrawerItem';
@@ -39,6 +39,12 @@ const COOKIE_DROP_FACTOR = 0.08;
 const MAX_COOKIE_DROP = 18;
 const PROMPT_LIFT_FACTOR = 0.22;
 const MAX_PROMPT_BOTTOM_INSET = 44;
+const ACTION_TRAY_IMAGE_GAP_FACTOR = 0.005;
+const MIN_ACTION_TRAY_IMAGE_GAP = 2;
+const MAX_ACTION_TRAY_IMAGE_GAP = 5;
+const ACTION_TRAY_VISUAL_LIFT_FACTOR = 0.48;
+const MIN_ACTION_TRAY_VISUAL_LIFT = 42;
+const MAX_ACTION_TRAY_VISUAL_LIFT = 52;
 
 const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
   .map((key) => ({
@@ -104,9 +110,20 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     0,
     MAX_COOKIE_DROP
   );
-  const cookieAttachmentOffset = isVeryCompact ? 64 : isCompact ? 72 : isRoomy ? 50 : 62;
+  const cookieImageBottom = getOpenedCookieImageBottom(cookieScale, cookieImageOffset);
+  const actionTrayImageGap = clamp(
+    Math.round(usableHeight * ACTION_TRAY_IMAGE_GAP_FACTOR),
+    MIN_ACTION_TRAY_IMAGE_GAP,
+    MAX_ACTION_TRAY_IMAGE_GAP
+  );
   const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
-  const actionTrayGap = -cookieAttachmentOffset;
+  const actionTrayEstimatedHeight = isVeryCompact ? 98 : isCompact ? 102 : isRoomy ? 110 : 106;
+  const actionTrayVisualLift = clamp(
+    Math.round(actionTrayEstimatedHeight * ACTION_TRAY_VISUAL_LIFT_FACTOR),
+    MIN_ACTION_TRAY_VISUAL_LIFT,
+    MAX_ACTION_TRAY_VISUAL_LIFT
+  );
+  const actionTrayTop = Math.round(cookieImageBottom + actionTrayImageGap - actionTrayVisualLift);
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
   const desiredCookieCenterY = Math.round(height * 0.62);
   const cookieTopSpacing = clamp(
@@ -151,9 +168,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   };
 
   return {
-    actionTrayGap,
+    actionTrayEstimatedHeight,
+    actionTrayTop,
     contentMaxWidth,
-    cookieAttachmentOffset,
     cookieImageOffset,
     cookieScale,
     cookieStageMinHeight,
@@ -305,6 +322,7 @@ export default function FortuneCard({
   const [customFortuneNotice, setCustomFortuneNotice] = useState('');
   const [createdFortuneSections, setCreatedFortuneSections] = useState([]);
   const [editingCustomFortune, setEditingCustomFortune] = useState(null);
+  const [actionTrayHeight, setActionTrayHeight] = useState(0);
   const previewLayout = usePreviewLayout();
   const viewportHeight = previewLayout.height;
   const viewportWidth = previewLayout.width;
@@ -334,6 +352,8 @@ export default function FortuneCard({
   const customFortuneSheetVisible = isCustomFortuneSheetForced
     ? forcedCustomFortuneSheetVisible
     : isCustomFortuneSheetVisible;
+  const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
+  const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const drawerPalette = {
     panel: '#fff8f1',
@@ -419,6 +439,14 @@ export default function FortuneCard({
       setIsActionTrayVisible(false);
       actionTrayTimerRef.current = null;
     }, 2000);
+  }
+
+  function handleActionTrayLayout(event) {
+    const nextHeight = Math.round(event.nativeEvent.layout.height);
+
+    if (nextHeight > 0 && nextHeight !== actionTrayHeight) {
+      setActionTrayHeight(nextHeight);
+    }
   }
 
   function openLibrary(library) {
@@ -817,7 +845,12 @@ export default function FortuneCard({
           ) : null}
         </View>
 
-        <View style={[styles.cookieSection, { maxWidth: metrics.contentMaxWidth }]}>
+        <View
+          style={[
+            styles.cookieSection,
+            { maxWidth: metrics.contentMaxWidth, minHeight: cookieSectionMinHeight },
+          ]}
+        >
           <CookieStage
             fortuneText={fortuneText}
             imageVerticalOffset={metrics.cookieImageOffset}
@@ -832,11 +865,20 @@ export default function FortuneCard({
           />
 
           {isFortuneRevealed ? (
-            <View style={[styles.actionZone, { marginTop: metrics.actionTrayGap, maxWidth: metrics.contentMaxWidth }]}>
+            <View
+              style={[
+                styles.actionZone,
+                {
+                  top: metrics.actionTrayTop,
+                  maxWidth: metrics.contentMaxWidth,
+                },
+              ]}
+            >
               <FortuneActionTray
                 canReplace={canReplaceCurrentFortune}
                 isFavorite={currentFortuneIsFavorite}
                 onReplace={onRequestReplace}
+                onLayout={handleActionTrayLayout}
                 onShare={onShareFortune}
                 onToggleFavorite={onToggleFavorite}
                 palette={actionTrayPalette}
@@ -1252,6 +1294,7 @@ const styles = StyleSheet.create({
   cookieSection: {
     width: '100%',
     alignSelf: 'center',
+    position: 'relative',
   },
   dailyWisdomSlot: {
     width: '100%',
@@ -1286,6 +1329,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actionZone: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     width: '100%',
     alignSelf: 'center',
     minHeight: 8,

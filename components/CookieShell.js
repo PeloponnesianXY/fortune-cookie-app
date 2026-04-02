@@ -43,6 +43,10 @@ function scaleValue(value, scale) {
   return Math.round(value * scale * 10) / 10;
 }
 
+function getOpenedCookieImageBottom(scale = 1, imageVerticalOffset = 0) {
+  return scaleValue(OPEN_COOKIE_FIT.translateY + imageVerticalOffset + OPEN_COOKIE_FIT.height, scale);
+}
+
 function CookieShell({
   fortuneText,
   imageVerticalOffset = 0,
@@ -303,7 +307,7 @@ function CookieShell({
   );
 }
 
-export { COOKIE_SHELL_FRAME };
+export { COOKIE_SHELL_FRAME, getOpenedCookieImageBottom };
 export default memo(CookieShell);
 
 const styles = StyleSheet.create({

@@ -47,6 +47,7 @@ export default function FortuneActionTray({
   isFavorite,
   canReplace,
   palette,
+  onLayout,
 }) {
   const [isMounted, setIsMounted] = useState(visible);
   const progress = useRef(new Animated.Value(visible ? 1 : 0)).current;
@@ -86,6 +87,7 @@ export default function FortuneActionTray({
 
   return (
     <Animated.View
+      onLayout={onLayout}
       pointerEvents={visible ? 'auto' : 'none'}
       style={[
         styles.wrapper,
