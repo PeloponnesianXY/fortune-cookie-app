@@ -57,6 +57,7 @@ const ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT = 156;
 const CUSTOM_NOTICE_GAP_FACTOR = 0.018;
 const MIN_CUSTOM_NOTICE_GAP = 10;
 const MAX_CUSTOM_NOTICE_GAP = 18;
+const SE_CUSTOM_NOTICE_LIFT = 30;
 
 const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
   .map((key) => ({
@@ -172,7 +173,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MIN_CUSTOM_NOTICE_GAP,
     MAX_CUSTOM_NOTICE_GAP
   );
-  const customNoticeTop = createFortuneTopAnchor + ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT + customNoticeGap;
+  const customNoticeTop = createFortuneTopAnchor + ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT + customNoticeGap
+    - (isVeryCompact ? SE_CUSTOM_NOTICE_LIFT : 0);
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
   const topGlowTop = isVeryCompact ? -56 : isCompact ? -64 : isRoomy ? -92 : -78;

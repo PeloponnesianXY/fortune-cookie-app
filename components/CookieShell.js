@@ -35,7 +35,7 @@ const OPEN_COOKIE_FIT = {
 };
 
 const PAPER_SIZE = {
-  width: 264,
+  width: 364,
   minHeight: 68,
 };
 
@@ -83,8 +83,9 @@ function CookieShell({
     paperMaxWidth || Number.POSITIVE_INFINITY
   );
   const paperMinHeight = scaleValue(PAPER_SIZE.minHeight, scale);
-  const paperTop = scaleValue(-28, scale);
-  const paperShadowTop = scaleValue(-6, scale);
+  const sePaperLift = scale < 0.86 ? scaleValue(8, scale) : 0;
+  const paperTop = scaleValue(-28, scale) - sePaperLift;
+  const paperShadowTop = scaleValue(-6, scale) - sePaperLift;
   const paperShadowWidth = scaleValue(214, scale);
   const paperShadowHeight = scaleValue(24, scale);
   const paperShadowRadius = scaleValue(18, scale);
