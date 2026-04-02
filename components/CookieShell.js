@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, View } from 'react-native';
 
 const COOKIE_CLOSED_IMAGE = require('../assets/cookie/closed-2.png');
-const COOKIE_OPEN_IMAGE = require('../assets/cookie/open-new.png');
+const COOKIE_OPEN_IMAGE = require('../assets/cookie/open-final.png');
 
 const FORTUNE_FONT_FAMILY = Platform.select({
   ios: 'Georgia',
@@ -28,15 +28,15 @@ const CLOSED_COOKIE_FIT = {
 };
 
 const OPEN_COOKIE_FIT = {
-  width: 392,
-  height: 258,
-  translateX: -2,
-  translateY: 20,
+  width: 474,
+  height: 304,
+  translateX: 0,
+  translateY: 18,
 };
 
 const PAPER_SIZE = {
   width: 264,
-  minHeight: 80,
+  minHeight: 68,
 };
 
 function scaleValue(value, scale) {
@@ -83,8 +83,8 @@ function CookieShell({
     paperMaxWidth || Number.POSITIVE_INFINITY
   );
   const paperMinHeight = scaleValue(PAPER_SIZE.minHeight, scale);
-  const paperTop = scaleValue(64, scale);
-  const paperShadowTop = scaleValue(86, scale);
+  const paperTop = scaleValue(-28, scale);
+  const paperShadowTop = scaleValue(-6, scale);
   const paperShadowWidth = scaleValue(214, scale);
   const paperShadowHeight = scaleValue(24, scale);
   const paperShadowRadius = scaleValue(18, scale);

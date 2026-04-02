@@ -40,11 +40,11 @@ const MAX_COOKIE_DROP = 18;
 const PROMPT_LIFT_FACTOR = 0.22;
 const MAX_PROMPT_BOTTOM_INSET = 44;
 const ACTION_TRAY_IMAGE_GAP_FACTOR = 0.005;
-const MIN_ACTION_TRAY_IMAGE_GAP = 2;
-const MAX_ACTION_TRAY_IMAGE_GAP = 5;
-const ACTION_TRAY_VISUAL_LIFT_FACTOR = 0.48;
-const MIN_ACTION_TRAY_VISUAL_LIFT = 42;
-const MAX_ACTION_TRAY_VISUAL_LIFT = 52;
+const MIN_ACTION_TRAY_IMAGE_GAP = 0;
+const MAX_ACTION_TRAY_IMAGE_GAP = 2;
+const ACTION_TRAY_VISUAL_LIFT_FACTOR = 0.78;
+const MIN_ACTION_TRAY_VISUAL_LIFT = 62;
+const MAX_ACTION_TRAY_VISUAL_LIFT = 80;
 const ACTION_TRAY_ROOMINESS_GAP_FACTOR = 0.065;
 const MAX_ACTION_TRAY_ROOMINESS_GAP = 30;
 const COOKIE_ROOMINESS_DROP_FACTOR = 0.16;
@@ -57,7 +57,6 @@ const ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT = 156;
 const CUSTOM_NOTICE_GAP_FACTOR = 0.018;
 const MIN_CUSTOM_NOTICE_GAP = 10;
 const MAX_CUSTOM_NOTICE_GAP = 18;
-const ESTIMATED_CUSTOM_NOTICE_HEIGHT = 44;
 
 const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
   .map((key) => ({
@@ -135,7 +134,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MAX_ACTION_TRAY_ROOMINESS_GAP
   );
   const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
-  const actionTrayEstimatedHeight = isVeryCompact ? 98 : isCompact ? 102 : isRoomy ? 110 : 106;
+  const actionTrayEstimatedHeight = isVeryCompact ? 88 : isCompact ? 92 : isRoomy ? 100 : 96;
   const actionTrayVisualLift = clamp(
     Math.round(actionTrayEstimatedHeight * ACTION_TRAY_VISUAL_LIFT_FACTOR),
     MIN_ACTION_TRAY_VISUAL_LIFT,
@@ -173,8 +172,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MIN_CUSTOM_NOTICE_GAP,
     MAX_CUSTOM_NOTICE_GAP
   );
-  const cookieTop = 12 + cookieTopSpacing + dailyWisdomSlotHeight;
-  const customNoticeMaxTop = cookieTop - customNoticeGap;
+  const customNoticeTop = createFortuneTopAnchor + ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT + customNoticeGap;
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
   const topGlowTop = isVeryCompact ? -56 : isCompact ? -64 : isRoomy ? -92 : -78;
@@ -216,7 +214,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     actionTrayTop,
     contentMaxWidth,
     createFortuneTopAnchor,
-    customNoticeMaxTop,
+    customNoticeTop,
     cookieImageOffset,
     cookieScale,
     cookieStageMinHeight,
@@ -366,7 +364,6 @@ export default function FortuneCard({
   const [customFortuneError, setCustomFortuneError] = useState('');
   const [isSavingCustomFortune, setIsSavingCustomFortune] = useState(false);
   const [customFortuneNotice, setCustomFortuneNotice] = useState('');
-  const [customFortuneNoticeHeight, setCustomFortuneNoticeHeight] = useState(ESTIMATED_CUSTOM_NOTICE_HEIGHT);
   const [createdFortuneSections, setCreatedFortuneSections] = useState([]);
   const [editingCustomFortune, setEditingCustomFortune] = useState(null);
   const [actionTrayHeight, setActionTrayHeight] = useState(0);
@@ -401,10 +398,7 @@ export default function FortuneCard({
     : isCustomFortuneSheetVisible;
   const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
   const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
-  const customFortuneNoticeTop = Math.max(
-    metrics.createFortuneTopAnchor,
-    metrics.customNoticeMaxTop - customFortuneNoticeHeight
-  );
+  const customFortuneNoticeTop = metrics.customNoticeTop;
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const drawerPalette = {
     panel: '#fff8f1',
@@ -471,14 +465,6 @@ export default function FortuneCard({
       setCustomFortuneNotice('');
       customFortuneNoticeTimerRef.current = null;
     }, 2200);
-  }
-
-  function handleCustomFortuneNoticeLayout(event) {
-    const nextHeight = Math.round(event.nativeEvent.layout.height);
-
-    if (nextHeight > 0 && nextHeight !== customFortuneNoticeHeight) {
-      setCustomFortuneNoticeHeight(nextHeight);
-    }
   }
 
   async function refreshCreatedFortunes() {
@@ -872,10 +858,7 @@ export default function FortuneCard({
             ]}
             pointerEvents="none"
           >
-            <View
-              onLayout={handleCustomFortuneNoticeLayout}
-              style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
-            >
+            <View style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
               <Text style={[styles.customFortuneNoticeText, { color: scene.textPrimary }]}>
                 {customFortuneNotice}
               </Text>
