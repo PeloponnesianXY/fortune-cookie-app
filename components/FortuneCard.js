@@ -45,6 +45,11 @@ const MAX_ACTION_TRAY_IMAGE_GAP = 5;
 const ACTION_TRAY_VISUAL_LIFT_FACTOR = 0.48;
 const MIN_ACTION_TRAY_VISUAL_LIFT = 42;
 const MAX_ACTION_TRAY_VISUAL_LIFT = 52;
+const ACTION_TRAY_ROOMINESS_GAP_FACTOR = 0.065;
+const MAX_ACTION_TRAY_ROOMINESS_GAP = 30;
+const COOKIE_ROOMINESS_DROP_FACTOR = 0.16;
+const COOKIE_ROOMINESS_CURVE_FACTOR = 0.0003;
+const MAX_COOKIE_ROOMINESS_DROP = 110;
 
 const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
   .map((key) => ({
@@ -116,6 +121,11 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MIN_ACTION_TRAY_IMAGE_GAP,
     MAX_ACTION_TRAY_IMAGE_GAP
   );
+  const actionTrayRoominessGap = clamp(
+    Math.round(extraUsableHeight * ACTION_TRAY_ROOMINESS_GAP_FACTOR),
+    0,
+    MAX_ACTION_TRAY_ROOMINESS_GAP
+  );
   const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
   const actionTrayEstimatedHeight = isVeryCompact ? 98 : isCompact ? 102 : isRoomy ? 110 : 106;
   const actionTrayVisualLift = clamp(
@@ -123,13 +133,24 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MIN_ACTION_TRAY_VISUAL_LIFT,
     MAX_ACTION_TRAY_VISUAL_LIFT
   );
-  const actionTrayTop = Math.round(cookieImageBottom + actionTrayImageGap - actionTrayVisualLift);
+  const actionTrayTop = Math.round(
+    cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
+  );
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
-  const desiredCookieCenterY = Math.round(height * 0.62);
+  const cookieRoominessDrop = clamp(
+    Math.round(
+      extraUsableHeight * COOKIE_ROOMINESS_DROP_FACTOR
+      + extraUsableHeight * extraUsableHeight * COOKIE_ROOMINESS_CURVE_FACTOR
+    ),
+    0,
+    MAX_COOKIE_ROOMINESS_DROP
+  );
+  const desiredCookieCenterY = Math.round(height * 0.62) + cookieRoominessDrop;
+  const maxCookieTopSpacing = 172 + clamp(Math.round(extraUsableHeight * 0.3), 0, 72);
   const cookieTopSpacing = clamp(
     Math.round(desiredCookieCenterY - dailyWisdomSlotHeight - cookieFrameHeight / 2),
     56,
-    172
+    maxCookieTopSpacing
   );
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;

@@ -97,13 +97,15 @@ export default function ScreenLab() {
   const [isStreakBarExpanded, setIsStreakBarExpanded] = useState(false);
   const [isKeyboardSimulated, setIsKeyboardSimulated] = useState(false);
   const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(false);
+  const [isCookieOpened, setIsCookieOpened] = useState(true);
+  const [isLockWarningVisible, setIsLockWarningVisible] = useState(false);
 
   const previewProps = useMemo(() => ({
     canReplaceCurrentFortune: true,
     currentFortuneIsFavorite: false,
-    dailyWisdomLockSeconds: 0,
-    dailyWisdomMessage: null,
-    dailyWisdomNoticeToken: 0,
+    dailyWisdomLockSeconds: isLockWarningVisible ? 32 : 0,
+    dailyWisdomMessage: isLockWarningVisible ? 'Fortune cooldown active. Please wait 32 seconds.' : null,
+    dailyWisdomNoticeToken: isLockWarningVisible ? 1 : 0,
     favoriteFortunes: [],
     fortuneText: FORTUNE_PRESETS[fortuneLength],
     forcedActionTrayVisible: isActionTrayExpanded,
@@ -111,9 +113,9 @@ export default function ScreenLab() {
     forcedDrawerOpen: isDrawerExpanded,
     historyFortunes: [],
     isAnimating: false,
-    isCookieOpened: true,
+    isCookieOpened,
     isHydratingSelection: false,
-    isPaperVisible: true,
+    isPaperVisible: isCookieOpened,
     isPreparingNextFortune: false,
     moodInput: 'curious',
     onBeginMoodEntry: () => {},
@@ -133,7 +135,15 @@ export default function ScreenLab() {
     streakForcedExpanded: isStreakBarExpanded,
     streakNextTierTitle: 'Snack Prophet',
     streakTierTitle: 'Fortune Chaser',
-  }), [fortuneLength, isActionTrayExpanded, isCreateFortuneSheetOpen, isDrawerExpanded, isStreakBarExpanded]);
+  }), [
+    fortuneLength,
+    isActionTrayExpanded,
+    isCookieOpened,
+    isCreateFortuneSheetOpen,
+    isDrawerExpanded,
+    isLockWarningVisible,
+    isStreakBarExpanded,
+  ]);
 
   return (
     <ScrollView
@@ -164,7 +174,9 @@ export default function ScreenLab() {
             <View style={styles.togglesGrid}>
               <ToggleRow label="Drawer" onValueChange={setIsDrawerExpanded} value={isDrawerExpanded} />
               <ToggleRow label="Action tray" onValueChange={setIsActionTrayExpanded} value={isActionTrayExpanded} />
+              <ToggleRow label="Open cookie" onValueChange={setIsCookieOpened} value={isCookieOpened} />
               <ToggleRow label="Create sheet" onValueChange={setIsCreateFortuneSheetOpen} value={isCreateFortuneSheetOpen} />
+              <ToggleRow label="Lock warning" onValueChange={setIsLockWarningVisible} value={isLockWarningVisible} />
               <ToggleRow label="Streak bar" onValueChange={setIsStreakBarExpanded} value={isStreakBarExpanded} />
               <ToggleRow label="Keyboard" onValueChange={setIsKeyboardSimulated} value={isKeyboardSimulated} />
               <ToggleRow label="Safe area" onValueChange={setIsSafeAreaSimulated} value={isSafeAreaSimulated} />
