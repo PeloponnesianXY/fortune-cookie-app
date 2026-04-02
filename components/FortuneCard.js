@@ -50,6 +50,14 @@ const MAX_ACTION_TRAY_ROOMINESS_GAP = 30;
 const COOKIE_ROOMINESS_DROP_FACTOR = 0.16;
 const COOKIE_ROOMINESS_CURVE_FACTOR = 0.0003;
 const MAX_COOKIE_ROOMINESS_DROP = 110;
+const CREATE_FORTUNE_TOP_GAP_FACTOR = 0.014;
+const MIN_CREATE_FORTUNE_TOP_GAP = 10;
+const MAX_CREATE_FORTUNE_TOP_GAP = 18;
+const ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT = 156;
+const CUSTOM_NOTICE_GAP_FACTOR = 0.018;
+const MIN_CUSTOM_NOTICE_GAP = 10;
+const MAX_CUSTOM_NOTICE_GAP = 18;
+const ESTIMATED_CUSTOM_NOTICE_HEIGHT = 44;
 
 const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
   .map((key) => ({
@@ -152,6 +160,21 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     56,
     maxCookieTopSpacing
   );
+  const createFortuneTopGap = clamp(
+    Math.round(usableHeight * CREATE_FORTUNE_TOP_GAP_FACTOR),
+    MIN_CREATE_FORTUNE_TOP_GAP,
+    MAX_CREATE_FORTUNE_TOP_GAP
+  );
+  const streakHeaderHeight = Math.round(48 * streakScale);
+  const headerChromeClearance = Math.max(menuButtonSize, streakHeaderHeight);
+  const createFortuneTopAnchor = headerTop + headerChromeClearance + createFortuneTopGap;
+  const customNoticeGap = clamp(
+    Math.round(usableHeight * CUSTOM_NOTICE_GAP_FACTOR),
+    MIN_CUSTOM_NOTICE_GAP,
+    MAX_CUSTOM_NOTICE_GAP
+  );
+  const cookieTop = 12 + cookieTopSpacing + dailyWisdomSlotHeight;
+  const customNoticeMaxTop = cookieTop - customNoticeGap;
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
   const topGlowTop = isVeryCompact ? -56 : isCompact ? -64 : isRoomy ? -92 : -78;
@@ -192,6 +215,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     actionTrayEstimatedHeight,
     actionTrayTop,
     contentMaxWidth,
+    createFortuneTopAnchor,
+    customNoticeMaxTop,
     cookieImageOffset,
     cookieScale,
     cookieStageMinHeight,
@@ -341,6 +366,7 @@ export default function FortuneCard({
   const [customFortuneError, setCustomFortuneError] = useState('');
   const [isSavingCustomFortune, setIsSavingCustomFortune] = useState(false);
   const [customFortuneNotice, setCustomFortuneNotice] = useState('');
+  const [customFortuneNoticeHeight, setCustomFortuneNoticeHeight] = useState(ESTIMATED_CUSTOM_NOTICE_HEIGHT);
   const [createdFortuneSections, setCreatedFortuneSections] = useState([]);
   const [editingCustomFortune, setEditingCustomFortune] = useState(null);
   const [actionTrayHeight, setActionTrayHeight] = useState(0);
@@ -375,6 +401,10 @@ export default function FortuneCard({
     : isCustomFortuneSheetVisible;
   const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
   const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
+  const customFortuneNoticeTop = Math.max(
+    metrics.createFortuneTopAnchor,
+    metrics.customNoticeMaxTop - customFortuneNoticeHeight
+  );
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const drawerPalette = {
     panel: '#fff8f1',
@@ -441,6 +471,14 @@ export default function FortuneCard({
       setCustomFortuneNotice('');
       customFortuneNoticeTimerRef.current = null;
     }, 2200);
+  }
+
+  function handleCustomFortuneNoticeLayout(event) {
+    const nextHeight = Math.round(event.nativeEvent.layout.height);
+
+    if (nextHeight > 0 && nextHeight !== customFortuneNoticeHeight) {
+      setCustomFortuneNoticeHeight(nextHeight);
+    }
   }
 
   async function refreshCreatedFortunes() {
@@ -829,12 +867,15 @@ export default function FortuneCard({
               {
                 left: metrics.horizontalPadding,
                 right: metrics.horizontalPadding,
-                bottom: clamp(Math.round(viewportHeight * 0.5), 244, 398),
+                top: customFortuneNoticeTop,
               },
             ]}
             pointerEvents="none"
           >
-            <View style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
+            <View
+              onLayout={handleCustomFortuneNoticeLayout}
+              style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}
+            >
               <Text style={[styles.customFortuneNoticeText, { color: scene.textPrimary }]}>
                 {customFortuneNotice}
               </Text>
@@ -1082,6 +1123,9 @@ export default function FortuneCard({
         visible={Boolean(activeLibrary)}
       />
       <CustomFortuneSheet
+        collapsedTopAnchor={metrics.createFortuneTopAnchor}
+        collapsedEstimatedHeight={ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT}
+        collapsedMaxWidth={metrics.contentMaxWidth}
         errorMessage={customFortuneError}
         initialFortuneText={editingCustomFortune?.text || ''}
         initialMoodKey={editingCustomFortune?.moodKey || null}
@@ -1247,11 +1291,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     zIndex: 2,
     elevation: 4,
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 9,
+    paddingHorizontal: 14,
+    paddingTop: 6,
+    paddingBottom: 5,
     shadowColor: '#6d4e37',
     shadowOpacity: 0.045,
     shadowRadius: 10,
@@ -1259,9 +1303,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   inputLabel: {
-    marginBottom: 8,
+    marginBottom: 4,
     marginLeft: 2,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
     textTransform: 'uppercase',
@@ -1271,10 +1315,10 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   inputRow: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    minHeight: 38,
-    paddingHorizontal: 14,
+    minHeight: 30,
+    paddingHorizontal: 12,
     justifyContent: 'center',
     zIndex: 3,
   },
@@ -1291,8 +1335,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingHorizontal: 2,
-    fontSize: 16,
-    paddingVertical: 5,
+    fontSize: 15,
+    paddingVertical: 1,
   },
   inputLocked: {
     opacity: 0.5,

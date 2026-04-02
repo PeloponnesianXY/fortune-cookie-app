@@ -13,10 +13,34 @@ import {
 } from 'react-native';
 
 import PreviewModal from './PreviewModal';
+import { usePreviewLayout } from './PreviewLayoutContext';
 
 const MAX_LENGTH = 140;
 
+function getMoodPillTypography(width, height) {
+  if (height >= 900 || width >= 430) {
+    return { fontSize: 14, lineHeight: 16, minimumFontScale: 0.92 };
+  }
+
+  if (height >= 800 || width >= 390) {
+    return { fontSize: 13.5, lineHeight: 15, minimumFontScale: 0.82 };
+  }
+
+  return { fontSize: 11.5, lineHeight: 13, minimumFontScale: 0.82 };
+}
+
+function getMoodPillLayout(width, height) {
+  if (height >= 800 || width >= 390) {
+    return { gap: 4, width: '24%' };
+  }
+
+  return { gap: 5, width: '23.5%' };
+}
+
 export default function CustomFortuneSheet({
+  collapsedTopAnchor,
+  collapsedEstimatedHeight,
+  collapsedMaxWidth,
   initialFortuneText,
   initialMoodKey,
   isEditing,
@@ -30,15 +54,41 @@ export default function CustomFortuneSheet({
 }) {
   const [selectedMood, setSelectedMood] = useState(initialMoodKey || null);
   const [fortuneText, setFortuneText] = useState(initialFortuneText || '');
+  const [collapsedHeight, setCollapsedHeight] = useState(collapsedEstimatedHeight || 0);
+  const [anchoredTop, setAnchoredTop] = useState(null);
+  const previewLayout = usePreviewLayout();
 
   const trimmedLength = useMemo(() => fortuneText.trim().length, [fortuneText]);
+  const moodPillTypography = useMemo(
+    () => getMoodPillTypography(previewLayout.width, previewLayout.height),
+    [previewLayout.height, previewLayout.width]
+  );
+  const moodPillLayout = useMemo(
+    () => getMoodPillLayout(previewLayout.width, previewLayout.height),
+    [previewLayout.height, previewLayout.width]
+  );
+  const isCollapsed = !selectedMood;
+  const collapsedTop = collapsedTopAnchor != null ? Math.max(12, Math.round(collapsedTopAnchor)) : null;
+  const sheetTop = anchoredTop ?? collapsedTop;
 
   useEffect(() => {
     if (visible) {
       setSelectedMood(initialMoodKey || null);
       setFortuneText(initialFortuneText || '');
+      setCollapsedHeight(collapsedEstimatedHeight || 0);
+      setAnchoredTop(null);
     }
-  }, [initialFortuneText, initialMoodKey, visible]);
+  }, [collapsedEstimatedHeight, initialFortuneText, initialMoodKey, visible]);
+
+  useEffect(() => {
+    if (!visible || collapsedTop == null) {
+      return;
+    }
+
+    if (isCollapsed) {
+      setAnchoredTop(collapsedTop);
+    }
+  }, [collapsedTop, isCollapsed, visible]);
 
   function handleClose() {
     Keyboard.dismiss();
@@ -60,15 +110,44 @@ export default function CustomFortuneSheet({
     }
   }
 
+  function handleSheetLayout(event) {
+    if (!isCollapsed) {
+      return;
+    }
+
+    const nextHeight = Math.round(event.nativeEvent.layout.height);
+
+    if (nextHeight > 0 && nextHeight !== collapsedHeight) {
+      setCollapsedHeight(nextHeight);
+    }
+  }
+
   return (
     <PreviewModal animationType="slide" onRequestClose={handleClose} transparent visible={visible}>
       <View style={styles.backdrop}>
         <SafeAreaView style={styles.safeArea}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.sheetWrap}
+            style={[
+              styles.sheetWrap,
+              sheetTop != null
+                ? { justifyContent: 'flex-start', paddingTop: sheetTop }
+                : null,
+            ]}
           >
-            <View style={styles.sheet}>
+            <View
+              onLayout={handleSheetLayout}
+              style={[
+                styles.sheet,
+                isCollapsed
+                  ? {
+                      alignSelf: 'center',
+                      width: '100%',
+                      maxWidth: collapsedMaxWidth || '100%',
+                    }
+                  : null,
+              ]}
+            >
               <View style={styles.header}>
                 <View>
                   <Text style={styles.title}>
@@ -85,7 +164,7 @@ export default function CustomFortuneSheet({
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
-                <View style={styles.moodGrid}>
+                <View style={[styles.moodGrid, { gap: moodPillLayout.gap }]}>
                   {moodOptions.map((option) => {
                     const isSelected = option.key === selectedMood;
                     return (
@@ -99,14 +178,22 @@ export default function CustomFortuneSheet({
                         }}
                         style={[
                           styles.moodPill,
+                          { width: moodPillLayout.width },
                           isSelected ? styles.moodPillSelected : null,
                         ]}
                       >
                         <Text
                           adjustsFontSizeToFit
-                          minimumFontScale={0.78}
+                          minimumFontScale={moodPillTypography.minimumFontScale}
                           numberOfLines={1}
-                          style={[styles.moodPillText, isSelected ? styles.moodPillTextSelected : null]}
+                          style={[
+                            styles.moodPillText,
+                            {
+                              fontSize: moodPillTypography.fontSize,
+                              lineHeight: moodPillTypography.lineHeight,
+                            },
+                            isSelected ? styles.moodPillTextSelected : null,
+                          ]}
                         >
                           {option.label}
                         </Text>
@@ -209,7 +296,6 @@ const styles = StyleSheet.create({
   moodGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 5,
     justifyContent: 'space-between',
   },
   moodPill: {
@@ -229,11 +315,11 @@ const styles = StyleSheet.create({
     borderColor: '#ddb17a',
   },
   moodPillText: {
-    fontSize: 11.5,
+    fontSize: 13,
     fontWeight: '600',
     color: '#5d4330',
     letterSpacing: -0.12,
-    lineHeight: 13,
+    lineHeight: 15,
     textAlign: 'center',
   },
   moodPillTextSelected: {
