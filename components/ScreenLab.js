@@ -92,11 +92,11 @@ function ToggleRow({ label, onValueChange, value }) {
 export default function ScreenLab() {
   const [fortuneLength, setFortuneLength] = useState('medium');
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
-  const [isActionTrayExpanded, setIsActionTrayExpanded] = useState(true);
+  const [isActionTrayExpanded, setIsActionTrayExpanded] = useState(false);
   const [isCreateFortuneSheetOpen, setIsCreateFortuneSheetOpen] = useState(false);
   const [isStreakBarExpanded, setIsStreakBarExpanded] = useState(false);
   const [isKeyboardSimulated, setIsKeyboardSimulated] = useState(false);
-  const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(true);
+  const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(false);
 
   const previewProps = useMemo(() => ({
     canReplaceCurrentFortune: true,

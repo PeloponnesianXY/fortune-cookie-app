@@ -45,6 +45,7 @@ function scaleValue(value, scale) {
 
 function CookieShell({
   fortuneText,
+  imageVerticalOffset = 0,
   isOpened,
   isPaperVisible,
   paperCueProgress,
@@ -65,13 +66,13 @@ function CookieShell({
     width: scaleValue(CLOSED_COOKIE_FIT.width, scale),
     height: scaleValue(CLOSED_COOKIE_FIT.height, scale),
     translateX: scaleValue(CLOSED_COOKIE_FIT.translateX, scale),
-    translateY: scaleValue(CLOSED_COOKIE_FIT.translateY, scale),
+    translateY: scaleValue(CLOSED_COOKIE_FIT.translateY + imageVerticalOffset, scale),
   };
   const openCookieFit = {
     width: scaleValue(OPEN_COOKIE_FIT.width, scale),
     height: scaleValue(OPEN_COOKIE_FIT.height, scale),
     translateX: scaleValue(OPEN_COOKIE_FIT.translateX, scale),
-    translateY: scaleValue(OPEN_COOKIE_FIT.translateY, scale),
+    translateY: scaleValue(OPEN_COOKIE_FIT.translateY + imageVerticalOffset, scale),
   };
   const paperWidth = Math.min(
     scaleValue(PAPER_SIZE.width, scale),

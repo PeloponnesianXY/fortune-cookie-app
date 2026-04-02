@@ -34,6 +34,11 @@ import { MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 const BASE_CONTENT_MAX_WIDTH = 540;
+const SE_BASELINE_USABLE_HEIGHT = 647;
+const COOKIE_DROP_FACTOR = 0.08;
+const MAX_COOKIE_DROP = 18;
+const PROMPT_LIFT_FACTOR = 0.22;
+const MAX_PROMPT_BOTTOM_INSET = 44;
 
 const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
   .map((key) => ({
@@ -62,11 +67,13 @@ function getLayoutMode(width, height) {
   return 'standard';
 }
 
-function createLayoutMetrics(width, height) {
+function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   const layoutMode = getLayoutMode(width, height);
   const isVeryCompact = layoutMode === 'veryCompact';
   const isCompact = layoutMode === 'compact' || isVeryCompact;
   const isRoomy = layoutMode === 'roomy';
+  const usableHeight = height - (insets.top || 0) - (insets.bottom || 0);
+  const extraUsableHeight = Math.max(0, usableHeight - SE_BASELINE_USABLE_HEIGHT);
   const horizontalPadding = clamp(Math.round(width * 0.055), 14, 24);
   const contentMaxWidth = Math.min(BASE_CONTENT_MAX_WIDTH, width - horizontalPadding * 2);
   const menuButtonSize = isVeryCompact ? 34 : isCompact ? 36 : isRoomy ? 42 : 38;
@@ -87,6 +94,16 @@ function createLayoutMetrics(width, height) {
         ? cookieFrameHeight + 34
         : cookieFrameHeight + 24;
   const promptGap = isVeryCompact ? 8 : isCompact ? 10 : isRoomy ? 18 : 14;
+  const promptBottomInset = clamp(
+    Math.round(extraUsableHeight * PROMPT_LIFT_FACTOR),
+    0,
+    MAX_PROMPT_BOTTOM_INSET
+  );
+  const cookieImageOffset = clamp(
+    Math.round(extraUsableHeight * COOKIE_DROP_FACTOR),
+    0,
+    MAX_COOKIE_DROP
+  );
   const cookieAttachmentOffset = isVeryCompact ? 64 : isCompact ? 72 : isRoomy ? 50 : 62;
   const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
   const actionTrayGap = -cookieAttachmentOffset;
@@ -137,6 +154,7 @@ function createLayoutMetrics(width, height) {
     actionTrayGap,
     contentMaxWidth,
     cookieAttachmentOffset,
+    cookieImageOffset,
     cookieScale,
     cookieStageMinHeight,
     cookieTopSpacing,
@@ -151,6 +169,7 @@ function createLayoutMetrics(width, height) {
     menuLineHeight,
     menuLineWidth,
     promptFloatClearance,
+    promptBottomInset,
     promptGap,
     scene,
     streakScale,
@@ -187,6 +206,7 @@ const SceneBackdrop = memo(function SceneBackdrop({ metrics, scene }) {
 
 const CookieStage = memo(function CookieStage({
   fortuneText,
+  imageVerticalOffset,
   isCookieOpened,
   isPaperVisible,
   onPress,
@@ -223,6 +243,7 @@ const CookieStage = memo(function CookieStage({
         <Animated.View style={[styles.cookieImageFrame, cookieLiftStyle]}>
           <CookieShell
             fortuneText={fortuneText}
+            imageVerticalOffset={imageVerticalOffset}
             isOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
             scale={shellScale}
@@ -298,7 +319,10 @@ export default function FortuneCard({
   const customFortuneNoticeTimerRef = useRef(null);
   const promptLiftProgress = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
-  const metrics = useMemo(() => createLayoutMetrics(viewportWidth, viewportHeight), [viewportWidth, viewportHeight]);
+  const metrics = useMemo(
+    () => createLayoutMetrics(viewportWidth, viewportHeight, previewLayout.insets),
+    [previewLayout.insets, viewportHeight, viewportWidth]
+  );
   const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isDrawerForced = typeof forcedDrawerOpen === 'boolean';
@@ -796,6 +820,7 @@ export default function FortuneCard({
         <View style={[styles.cookieSection, { maxWidth: metrics.contentMaxWidth }]}>
           <CookieStage
             fortuneText={fortuneText}
+            imageVerticalOffset={metrics.cookieImageOffset}
             isCookieOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
             onPress={showActionTrayTemporarily}
@@ -827,6 +852,7 @@ export default function FortuneCard({
             promptDockAnimatedStyle,
             {
               paddingTop: metrics.promptGap,
+              paddingBottom: effectiveKeyboardVisible ? 0 : metrics.promptBottomInset,
               justifyContent: effectiveKeyboardVisible ? 'flex-start' : 'flex-end',
             },
           ]}
