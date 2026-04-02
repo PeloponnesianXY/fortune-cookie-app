@@ -133,7 +133,7 @@ eas submit --platform ios
   - `angry`
   - `confused`
   - `surprised`
-  - `averse`
+  - `disgusted`
   - `weird`
 - Older emotion-taxonomy writing was merged into those 12 runtime mood buckets so the content model matches the live taxonomy.
 - Unknown or unmapped inputs fall back to the `weird` path instead of generating a separate generic bucket.

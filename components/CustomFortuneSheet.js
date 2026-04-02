@@ -167,7 +167,7 @@ export default function CustomFortuneSheet({
                 <View style={[styles.moodGrid, { gap: moodPillLayout.gap }]}>
                   {moodOptions.map((option) => {
                     const isSelected = option.key === selectedMood;
-                    const isLongMoodLabel = option.key === 'averse';
+                    const isLongMoodLabel = option.key === 'disgusted';
                     return (
                       <Pressable
                         key={option.key}

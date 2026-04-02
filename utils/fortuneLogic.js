@@ -38,7 +38,7 @@ const HIGH_RISK_WORDS = new Set([
 const LEGACY_EMOTION_TO_MOOD_BUCKET = {
   anger: 'angry',
   anticipation: 'hopeful',
-  disgust: 'averse',
+  disgust: 'disgusted',
   fear: 'anxious',
   joy: 'happy',
   sadness: 'sad',
@@ -68,7 +68,7 @@ const MOOD_BUCKET_KEYS = [
   'angry',
   'confused',
   'surprised',
-  'averse',
+  'disgusted',
   'weird',
 ];
 
@@ -83,7 +83,7 @@ const MOOD_BUCKET_PRIORITY = [
   'angry',
   'confused',
   'surprised',
-  'averse',
+  'disgusted',
   'weird',
 ];
 
@@ -107,7 +107,7 @@ const STRONG_MOOD_HINTS = {
   lonely: ['lonely', 'alone', 'isolated', 'abandoned', 'unseen', 'disconnected'],
   anxious: ['afraid', 'fearful', 'scared', 'terrified', 'panicked', 'anxious', 'restless', 'watchful'],
   angry: ['angry', 'furious', 'irritated', 'mad', 'resentful'],
-  averse: ['disgusted', 'grossed', 'repulsed'],
+  disgusted: ['disgusted', 'grossed', 'repulsed'],
   surprised: ['surprised', 'shocked', 'startled', 'stunned', 'unexpected'],
   confused: ['confused', 'unclear', 'lost', 'blank', 'unsure', 'puzzled'],
 };
@@ -143,7 +143,7 @@ const CURATED_MOOD_WORDS = {
     'hesitating', 'ruminating', 'overthinking', 'pensive', 'displaced', 'turnedaround',
     'misaligned', 'unclearheaded', 'atsea', 'inbetween', 'unanchored', 'divided', 'uncertainly',
   ],
-  averse: [
+  disgusted: [
     'disgusted', 'grossed', 'repelled', 'repulsed', 'sickened', 'appalled', 'averse',
     'contaminated', 'contemptuous', 'creeped', 'disdainful', 'displeased', 'disturbed',
     'disgust', 'eww', 'filthy', 'gross', 'grimacing', 'icky', 'loathing', 'nauseated',
@@ -245,6 +245,41 @@ const NRC_BUCKET_OVERRIDES = {
 let _nrcWordToMoodBucket = null;
 let _nrcWordsByFirstLetter = null;
 
+function normalizeMoodBucketKey(moodKey) {
+  if (moodKey === 'averse') {
+    return 'disgusted';
+  }
+
+  return moodKey;
+}
+
+function normalizeStoredSelection(selection) {
+  if (!selection || typeof selection !== 'object') {
+    return selection;
+  }
+
+  const normalizedPrimaryEmotion = normalizeMoodBucketKey(selection.analysis?.primaryEmotion);
+  const normalizedSelection = {
+    ...selection,
+    analysis: selection.analysis
+      ? {
+          ...selection.analysis,
+          primaryEmotion: normalizedPrimaryEmotion,
+        }
+      : selection.analysis,
+  };
+
+  if (
+    normalizedSelection.analysis?.primaryEmotion
+    && normalizedSelection.sceneKey === 'stoneVeil'
+  ) {
+    normalizedSelection.sceneKey = MOOD_SCENE_KEYS[normalizedSelection.analysis.primaryEmotion]
+      || normalizedSelection.sceneKey;
+  }
+
+  return normalizedSelection;
+}
+
 function ensureNrcLookups() {
   if (_nrcWordToMoodBucket) {
     return;
@@ -323,14 +358,14 @@ async function loadDayState() {
   }
 
   try {
-    return JSON.parse(raw);
+    return normalizeStoredSelection(JSON.parse(raw));
   } catch {
     return null;
   }
 }
 
 async function saveDayState(selection) {
-  const nextSelection = ensureSelectionMetadata(selection);
+  const nextSelection = normalizeStoredSelection(ensureSelectionMetadata(selection));
   await AsyncStorage.setItem(DAY_STATE_STORAGE_KEY, JSON.stringify(nextSelection));
   return nextSelection;
 }

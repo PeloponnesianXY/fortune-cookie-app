@@ -20,10 +20,20 @@ function normalizeStoredCustomFortunes(value) {
     return base;
   }
 
+  if (Array.isArray(value.averse)) {
+    base.disgusted = value.averse
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim());
+  }
+
   for (const key of MOOD_BUCKET_KEYS) {
-    base[key] = Array.isArray(value[key])
+    const normalizedItems = Array.isArray(value[key])
       ? value[key].filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
       : [];
+
+    base[key] = key === 'disgusted'
+      ? [...new Set([...base[key], ...normalizedItems])]
+      : normalizedItems;
   }
 
   return base;
@@ -34,7 +44,7 @@ function normalizeForDuplicateCheck(value) {
 }
 
 export function formatMoodBucketLabel(moodKey) {
-  if (moodKey === 'averse') {
+  if (moodKey === 'averse' || moodKey === 'disgusted') {
     return 'Disgusted';
   }
 

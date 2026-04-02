@@ -88,7 +88,7 @@ const MOOD_SCENE_KEYS = {
   sad: 'silverHush',
   anxious: 'silverHush',
   angry: 'emberMesa',
-  averse: 'stoneVeil',
+  disgusted: 'stoneVeil',
   confused: 'emberMesa',
   surprised: 'opalMist',
   weird: 'opalMist',
