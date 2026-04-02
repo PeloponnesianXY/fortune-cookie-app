@@ -46,6 +46,7 @@ export default function StreakStatus({
   nextTierTitle,
   daysToNextTier,
   celebrationToken,
+  forcedExpanded,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
@@ -90,6 +91,18 @@ export default function StreakStatus({
   }, []);
 
   useEffect(() => {
+    if (typeof forcedExpanded === 'boolean') {
+      clearCollapseTimer();
+      setIsCelebrating(false);
+      animateExpanded(forcedExpanded);
+    }
+  }, [forcedExpanded]);
+
+  useEffect(() => {
+    if (typeof forcedExpanded === 'boolean') {
+      return;
+    }
+
     if (hasShownIntroRef.current || streakCount <= 0) {
       return;
     }
@@ -99,6 +112,10 @@ export default function StreakStatus({
   }, [streakCount]);
 
   useEffect(() => {
+    if (typeof forcedExpanded === 'boolean') {
+      return;
+    }
+
     if (!celebrationToken) {
       return;
     }
@@ -156,7 +173,7 @@ export default function StreakStatus({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Streak status"
-        onPress={() => openExpanded({ celebration: false })}
+        onPress={typeof forcedExpanded === 'boolean' ? undefined : () => openExpanded({ celebration: false })}
       >
         <Animated.View
           style={[

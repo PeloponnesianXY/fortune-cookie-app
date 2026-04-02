@@ -10,7 +10,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -22,6 +21,7 @@ import DrawerSection from './DrawerSection';
 import FortuneActionTray from './FortuneActionTray';
 import FortuneLibrarySheet from './FortuneLibrarySheet';
 import StreakStatus from './StreakStatus';
+import { usePreviewLayout } from './PreviewLayoutContext';
 import {
   buildCreatedFortuneSections,
   deleteCustomFortune,
@@ -79,13 +79,6 @@ function createLayoutMetrics(width, height) {
   const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
   const cookieScale = isVeryCompact ? 0.84 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
   const cookieFrameHeight = Math.round(COOKIE_SHELL_FRAME.height * cookieScale);
-  const cookieTopSpacing = isVeryCompact
-    ? 96
-    : isCompact
-      ? 118
-      : isRoomy
-        ? 164
-        : 138;
   const cookieStageMinHeight = isVeryCompact
     ? cookieFrameHeight + 10
     : isCompact
@@ -98,6 +91,12 @@ function createLayoutMetrics(width, height) {
   const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
   const actionTrayGap = -cookieAttachmentOffset;
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
+  const desiredCookieCenterY = Math.round(height * 0.62);
+  const cookieTopSpacing = clamp(
+    Math.round(desiredCookieCenterY - dailyWisdomSlotHeight - cookieFrameHeight / 2),
+    56,
+    172
+  );
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
   const topGlowTop = isVeryCompact ? -56 : isCompact ? -64 : isRoomy ? -92 : -78;
@@ -245,6 +244,9 @@ export default function FortuneCard({
   dailyWisdomNoticeToken,
   favoriteFortunes,
   fortuneText,
+  forcedActionTrayVisible,
+  forcedCustomFortuneSheetVisible,
+  forcedDrawerOpen,
   historyFortunes,
   isCookieOpened,
   isHydratingSelection,
@@ -264,6 +266,7 @@ export default function FortuneCard({
   streakCelebrationToken,
   streakCount,
   streakDaysToNextTier,
+  streakForcedExpanded,
   streakNextTierTitle,
   streakTierTitle,
 }) {
@@ -281,7 +284,9 @@ export default function FortuneCard({
   const [customFortuneNotice, setCustomFortuneNotice] = useState('');
   const [createdFortuneSections, setCreatedFortuneSections] = useState([]);
   const [editingCustomFortune, setEditingCustomFortune] = useState(null);
-  const { height: viewportHeight, width: viewportWidth } = useWindowDimensions();
+  const previewLayout = usePreviewLayout();
+  const viewportHeight = previewLayout.height;
+  const viewportWidth = previewLayout.width;
   const drawerProgress = useRef(new Animated.Value(0)).current;
   const dailyWisdomProgress = useRef(new Animated.Value(dailyWisdomMessage ? 1 : 0)).current;
   const paperCueProgress = useRef(new Animated.Value(0)).current;
@@ -296,6 +301,15 @@ export default function FortuneCard({
   const metrics = useMemo(() => createLayoutMetrics(viewportWidth, viewportHeight), [viewportWidth, viewportHeight]);
   const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
+  const isDrawerForced = typeof forcedDrawerOpen === 'boolean';
+  const isActionTrayForced = typeof forcedActionTrayVisible === 'boolean';
+  const isCustomFortuneSheetForced = typeof forcedCustomFortuneSheetVisible === 'boolean';
+  const effectiveKeyboardVisible = previewLayout.keyboardVisible ?? isKeyboardVisible;
+  const isDrawerShown = isDrawerForced ? forcedDrawerOpen : isDrawerOpen;
+  const actionTrayVisible = isActionTrayForced ? forcedActionTrayVisible : isActionTrayVisible;
+  const customFortuneSheetVisible = isCustomFortuneSheetForced
+    ? forcedCustomFortuneSheetVisible
+    : isCustomFortuneSheetVisible;
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const drawerPalette = {
     panel: '#fff8f1',
@@ -407,10 +421,19 @@ export default function FortuneCard({
   }
 
   function openDrawer() {
+    if (isDrawerForced) {
+      return;
+    }
+
     animateDrawer(true);
   }
 
   function closeDrawer(onComplete) {
+    if (isDrawerForced) {
+      onComplete?.(true);
+      return;
+    }
+
     animateDrawer(false, onComplete);
   }
 
@@ -462,7 +485,7 @@ export default function FortuneCard({
       return undefined;
     }
 
-    if (isActionTrayVisible) {
+    if (actionTrayVisible) {
       paperCueLoopRef.current?.stop();
       paperCueProgress.stopAnimation();
       paperCueProgress.setValue(0);
@@ -516,7 +539,7 @@ export default function FortuneCard({
       paperCueProgress.stopAnimation();
       paperCueProgress.setValue(0);
     };
-  }, [isActionTrayVisible, isFortuneRevealed, paperCueProgress]);
+  }, [actionTrayVisible, isFortuneRevealed, paperCueProgress]);
 
   useEffect(() => {
     scheduleIdleKeyboardDismiss(moodInput);
@@ -539,13 +562,24 @@ export default function FortuneCard({
   }, []);
 
   useEffect(() => {
+    if (!isDrawerForced) {
+      return undefined;
+    }
+
+    setIsDrawerOpen(forcedDrawerOpen);
+    drawerProgress.stopAnimation();
+    drawerProgress.setValue(forcedDrawerOpen ? 1 : 0);
+    return undefined;
+  }, [drawerProgress, forcedDrawerOpen, isDrawerForced]);
+
+  useEffect(() => {
     Animated.timing(promptLiftProgress, {
-      toValue: isKeyboardVisible ? 1 : 0,
+      toValue: effectiveKeyboardVisible ? 1 : 0,
       duration: Platform.OS === 'ios' ? 240 : 180,
-      easing: isKeyboardVisible ? Easing.out(Easing.cubic) : Easing.inOut(Easing.quad),
+      easing: effectiveKeyboardVisible ? Easing.out(Easing.cubic) : Easing.inOut(Easing.quad),
       useNativeDriver: true,
     }).start();
-  }, [isKeyboardVisible, promptLiftProgress]);
+  }, [effectiveKeyboardVisible, promptLiftProgress]);
 
   useEffect(() => {
     clearDailyWisdomShowTimer();
@@ -709,6 +743,7 @@ export default function FortuneCard({
               daysToNextTier={streakDaysToNextTier}
               nextTierTitle={streakNextTierTitle}
               streakCount={streakCount}
+              forcedExpanded={streakForcedExpanded}
               tierTitle={streakTierTitle}
             />
           </View>
@@ -780,7 +815,7 @@ export default function FortuneCard({
                 onShare={onShareFortune}
                 onToggleFavorite={onToggleFavorite}
                 palette={actionTrayPalette}
-                visible={isActionTrayVisible}
+                visible={actionTrayVisible}
               />
             </View>
           ) : null}
@@ -792,7 +827,7 @@ export default function FortuneCard({
             promptDockAnimatedStyle,
             {
               paddingTop: metrics.promptGap,
-              justifyContent: isKeyboardVisible ? 'flex-start' : 'flex-end',
+              justifyContent: effectiveKeyboardVisible ? 'flex-start' : 'flex-end',
             },
           ]}
         >
@@ -877,7 +912,7 @@ export default function FortuneCard({
         </View>
       </View>
 
-      {isDrawerOpen ? (
+      {isDrawerShown ? (
         <View pointerEvents="box-none" style={styles.drawerLayer}>
           <Animated.View style={[styles.drawerBackdrop, drawerBackdropAnimatedStyle]}>
             <Pressable onPress={() => closeDrawer()} style={StyleSheet.absoluteFill} />
@@ -964,6 +999,10 @@ export default function FortuneCard({
         isEditing={Boolean(editingCustomFortune)}
         moodOptions={MOOD_OPTIONS}
         onCancel={() => {
+          if (isCustomFortuneSheetForced) {
+            return;
+          }
+
           setCustomFortuneError('');
           setEditingCustomFortune(null);
           setIsCustomFortuneSheetVisible(false);
@@ -1008,7 +1047,7 @@ export default function FortuneCard({
           }
         }}
         saving={isSavingCustomFortune}
-        visible={isCustomFortuneSheetVisible}
+        visible={customFortuneSheetVisible}
       />
       <CreatedFortunesSheet
         onDeleteFortune={async (item) => {
