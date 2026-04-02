@@ -167,6 +167,7 @@ export default function CustomFortuneSheet({
                 <View style={[styles.moodGrid, { gap: moodPillLayout.gap }]}>
                   {moodOptions.map((option) => {
                     const isSelected = option.key === selectedMood;
+                    const isLongMoodLabel = option.key === 'averse';
                     return (
                       <Pressable
                         key={option.key}
@@ -184,13 +185,17 @@ export default function CustomFortuneSheet({
                       >
                         <Text
                           adjustsFontSizeToFit
-                          minimumFontScale={moodPillTypography.minimumFontScale}
+                          minimumFontScale={isLongMoodLabel ? 0.74 : moodPillTypography.minimumFontScale}
                           numberOfLines={1}
                           style={[
                             styles.moodPillText,
                             {
-                              fontSize: moodPillTypography.fontSize,
-                              lineHeight: moodPillTypography.lineHeight,
+                              fontSize: isLongMoodLabel
+                                ? moodPillTypography.fontSize - 1
+                                : moodPillTypography.fontSize,
+                              lineHeight: isLongMoodLabel
+                                ? moodPillTypography.lineHeight - 1
+                                : moodPillTypography.lineHeight,
                             },
                             isSelected ? styles.moodPillTextSelected : null,
                           ]}

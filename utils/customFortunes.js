@@ -34,6 +34,10 @@ function normalizeForDuplicateCheck(value) {
 }
 
 export function formatMoodBucketLabel(moodKey) {
+  if (moodKey === 'averse') {
+    return 'Disgusted';
+  }
+
   return moodKey.charAt(0).toUpperCase() + moodKey.slice(1);
 }
 
