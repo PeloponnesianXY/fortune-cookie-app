@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -34,6 +34,13 @@ import { MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 const BASE_CONTENT_MAX_WIDTH = 540;
+
+const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
+  .map((key) => ({
+    key,
+    label: formatMoodBucketLabel(key),
+  }))
+  .sort((left, right) => left.label.localeCompare(right.label));
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -286,7 +293,7 @@ export default function FortuneCard({
   const customFortuneNoticeTimerRef = useRef(null);
   const promptLiftProgress = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
-  const metrics = createLayoutMetrics(viewportWidth, viewportHeight);
+  const metrics = useMemo(() => createLayoutMetrics(viewportWidth, viewportHeight), [viewportWidth, viewportHeight]);
   const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
@@ -640,12 +647,6 @@ export default function FortuneCard({
       },
     ],
   };
-  const moodOptions = [...MOOD_BUCKET_KEYS]
-    .map((key) => ({
-      key,
-      label: formatMoodBucketLabel(key),
-    }))
-    .sort((left, right) => left.label.localeCompare(right.label));
   const shouldPrepareFreshEntry = Boolean(
     moodInput
     || isCookieOpened
@@ -961,7 +962,7 @@ export default function FortuneCard({
         initialFortuneText={editingCustomFortune?.text || ''}
         initialMoodKey={editingCustomFortune?.moodKey || null}
         isEditing={Boolean(editingCustomFortune)}
-        moodOptions={moodOptions}
+        moodOptions={MOOD_OPTIONS}
         onCancel={() => {
           setCustomFortuneError('');
           setEditingCustomFortune(null);

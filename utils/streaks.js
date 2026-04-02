@@ -1,13 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STREAK_STORAGE_KEY = '@fortune-cookie-daily/streak';
+import { getLocalDayKey } from './dateUtils';
 
-function getLocalDayKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+const STREAK_STORAGE_KEY = '@fortune-cookie-daily/streak';
 
 function parseStoredStreak(rawValue) {
   if (!rawValue) {

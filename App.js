@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AppState,
   Animated,
@@ -81,65 +81,31 @@ function getDailyWisdomLockSeconds(fortuneCount) {
   return Math.min(2 ** (fortuneCount - 1), 64);
 }
 
+const STREAK_TIERS = [
+  { minDays: 1, title: 'Crumb Collector' },
+  { minDays: 5, title: 'Cookie Regular' },
+  { minDays: 10, title: 'Fortune Chaser' },
+  { minDays: 20, title: 'Snack Prophet' },
+  { minDays: 50, title: 'Cookie Master' },
+  { minDays: 100, title: 'Oracle of Crumbs' },
+  { minDays: 1000, title: 'Cookie Emperor' },
+];
+
 function getStreakTierTitle(streakCount) {
-  if (streakCount >= 1000) {
-    return 'Cookie Emperor';
-  }
-
-  if (streakCount >= 100) {
-    return 'Oracle of Crumbs';
-  }
-
-  if (streakCount >= 50) {
-    return 'Cookie Master';
-  }
-
-  if (streakCount >= 20) {
-    return 'Snack Prophet';
-  }
-
-  if (streakCount >= 10) {
-    return 'Fortune Chaser';
-  }
-
-  if (streakCount >= 5) {
-    return 'Cookie Regular';
-  }
-
-  if (streakCount >= 1) {
-    return 'Crumb Collector';
+  for (let i = STREAK_TIERS.length - 1; i >= 0; i -= 1) {
+    if (streakCount >= STREAK_TIERS[i].minDays) {
+      return STREAK_TIERS[i].title;
+    }
   }
 
   return null;
 }
 
 function getNextStreakTier(streakCount) {
-  if (streakCount < 1) {
-    return { title: 'Crumb Collector', minDays: 1 };
-  }
-
-  if (streakCount < 5) {
-    return { title: 'Cookie Regular', minDays: 5 };
-  }
-
-  if (streakCount < 10) {
-    return { title: 'Fortune Chaser', minDays: 10 };
-  }
-
-  if (streakCount < 20) {
-    return { title: 'Snack Prophet', minDays: 20 };
-  }
-
-  if (streakCount < 50) {
-    return { title: 'Cookie Master', minDays: 50 };
-  }
-
-  if (streakCount < 100) {
-    return { title: 'Oracle of Crumbs', minDays: 100 };
-  }
-
-  if (streakCount < 1000) {
-    return { title: 'Cookie Emperor', minDays: 1000 };
+  for (const tier of STREAK_TIERS) {
+    if (streakCount < tier.minDays) {
+      return tier;
+    }
   }
 
   return null;
@@ -180,7 +146,7 @@ export default function App() {
   const hasActionableInput = Boolean(moodInput.trim());
   const isCookieOpened = cookieShellState === COOKIE_SHELL_STATE.OPEN;
   const isPaperVisible = isCookieOpened && revealPhase !== REVEAL_PHASE.IDLE;
-  const collapsedHistoryFortunes = collapseFortuneRuns(historyFortunes, 10);
+  const collapsedHistoryFortunes = useMemo(() => collapseFortuneRuns(historyFortunes, 10), [historyFortunes]);
   const isCurrentFortuneFavorite = Boolean(
     currentFortuneRecord
     && favoriteFortunes.some((favorite) => favorite.id === currentFortuneRecord.id)

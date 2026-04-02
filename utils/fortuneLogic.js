@@ -8,8 +8,8 @@ import {
   MOOD_BUCKET_PROFILES,
   PROTECTED_GROUP_TERMS,
 } from '../data/fortunes';
-import EMOTION_LEXICON from '../data/nrcEmotionLexicon.json';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
+import { getLocalDayKey } from './dateUtils';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
@@ -242,25 +242,46 @@ const NRC_BUCKET_OVERRIDES = {
   weary: 'tired',
 };
 
-const NRC_WORD_TO_MOOD_BUCKET = Object.fromEntries(
-  Object.entries(EMOTION_LEXICON).map(([word, legacyEmotions]) => {
-    const overriddenBucket = NRC_BUCKET_OVERRIDES[word];
-    return [
-      word,
-      overriddenBucket || pickMoodBucketFromLegacyEmotions(legacyEmotions),
-    ];
-  })
-);
+let _nrcWordToMoodBucket = null;
+let _nrcWordsByFirstLetter = null;
 
-const NRC_WORDS_BY_FIRST_LETTER = Object.keys(NRC_WORD_TO_MOOD_BUCKET).reduce((accumulator, word) => {
-  const firstLetter = word[0];
-  if (!accumulator[firstLetter]) {
-    accumulator[firstLetter] = [];
+function ensureNrcLookups() {
+  if (_nrcWordToMoodBucket) {
+    return;
   }
 
-  accumulator[firstLetter].push(word);
-  return accumulator;
-}, {});
+  const EMOTION_LEXICON = require('../data/nrcEmotionLexicon.json');
+
+  _nrcWordToMoodBucket = Object.fromEntries(
+    Object.entries(EMOTION_LEXICON).map(([word, legacyEmotions]) => {
+      const overriddenBucket = NRC_BUCKET_OVERRIDES[word];
+      return [
+        word,
+        overriddenBucket || pickMoodBucketFromLegacyEmotions(legacyEmotions),
+      ];
+    })
+  );
+
+  _nrcWordsByFirstLetter = Object.keys(_nrcWordToMoodBucket).reduce((accumulator, word) => {
+    const firstLetter = word[0];
+    if (!accumulator[firstLetter]) {
+      accumulator[firstLetter] = [];
+    }
+
+    accumulator[firstLetter].push(word);
+    return accumulator;
+  }, {});
+}
+
+function getNrcWordToMoodBucket() {
+  ensureNrcLookups();
+  return _nrcWordToMoodBucket;
+}
+
+function getNrcWordsByFirstLetter() {
+  ensureNrcLookups();
+  return _nrcWordsByFirstLetter;
+}
 
 function buildBlockedAnalysis() {
   return {
@@ -268,13 +289,6 @@ function buildBlockedAnalysis() {
     scores: {},
     source: 'blocked-hate',
   };
-}
-
-function getLocalDayKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 function createUserId() {
@@ -446,7 +460,7 @@ export function analyzeMoodInput(input) {
   const scores = createMoodScoreCard();
 
   for (const token of tokens) {
-    const exactMatchBucket = NRC_WORD_TO_MOOD_BUCKET[token];
+    const exactMatchBucket = getNrcWordToMoodBucket()[token];
 
     if (exactMatchBucket) {
       scores[exactMatchBucket] += 4;
@@ -458,7 +472,7 @@ export function analyzeMoodInput(input) {
       continue;
     }
 
-    scores[NRC_WORD_TO_MOOD_BUCKET[similarWord]] += 1;
+    scores[getNrcWordToMoodBucket()[similarWord]] += 1;
   }
 
   const rankedBuckets = rankMoodScores(scores);
@@ -596,16 +610,25 @@ function levenshteinDistance(a, b) {
   return matrix[a.length][b.length];
 }
 
+const _similarWordCache = new Map();
+
 function findSimilarMoodWord(token) {
-  const candidateWords = NRC_WORDS_BY_FIRST_LETTER[token[0]] || [];
+  if (_similarWordCache.has(token)) {
+    return _similarWordCache.get(token);
+  }
+
+  const candidateWords = getNrcWordsByFirstLetter()[token[0]] || [];
+  let result = null;
 
   for (const keyword of candidateWords) {
     if (isSimilarWord(token, keyword)) {
-      return keyword;
+      result = keyword;
+      break;
     }
   }
 
-  return null;
+  _similarWordCache.set(token, result);
+  return result;
 }
 
 function buildFortunePool(analysis) {
@@ -637,14 +660,10 @@ export function moderateCustomFortuneText(input) {
   };
 }
 
-async function loadCustomFortunesModule() {
-  const customFortunesModule = await import('./customFortunes');
-  return customFortunesModule.loadCustomFortunes();
-}
-
 async function buildWeightedFortunePools(analysis) {
   const builtInPool = buildFortunePool(analysis);
-  const customFortunes = await loadCustomFortunesModule();
+  const { loadCustomFortunes } = require('./customFortunes');
+  const customFortunes = await loadCustomFortunes();
   const customPool = customFortunes[analysis.primaryEmotion] || [];
 
   return {
@@ -765,7 +784,7 @@ export async function getDailyFortuneSelection(input) {
   const nextSelection = await buildFortuneSelection(input, {
     dayKey,
     seedKey: `${dayKey}|fortune|${nextDailyFortuneCount}`,
-    persistSelection: true,
+    persistSelection: false,
   });
 
   return saveDayState({
@@ -787,7 +806,7 @@ export async function getReplacementFortuneSelection(input, {
   const replacementSelection = await buildFortuneSelection(input, {
     dayKey,
     seedKey: `${dayKey}|replace|${replacementKey}`,
-    persistSelection: true,
+    persistSelection: false,
     excludeFortuneText,
   });
 
