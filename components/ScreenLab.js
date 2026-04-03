@@ -71,7 +71,7 @@ const LAB_FAVORITE_FORTUNES = [
 const PREVIEW_DEVICES = [
   {
     key: 'se',
-    label: 'iPhone SE Class',
+    label: '4.7-inch Class, such as iPhone SE (2022)',
     width: 375,
     height: 667,
     displayDiagonalInches: 4.7,
@@ -79,7 +79,7 @@ const PREVIEW_DEVICES = [
   },
   {
     key: 'iphone14',
-    label: 'iPhone 14 Class',
+    label: '6.1-inch Class, such as iPhone 14',
     width: 390,
     height: 844,
     displayDiagonalInches: 6.1,
@@ -87,7 +87,7 @@ const PREVIEW_DEVICES = [
   },
   {
     key: 'proMax',
-    label: 'Pro Max Class',
+    label: '6.7-inch Class, such as iPhone 14 Pro Max',
     width: 430,
     height: 932,
     displayDiagonalInches: 6.7,
