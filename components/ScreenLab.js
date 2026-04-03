@@ -11,6 +11,63 @@ const FORTUNE_PRESETS = {
   long: 'The answer you want is not hiding from you. It is arriving one calm choice at a time, and the more gently you move through today, the more clearly the right door will stand out from all the noisy ones.',
 };
 
+const LAB_HISTORY_FORTUNES = [
+  {
+    id: 'lab-history-1',
+    text: 'A calmer answer is already finding its way to you.',
+    mood: 'calm',
+    category: 'calm',
+    createdAt: '2026-04-03T14:22:00.000Z',
+    latestCreatedAt: '2026-04-03T14:22:00.000Z',
+    isFavorite: true,
+    favoritedAt: '2026-04-03T14:24:00.000Z',
+    repeatCount: 1,
+  },
+  {
+    id: 'lab-history-2',
+    text: 'The next small step will feel kinder than the big worry.',
+    mood: 'anxious',
+    category: 'anxious',
+    createdAt: '2026-04-03T12:08:00.000Z',
+    latestCreatedAt: '2026-04-03T12:08:00.000Z',
+    isFavorite: false,
+    favoritedAt: null,
+    repeatCount: 1,
+  },
+  {
+    id: 'lab-history-3',
+    text: 'A clean boundary will protect more peace than drama ever could.',
+    mood: 'angry',
+    category: 'angry',
+    createdAt: '2026-04-03T09:41:00.000Z',
+    latestCreatedAt: '2026-04-03T09:41:00.000Z',
+    isFavorite: true,
+    favoritedAt: '2026-04-03T09:43:00.000Z',
+    repeatCount: 1,
+  },
+];
+
+const LAB_FAVORITE_FORTUNES = [
+  {
+    id: 'lab-history-1',
+    text: 'A calmer answer is already finding its way to you.',
+    mood: 'calm',
+    category: 'calm',
+    createdAt: '2026-04-03T14:22:00.000Z',
+    isFavorite: true,
+    favoritedAt: '2026-04-03T14:24:00.000Z',
+  },
+  {
+    id: 'lab-history-3',
+    text: 'A clean boundary will protect more peace than drama ever could.',
+    mood: 'angry',
+    category: 'angry',
+    createdAt: '2026-04-03T09:41:00.000Z',
+    isFavorite: true,
+    favoritedAt: '2026-04-03T09:43:00.000Z',
+  },
+];
+
 const PREVIEW_DEVICES = [
   {
     key: 'se',
@@ -94,6 +151,7 @@ export default function ScreenLab() {
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const [isActionTrayExpanded, setIsActionTrayExpanded] = useState(false);
   const [isCreateFortuneSheetOpen, setIsCreateFortuneSheetOpen] = useState(false);
+  const [isHistorySheetOpen, setIsHistorySheetOpen] = useState(false);
   const [isStreakBarExpanded, setIsStreakBarExpanded] = useState(false);
   const [isKeyboardSimulated, setIsKeyboardSimulated] = useState(false);
   const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(false);
@@ -106,12 +164,13 @@ export default function ScreenLab() {
     dailyWisdomLockSeconds: isLockWarningVisible ? 32 : 0,
     dailyWisdomMessage: isLockWarningVisible ? 'Fortune cooldown active. Please wait 32 seconds.' : null,
     dailyWisdomNoticeToken: isLockWarningVisible ? 1 : 0,
-    favoriteFortunes: [],
+    favoriteFortunes: LAB_FAVORITE_FORTUNES,
     fortuneText: FORTUNE_PRESETS[fortuneLength],
     forcedActionTrayVisible: isActionTrayExpanded,
     forcedCustomFortuneSheetVisible: isCreateFortuneSheetOpen,
-    forcedDrawerOpen: isDrawerExpanded,
-    historyFortunes: [],
+    forcedDrawerOpen: isHistorySheetOpen ? false : isDrawerExpanded,
+    forcedLibraryOpen: isHistorySheetOpen ? 'history' : null,
+    historyFortunes: LAB_HISTORY_FORTUNES,
     isAnimating: false,
     isCookieOpened,
     isHydratingSelection: false,
@@ -122,9 +181,11 @@ export default function ScreenLab() {
     onMoodChange: () => {},
     onRemoveFavorite: () => {},
     onRequestReplace: () => {},
+    onSaveCreatedFortuneFavorite: () => {},
     onShareSavedFortune: () => {},
     onShareFortune: () => {},
     onSubmitMoodInput: () => {},
+    onToggleSavedFavorite: () => {},
     onToggleFavorite: () => {},
     paperProgress: new Animated.Value(1),
     scene: SCENE_LIBRARY.apricotMorning,
@@ -141,6 +202,7 @@ export default function ScreenLab() {
     isCookieOpened,
     isCreateFortuneSheetOpen,
     isDrawerExpanded,
+    isHistorySheetOpen,
     isLockWarningVisible,
     isStreakBarExpanded,
   ]);
@@ -172,14 +234,15 @@ export default function ScreenLab() {
             </View>
 
             <View style={styles.togglesGrid}>
-              <ToggleRow label="Drawer" onValueChange={setIsDrawerExpanded} value={isDrawerExpanded} />
               <ToggleRow label="Action tray" onValueChange={setIsActionTrayExpanded} value={isActionTrayExpanded} />
-              <ToggleRow label="Open cookie" onValueChange={setIsCookieOpened} value={isCookieOpened} />
               <ToggleRow label="Create sheet" onValueChange={setIsCreateFortuneSheetOpen} value={isCreateFortuneSheetOpen} />
-              <ToggleRow label="Lock warning" onValueChange={setIsLockWarningVisible} value={isLockWarningVisible} />
-              <ToggleRow label="Streak bar" onValueChange={setIsStreakBarExpanded} value={isStreakBarExpanded} />
+              <ToggleRow label="Drawer" onValueChange={setIsDrawerExpanded} value={isDrawerExpanded} />
+              <ToggleRow label="History" onValueChange={setIsHistorySheetOpen} value={isHistorySheetOpen} />
               <ToggleRow label="Keyboard" onValueChange={setIsKeyboardSimulated} value={isKeyboardSimulated} />
+              <ToggleRow label="Lock warning" onValueChange={setIsLockWarningVisible} value={isLockWarningVisible} />
+              <ToggleRow label="Open cookie" onValueChange={setIsCookieOpened} value={isCookieOpened} />
               <ToggleRow label="Safe area" onValueChange={setIsSafeAreaSimulated} value={isSafeAreaSimulated} />
+              <ToggleRow label="Streak bar" onValueChange={setIsStreakBarExpanded} value={isStreakBarExpanded} />
             </View>
           </View>
         </View>

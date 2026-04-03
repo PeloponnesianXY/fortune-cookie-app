@@ -70,6 +70,20 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+function createCustomFavoriteRecord(moodKey, fortuneText) {
+  const normalizedId = `${moodKey}:${fortuneText.trim().toLowerCase().replace(/\s+/g, '-')}`;
+
+  return {
+    id: `custom-fortune:${normalizedId}`,
+    text: fortuneText,
+    mood: formatMoodBucketLabel(moodKey),
+    category: moodKey,
+    createdAt: new Date().toISOString(),
+    isFavorite: true,
+    favoritedAt: null,
+  };
+}
+
 function getLayoutMode(width, height) {
   if (height < 670) {
     return 'veryCompact';
@@ -331,6 +345,7 @@ export default function FortuneCard({
   forcedActionTrayVisible,
   forcedCustomFortuneSheetVisible,
   forcedDrawerOpen,
+  forcedLibraryOpen,
   historyFortunes,
   isCookieOpened,
   isHydratingSelection,
@@ -340,9 +355,11 @@ export default function FortuneCard({
   onMoodChange,
   onRemoveFavorite,
   onRequestReplace,
+  onSaveCreatedFortuneFavorite,
   onShareSavedFortune,
   onShareFortune,
   onSubmitMoodInput,
+  onToggleSavedFavorite,
   onToggleFavorite,
   paperProgress,
   scene,
@@ -392,8 +409,10 @@ export default function FortuneCard({
   const isDrawerForced = typeof forcedDrawerOpen === 'boolean';
   const isActionTrayForced = typeof forcedActionTrayVisible === 'boolean';
   const isCustomFortuneSheetForced = typeof forcedCustomFortuneSheetVisible === 'boolean';
+  const isLibraryForced = forcedLibraryOpen === 'history' || forcedLibraryOpen === 'favorites';
   const effectiveKeyboardVisible = previewLayout.keyboardVisible ?? isKeyboardVisible;
   const isDrawerShown = isDrawerForced ? forcedDrawerOpen : isDrawerOpen;
+  const resolvedActiveLibrary = isLibraryForced ? (activeLibrary || forcedLibraryOpen) : activeLibrary;
   const actionTrayVisible = isActionTrayForced ? forcedActionTrayVisible : isActionTrayVisible;
   const customFortuneSheetVisible = isCustomFortuneSheetForced
     ? forcedCustomFortuneSheetVisible
@@ -670,6 +689,20 @@ export default function FortuneCard({
     drawerProgress.setValue(forcedDrawerOpen ? 1 : 0);
     return undefined;
   }, [drawerProgress, forcedDrawerOpen, isDrawerForced]);
+
+  useEffect(() => {
+    if (forcedLibraryOpen == null) {
+      setActiveLibrary(null);
+      return undefined;
+    }
+
+    if (!isLibraryForced) {
+      return undefined;
+    }
+
+    setActiveLibrary(forcedLibraryOpen);
+    return undefined;
+  }, [forcedLibraryOpen, isLibraryForced]);
 
   useEffect(() => {
     Animated.timing(promptLiftProgress, {
@@ -1098,14 +1131,21 @@ export default function FortuneCard({
         </View>
       ) : null}
       <FortuneLibrarySheet
-        activeLibrary={activeLibrary || 'history'}
+        activeLibrary={resolvedActiveLibrary || 'history'}
         favorites={favoriteFortunes}
         history={historyFortunes}
-        onClose={() => setActiveLibrary(null)}
+        onClose={() => {
+          if (isLibraryForced) {
+            return;
+          }
+
+          setActiveLibrary(null);
+        }}
         onRemoveFavorite={onRemoveFavorite}
         onShareItem={onShareSavedFortune}
+        onToggleFavorite={onToggleSavedFavorite}
         onSelectLibrary={setActiveLibrary}
-        visible={Boolean(activeLibrary)}
+        visible={Boolean(resolvedActiveLibrary)}
       />
       <CustomFortuneSheet
         collapsedTopAnchor={metrics.createFortuneTopAnchor}
@@ -1151,10 +1191,18 @@ export default function FortuneCard({
             setEditingCustomFortune(null);
             setIsCustomFortuneSheetVisible(false);
             await refreshCreatedFortunes();
+
+            if (!editingCustomFortune) {
+              await onSaveCreatedFortuneFavorite?.(createCustomFavoriteRecord(
+                moodKey,
+                result.savedFortune
+              ));
+            }
+
             showCustomFortuneNotice(
               editingCustomFortune
                 ? `Updated in ${formatMoodBucketLabel(moodKey)} fortunes`
-                : `Saved to ${formatMoodBucketLabel(moodKey)} fortunes`
+                : `Saved to ${formatMoodBucketLabel(moodKey)} fortunes and added to Favorites`
             );
             return true;
           } catch {

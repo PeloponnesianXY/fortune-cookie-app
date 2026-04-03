@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Animated,
   Easing,
@@ -10,6 +11,7 @@ import {
 
 function FortuneActionButton({
   label,
+  iconName,
   onPress,
   palette,
 }) {
@@ -25,16 +27,19 @@ function FortuneActionButton({
         },
       ]}
     >
-      <Text
-        style={[
-          styles.buttonText,
-          {
-            color: palette.text,
-          },
-        ]}
-      >
-        {label}
-      </Text>
+      <View style={styles.buttonContent}>
+        <Text
+          style={[
+            styles.buttonText,
+            {
+              color: palette.text,
+            },
+          ]}
+        >
+          {label}
+        </Text>
+        <Ionicons color={palette.text} name={iconName} size={14} style={styles.buttonIcon} />
+      </View>
     </Pressable>
   );
 }
@@ -74,14 +79,15 @@ export default function FortuneActionTray({
   }
 
   const buttons = [
-    { key: 'share', label: 'Share', onPress: onShare },
+    { key: 'share', label: 'Share', iconName: 'share-outline', onPress: onShare },
     {
       key: 'favorite',
       label: isFavorite ? 'Unfavorite' : 'Favorite',
+      iconName: isFavorite ? 'heart' : 'heart-outline',
       onPress: onToggleFavorite,
     },
     canReplace
-      ? { key: 'replace', label: 'Replace', onPress: onReplace }
+      ? { key: 'replace', label: 'Replace', iconName: 'refresh-outline', onPress: onReplace }
       : null,
   ].filter(Boolean);
 
@@ -125,6 +131,7 @@ export default function FortuneActionTray({
             <FortuneActionButton
               key={button.key}
               label={button.label}
+              iconName={button.iconName}
               onPress={button.onPress}
               palette={palette}
             />
@@ -162,23 +169,30 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    flexWrap: 'nowrap',
+    gap: 6,
   },
   button: {
     minHeight: 34,
-    minWidth: 92,
     borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     paddingVertical: 0,
-    flexGrow: 1,
+    flex: 1,
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     letterSpacing: -0.12,
+  },
+  buttonContent: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginLeft: 5,
   },
 });

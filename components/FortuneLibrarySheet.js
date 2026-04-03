@@ -1,4 +1,5 @@
 import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   FlatList,
   Pressable,
@@ -41,26 +42,61 @@ function formatMeta(item, library) {
   return detailParts.join(' | ');
 }
 
-function LibraryItem({ item, library, onRemoveFavorite, onShareItem }) {
+function LibraryItem({ item, library, onRemoveFavorite, onShareItem, onToggleFavorite }) {
+  const isFavorites = library === 'favorites';
+
   return (
     <Pressable onPress={() => onShareItem(item)} style={styles.itemCard}>
       <View style={styles.itemHeader}>
         <Text style={styles.itemMeta}>{formatMeta(item, library)}</Text>
-        {item.repeatCount > 1 ? (
-          <View style={styles.repeatBadge}>
-            <Text style={styles.repeatBadgeText}>x{item.repeatCount}</Text>
-          </View>
-        ) : null}
+        <View style={styles.itemHeaderActions}>
+          {!isFavorites ? (
+            <Pressable
+              hitSlop={8}
+              onPress={(event) => {
+                event.stopPropagation?.();
+                onToggleFavorite(item);
+              }}
+              style={styles.favoriteButton}
+            >
+              <Ionicons
+                color={item.isFavorite ? '#b85f4b' : '#9b7c64'}
+                name={item.isFavorite ? 'heart' : 'heart-outline'}
+                size={18}
+              />
+            </Pressable>
+          ) : null}
+          {item.repeatCount > 1 ? (
+            <View style={styles.repeatBadge}>
+              <Text style={styles.repeatBadgeText}>x{item.repeatCount}</Text>
+            </View>
+          ) : null}
+        </View>
       </View>
 
       <Text style={styles.itemText}>{item.text}</Text>
 
-      {library === 'favorites' ? (
+      {isFavorites ? (
         <Pressable onPress={() => onRemoveFavorite(item)} style={styles.inlineAction}>
           <Text style={styles.inlineActionText}>Remove</Text>
         </Pressable>
       ) : null}
     </Pressable>
+  );
+}
+
+function EmptyLibraryMessage({ isFavorites }) {
+  return (
+    <Text
+      adjustsFontSizeToFit
+      minimumFontScale={0.78}
+      numberOfLines={1}
+      style={styles.emptyText}
+    >
+      {isFavorites
+        ? 'Favorite a revealed fortune and it will appear here.'
+        : 'Open a fortune and it will be saved here automatically.'}
+    </Text>
   );
 }
 
@@ -71,6 +107,7 @@ export default function FortuneLibrarySheet({
   onClose,
   onRemoveFavorite,
   onShareItem,
+  onToggleFavorite,
   onSelectLibrary,
   visible,
 }) {
@@ -120,6 +157,7 @@ export default function FortuneLibrarySheet({
                   library={activeLibrary}
                   onRemoveFavorite={onRemoveFavorite}
                   onShareItem={onShareItem}
+                  onToggleFavorite={onToggleFavorite}
                 />
               )}
               removeClippedSubviews
@@ -128,11 +166,7 @@ export default function FortuneLibrarySheet({
                   <Text style={styles.emptyTitle}>
                     {isFavorites ? 'No favorites yet' : 'No fortune history yet'}
                   </Text>
-                  <Text style={styles.emptyText}>
-                    {isFavorites
-                      ? 'Favorite a revealed fortune and it will appear here.'
-                      : 'Open a fortune and it will be saved here automatically.'}
-                  </Text>
+                  <EmptyLibraryMessage isFavorites={isFavorites} />
                 </View>
               )}
               showsVerticalScrollIndicator={false}
@@ -229,6 +263,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 10,
   },
+  itemHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   itemMeta: {
     flex: 1,
     fontSize: 12,
@@ -246,6 +285,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#845b36',
+  },
+  favoriteButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 24,
+    minHeight: 24,
   },
   itemText: {
     fontSize: 17,

@@ -109,6 +109,45 @@ export async function saveFortuneToHistory(record) {
   };
 }
 
+export async function saveFortuneToFavorites(record) {
+  const { history, favorites } = await getSavedFortunesSnapshot();
+  const existingFavorite = findById(favorites, record.id);
+  const favoriteTimestamp = existingFavorite?.favoritedAt || new Date().toISOString();
+  const nextFavorite = {
+    ...record,
+    isFavorite: true,
+    favoritedAt: favoriteTimestamp,
+  };
+
+  const nextFavorites = sortFavoritesNewestFirst([
+    nextFavorite,
+    ...favorites.filter((item) => item.id !== record.id),
+  ]);
+
+  const historyRecord = findById(history, record.id);
+  const nextHistory = historyRecord
+    ? sortNewestFirst([
+        {
+          ...historyRecord,
+          isFavorite: true,
+          favoritedAt: favoriteTimestamp,
+        },
+        ...history.filter((item) => item.id !== record.id),
+      ]).slice(0, MAX_HISTORY_ITEMS)
+    : history;
+
+  await AsyncStorage.multiSet([
+    [HISTORY_STORAGE_KEY, JSON.stringify(nextHistory)],
+    [FAVORITES_STORAGE_KEY, JSON.stringify(nextFavorites)],
+  ]);
+
+  return {
+    history: nextHistory,
+    favorites: nextFavorites,
+    isFavorite: true,
+  };
+}
+
 export async function toggleFavoriteFortune(record) {
   const { history, favorites } = await getSavedFortunesSnapshot();
   const existingFavorite = findById(favorites, record.id);

@@ -29,6 +29,7 @@ import {
   collapseFortuneRuns,
   createSavedFortuneRecord,
   getSavedFortunesSnapshot,
+  saveFortuneToFavorites,
   saveFortuneToHistory,
   toggleFavoriteFortune,
 } from '../utils/savedFortunes';
@@ -246,6 +247,26 @@ export default function FortuneHomeScreen() {
           }
         : currentRecord
     ));
+  }
+
+  async function handleToggleSavedFavorite(record) {
+    const snapshot = await toggleFavoriteFortune(record);
+    applySavedFortunesSnapshot(snapshot);
+    const updatedFavorite = snapshot.favorites.find((favorite) => favorite.id === record.id);
+    setCurrentFortuneRecord((currentRecord) => (
+      currentRecord?.id === record.id
+        ? {
+            ...currentRecord,
+            isFavorite: snapshot.isFavorite,
+            favoritedAt: updatedFavorite?.favoritedAt || null,
+          }
+        : currentRecord
+    ));
+  }
+
+  async function handleSaveCreatedFortuneFavorite(record) {
+    const snapshot = await saveFortuneToFavorites(record);
+    applySavedFortunesSnapshot(snapshot);
   }
 
   async function handleShareFortune() {
@@ -610,7 +631,9 @@ export default function FortuneHomeScreen() {
               onRequestReplace={handleRequestReplace}
               onShareSavedFortune={handleShareSavedFortune}
               onShareFortune={handleShareFortune}
+              onSaveCreatedFortuneFavorite={handleSaveCreatedFortuneFavorite}
               onSubmitMoodInput={submitMoodInput}
+              onToggleSavedFavorite={handleToggleSavedFavorite}
               onToggleFavorite={handleToggleFavorite}
               paperProgress={paperProgress}
               scene={scene}
