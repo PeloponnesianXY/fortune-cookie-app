@@ -34,6 +34,7 @@ function MoodSection({ onDelete, onEdit, section }) {
 }
 
 export default function CreatedFortunesSheet({
+  onClearAll,
   onDeleteFortune,
   onEditFortune,
   onClose,
@@ -52,9 +53,16 @@ export default function CreatedFortunesSheet({
                 <Text style={styles.title}>Your created fortunes</Text>
                 <Text style={styles.subtitle}>Saved locally on this device</Text>
               </View>
-              <Pressable hitSlop={8} onPress={onClose}>
-                <Text style={styles.closeText}>Close</Text>
-              </Pressable>
+              <View style={styles.headerActions}>
+                {hasContent ? (
+                  <Pressable hitSlop={8} onPress={onClearAll}>
+                    <Text style={styles.clearText}>Clear all</Text>
+                  </Pressable>
+                ) : null}
+                <Pressable hitSlop={8} onPress={onClose}>
+                  <Text style={styles.closeText}>Close</Text>
+                </Pressable>
+              </View>
             </View>
 
             <ScrollView
@@ -111,6 +119,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 14,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
   title: {
     fontSize: 22,
     fontWeight: '700',
@@ -122,6 +135,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: '#8f6b4f',
+  },
+  clearText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#a14f3a',
   },
   closeText: {
     fontSize: 15,

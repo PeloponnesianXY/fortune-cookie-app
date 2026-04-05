@@ -24,6 +24,7 @@ import StreakStatus from './StreakStatus';
 import { usePreviewLayout } from './PreviewLayoutContext';
 import {
   buildCreatedFortuneSections,
+  clearAllCustomFortunes,
   deleteCustomFortune,
   formatMoodBucketLabel,
   loadCustomFortunes,
@@ -1216,6 +1217,11 @@ export default function FortuneCard({
         visible={customFortuneSheetVisible}
       />
       <CreatedFortunesSheet
+        onClearAll={async () => {
+          await clearAllCustomFortunes();
+          await refreshCreatedFortunes();
+          showCustomFortuneNotice('Cleared all created fortunes');
+        }}
         onDeleteFortune={async (item) => {
           await deleteCustomFortune({
             moodKey: item.moodKey,

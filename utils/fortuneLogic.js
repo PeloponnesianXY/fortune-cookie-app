@@ -259,14 +259,28 @@ function normalizeStoredSelection(selection) {
   }
 
   const normalizedPrimaryEmotion = normalizeMoodBucketKey(selection.analysis?.primaryEmotion);
+  const normalizedAnalysis = selection.analysis
+    ? {
+        ...selection.analysis,
+        primaryEmotion: normalizedPrimaryEmotion,
+      }
+    : selection.analysis;
+
+  const backfilledAnalysis = (
+    normalizedAnalysis
+    && typeof normalizedAnalysis.confidence !== 'number'
+    && selection.inputMood
+    && selection.moderation === 'clean'
+  )
+    ? {
+        ...normalizedAnalysis,
+        ...analyzeMoodInput(selection.inputMood),
+      }
+    : normalizedAnalysis;
+
   const normalizedSelection = {
     ...selection,
-    analysis: selection.analysis
-      ? {
-          ...selection.analysis,
-          primaryEmotion: normalizedPrimaryEmotion,
-        }
-      : selection.analysis,
+    analysis: backfilledAnalysis,
   };
 
   if (
@@ -321,6 +335,7 @@ function getNrcWordsByFirstLetter() {
 function buildBlockedAnalysis() {
   return {
     primaryEmotion: 'weird',
+    confidence: 0,
     scores: {},
     source: 'blocked-hate',
   };
@@ -422,6 +437,29 @@ function rankMoodScores(scores) {
     });
 }
 
+function roundConfidence(value) {
+  return Math.max(0, Math.min(1, Math.round(value * 1000) / 1000));
+}
+
+function getTopScoreGapConfidence(rankedBuckets) {
+  if (!rankedBuckets.length) {
+    return 0;
+  }
+
+  const topScore = rankedBuckets[0][1];
+  const secondScore = rankedBuckets[1]?.[1] || 0;
+  const totalScore = rankedBuckets.reduce((sum, [, score]) => sum + score, 0);
+
+  if (topScore <= 0 || totalScore <= 0) {
+    return 0;
+  }
+
+  const dominance = topScore / totalScore;
+  const separation = topScore / (topScore + secondScore || 1);
+
+  return roundConfidence((dominance * 0.65) + (separation * 0.35));
+}
+
 function pickMoodBucketFromLegacyEmotions(legacyEmotions) {
   const scores = createMoodScoreCard();
 
@@ -466,33 +504,42 @@ export function analyzeMoodInput(input) {
   if (!normalized) {
     return {
       primaryEmotion: 'weird',
+      confidence: 0,
       scores: {},
       source: 'empty',
     };
   }
 
   const tokens = normalized.split(/[^a-z]+/).filter(Boolean);
-  const curatedMoodBucket = findCuratedMoodBucket(tokens);
+  const curatedMoodMatch = findCuratedMoodMatch(tokens);
 
-  if (curatedMoodBucket) {
+  if (curatedMoodMatch) {
+    const isExactMoodLabel = curatedMoodMatch.token === curatedMoodMatch.bucket;
+    const confidence = isExactMoodLabel ? 1 : 0.72;
+
     return {
-      primaryEmotion: curatedMoodBucket,
-      scores: { [curatedMoodBucket]: 10 },
+      primaryEmotion: curatedMoodMatch.bucket,
+      confidence,
+      scores: { [curatedMoodMatch.bucket]: 10 },
       source: 'curated-mood',
     };
   }
 
-  const directMoodBucket = findStrongMoodHint(tokens);
+  const strongMoodMatch = findStrongMoodHintMatch(tokens);
 
-  if (directMoodBucket) {
+  if (strongMoodMatch) {
+    const confidence = strongMoodMatch.token === strongMoodMatch.bucket ? 1 : 0.88;
+
     return {
-      primaryEmotion: directMoodBucket,
-      scores: { [directMoodBucket]: 10 },
+      primaryEmotion: strongMoodMatch.bucket,
+      confidence,
+      scores: { [strongMoodMatch.bucket]: 10 },
       source: 'strong-hint',
     };
   }
 
   const scores = createMoodScoreCard();
+  let matchedSimilarWord = false;
 
   for (const token of tokens) {
     const exactMatchBucket = getNrcWordToMoodBucket()[token];
@@ -507,6 +554,7 @@ export function analyzeMoodInput(input) {
       continue;
     }
 
+    matchedSimilarWord = true;
     scores[getNrcWordToMoodBucket()[similarWord]] += 1;
   }
 
@@ -516,35 +564,46 @@ export function analyzeMoodInput(input) {
     const guessedMoodBucket = guessMoodFromTone(tokens);
     return {
       primaryEmotion: guessedMoodBucket,
+      confidence: guessedMoodBucket === 'weird' ? 0 : 0.28,
       scores,
       source: guessedMoodBucket === 'weird' ? 'fallback-weird' : 'fallback-tone',
     };
   }
 
   const [primaryEmotion] = rankedBuckets[0];
+  const baseConfidence = getTopScoreGapConfidence(rankedBuckets);
+  const confidence = matchedSimilarWord
+    ? Math.min(baseConfidence, 0.58)
+    : Math.max(baseConfidence, 0.78);
 
   return {
     primaryEmotion,
+    confidence,
     scores,
     source: 'nrc-mood-map',
   };
 }
 
-function findStrongMoodHint(tokens) {
+function findStrongMoodHintMatch(tokens) {
   for (const bucket of MOOD_BUCKET_KEYS) {
     const hints = STRONG_MOOD_HINTS[bucket] || [];
-    if (tokens.some((token) => hints.includes(token))) {
-      return bucket;
+    for (const token of tokens) {
+      if (hints.includes(token)) {
+        return { bucket, token };
+      }
     }
   }
 
   return null;
 }
 
-function findCuratedMoodBucket(tokens) {
+function findCuratedMoodMatch(tokens) {
   for (const token of tokens) {
     if (COMMON_MOOD_BUCKETS[token]) {
-      return COMMON_MOOD_BUCKETS[token];
+      return {
+        bucket: COMMON_MOOD_BUCKETS[token],
+        token,
+      };
     }
   }
 
@@ -695,8 +754,16 @@ export function moderateCustomFortuneText(input) {
   };
 }
 
-async function buildWeightedFortunePools(analysis) {
+async function buildWeightedFortunePools(analysis, { includeCustomFortunes = true } = {}) {
   const builtInPool = buildFortunePool(analysis);
+
+  if (!includeCustomFortunes) {
+    return {
+      builtInPool,
+      customPool: [],
+    };
+  }
+
   const { loadCustomFortunes } = require('./customFortunes');
   const customFortunes = await loadCustomFortunes();
   const customPool = customFortunes[analysis.primaryEmotion] || [];
@@ -747,6 +814,7 @@ async function buildFortuneSelection(input, {
   seedKey,
   persistSelection,
   excludeFortuneText = null,
+  includeCustomFortunes = true,
 }) {
   const moderationResult = moderateMoodInput(input);
 
@@ -776,7 +844,9 @@ async function buildFortuneSelection(input, {
 
   const analysis = analyzeMoodInput(moderationResult.sanitizedInput);
   const userId = await getOrCreateUserId();
-  const { builtInPool, customPool } = await buildWeightedFortunePools(analysis);
+  const { builtInPool, customPool } = await buildWeightedFortunePools(analysis, {
+    includeCustomFortunes,
+  });
   const seed = hashString(`${userId}|${seedKey}`);
   const fortuneText = pickFortuneTextFromPools({
     builtInPool,
@@ -807,6 +877,17 @@ async function buildFortuneSelection(input, {
     ...ensureSelectionMetadata(selection),
     fromCache: false,
   };
+}
+
+export async function getMoodLabSelection(input) {
+  const normalizedInput = input.trim().toLowerCase();
+
+  return buildFortuneSelection(normalizedInput, {
+    dayKey: 'mood-lab',
+    seedKey: `mood-lab|${normalizedInput || 'empty'}`,
+    includeCustomFortunes: false,
+    persistSelection: false,
+  });
 }
 
 export async function getDailyFortuneSelection(input) {

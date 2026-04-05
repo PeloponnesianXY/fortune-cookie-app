@@ -215,6 +215,16 @@ export async function deleteCustomFortune({ moodKey, fortuneText }) {
   };
 }
 
+export async function clearAllCustomFortunes() {
+  const nextFortunes = createEmptyCustomFortunes();
+  await saveCustomFortunes(nextFortunes);
+
+  return {
+    ok: true,
+    fortunes: nextFortunes,
+  };
+}
+
 export function buildCreatedFortuneSections(fortunesByMood) {
   return MOOD_BUCKET_KEYS
     .map((moodKey) => {
