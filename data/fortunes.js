@@ -101,7 +101,7 @@ const FORTUNE_LIBRARY = {
     'Loneliness can shrink after one decent conversation.',
   ],
   happy: [
-    'Your spark is loud in the best possible way.',
+    'Your mood is making the day sparkle.',
     'Let happiness belong to now, not just later.',
     'Your good mood makes small things feel bigger.',
     'Gratitude makes good things easier to notice.',
@@ -289,7 +289,7 @@ const FORTUNE_LIBRARY = {
     'Revulsion can be discernment that has run out of patience.',
     'Disgust is taste refusing to be polite.',
     'Your no has excellent survival instincts.',
-    'Not for you is a complete sentence.',
+    "'Not for you' is a complete sentence.",
     'Bad vibes rarely improve with more exposure.',
     'Disgust is clarity with better reflexes.',
     'Your whole system just voted no without needing a meeting.',
@@ -461,6 +461,13 @@ const MOOD_BUCKET_PROFILES = {
 
 const BLOCKED_INPUT_FORTUNE =
   'A kinder fortune waits when the mood is named without turning anyone into a target.';
+const UNKNOWN_INPUT_FORTUNES = [
+  'Until I learn what your word means, live long and prosper. And stretch.',
+  'Mysterious input detected. Proceed with grace.',
+  'Your word is new to me. Your future remains bright.',
+  'The cookie oracle is puzzled, not displeased. Carry on.',
+  'Unknown word. Excellent aura. Continue accordingly.',
+];
 
 
 export {
@@ -470,6 +477,7 @@ export {
   HATE_PATTERNS,
   MOOD_BUCKET_PROFILES,
   BLOCKED_INPUT_FORTUNE,
+  UNKNOWN_INPUT_FORTUNES,
 };
 
 

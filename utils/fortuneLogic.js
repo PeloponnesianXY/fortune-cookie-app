@@ -6,6 +6,7 @@ import {
   FORTUNE_LIBRARY,
   HATE_PATTERNS,
   MOOD_BUCKET_PROFILES,
+  UNKNOWN_INPUT_FORTUNES,
   PROTECTED_GROUP_TERMS,
 } from '../data/fortunes';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
@@ -121,12 +122,13 @@ const CURATED_MOOD_WORDS = {
     'incensed', 'indignant', 'inflamed', 'irate', 'livid', 'offended', 'peeved', 'petty',
     'provoked', 'raging', 'riled', 'seething', 'snappy', 'sore', 'spiteful', 'stormy',
     'testy', 'touchy', 'vengeful', 'volatile', 'wrathful',
+    'pissy', 'snippy', 'salty', 'crabby', 'bitchy', 'petulant', 'grouchy',
   ],
   hopeful: [
     'eager', 'excited', 'expectant', 'hopeful', 'optimistic', 'ready', 'alert',
     'ambitious', 'anticipatory', 'aspiring', 'attentive', 'awake', 'buoyant', 'charged',
-    'confident', 'craving', 'curious', 'determined', 'driven', 'encouraged', 'energized',
-    'enthusiastic', 'game', 'hungry', 'inspired', 'interested', 'intrigued', 'invested',
+    'confident', 'curious', 'determined', 'driven', 'encouraged', 'energized',
+    'enthusiastic', 'game', 'inspired', 'interested', 'intrigued', 'invested',
     'keyed', 'keen', 'longing', 'motivated', 'prepared', 'primed',
     'pumped', 'receptive', 'refreshed', 'revived', 'searching', 'seeking', 'striving',
     'yearning', 'adventurous', 'awaiting', 'enterprising',
@@ -142,6 +144,7 @@ const CURATED_MOOD_WORDS = {
     'scrappy', 'messy', 'scruffy', 'rattled', 'scrutinizing', 'secondguessing', 'spiraling',
     'hesitating', 'ruminating', 'overthinking', 'pensive', 'displaced', 'turnedaround',
     'misaligned', 'unclearheaded', 'atsea', 'inbetween', 'unanchored', 'divided', 'uncertainly',
+    'unbalanced', 'imbalanced', 'lopsided',
   ],
   disgusted: [
     'disgusted', 'grossed', 'repelled', 'repulsed', 'sickened', 'appalled', 'averse',
@@ -179,10 +182,13 @@ const CURATED_MOOD_WORDS = {
     'languishing', 'pained', 'raw', 'regretful', 'rejected', 'rueful', 'small', 'sorrowful',
     'sorry', 'weepy', 'wounded', 'worthless',
     'bleak', 'crestfallen', 'hollow', 'forlorn', 'meh', 'blah',
+    'dumb', 'stupid', 'idiot', 'idiotic', 'fool', 'foolish', 'moron', 'dense',
+    'dimwitted', 'dopey', 'airhead', 'dunce', 'boneheaded', 'brainless', 'obtuse', 'destroyed',
   ],
   tired: [
     'tired', 'drained', 'depleted', 'exhausted', 'spent', 'weary', 'fatigued', 'burntout',
     'burnedout', 'wornout', 'sleepy', 'drowsy', 'heavy', 'foggy',
+    'hungry', 'craving', 'starving', 'famished', 'ravenous', 'peckish',
   ],
   lonely: [
     'lonely', 'alone', 'isolated', 'abandoned', 'unseen', 'leftout', 'unloved', 'unwanted',
@@ -230,20 +236,50 @@ const COMMON_MOOD_BUCKETS = Object.fromEntries(
 
 const NRC_BUCKET_OVERRIDES = {
   abandoned: 'lonely',
+  airhead: 'sad',
   alone: 'lonely',
+  bitchy: 'angry',
+  boneheaded: 'sad',
+  brainless: 'sad',
+  crabby: 'angry',
+  craving: 'tired',
+  dense: 'sad',
   disconnected: 'lonely',
+  destroyed: 'sad',
+  dopey: 'sad',
+  dumb: 'sad',
+  dunce: 'sad',
   exhausted: 'tired',
+  famished: 'tired',
   fatigued: 'tired',
+  fool: 'sad',
+  foolish: 'sad',
+  grouchy: 'angry',
+  hungry: 'tired',
+  imbalanced: 'confused',
+  idiot: 'sad',
+  idiotic: 'sad',
   isolated: 'lonely',
+  lopsided: 'confused',
   lonely: 'lonely',
+  moron: 'sad',
+  obtuse: 'sad',
+  peckish: 'tired',
+  petulant: 'angry',
+  pissy: 'angry',
+  ravenous: 'tired',
+  salty: 'angry',
   sleepy: 'tired',
+  snippy: 'angry',
   spent: 'tired',
+  starving: 'tired',
+  stupid: 'sad',
   tired: 'tired',
+  unbalanced: 'confused',
   weary: 'tired',
 };
 
 let _nrcWordToMoodBucket = null;
-let _nrcWordsByFirstLetter = null;
 
 function normalizeMoodBucketKey(moodKey) {
   if (moodKey === 'averse') {
@@ -311,25 +347,11 @@ function ensureNrcLookups() {
     })
   );
 
-  _nrcWordsByFirstLetter = Object.keys(_nrcWordToMoodBucket).reduce((accumulator, word) => {
-    const firstLetter = word[0];
-    if (!accumulator[firstLetter]) {
-      accumulator[firstLetter] = [];
-    }
-
-    accumulator[firstLetter].push(word);
-    return accumulator;
-  }, {});
 }
 
 function getNrcWordToMoodBucket() {
   ensureNrcLookups();
   return _nrcWordToMoodBucket;
-}
-
-function getNrcWordsByFirstLetter() {
-  ensureNrcLookups();
-  return _nrcWordsByFirstLetter;
 }
 
 function buildBlockedAnalysis() {
@@ -539,23 +561,13 @@ export function analyzeMoodInput(input) {
   }
 
   const scores = createMoodScoreCard();
-  let matchedSimilarWord = false;
 
   for (const token of tokens) {
     const exactMatchBucket = getNrcWordToMoodBucket()[token];
 
     if (exactMatchBucket) {
       scores[exactMatchBucket] += 4;
-      continue;
     }
-
-    const similarWord = findSimilarMoodWord(token);
-    if (!similarWord) {
-      continue;
-    }
-
-    matchedSimilarWord = true;
-    scores[getNrcWordToMoodBucket()[similarWord]] += 1;
   }
 
   const rankedBuckets = rankMoodScores(scores);
@@ -572,9 +584,7 @@ export function analyzeMoodInput(input) {
 
   const [primaryEmotion] = rankedBuckets[0];
   const baseConfidence = getTopScoreGapConfidence(rankedBuckets);
-  const confidence = matchedSimilarWord
-    ? Math.min(baseConfidence, 0.58)
-    : Math.max(baseConfidence, 0.78);
+  const confidence = Math.max(baseConfidence, 0.78);
 
   return {
     primaryEmotion,
@@ -610,19 +620,6 @@ function findCuratedMoodMatch(tokens) {
   return null;
 }
 
-function isSimilarWord(inputWord, keyword) {
-  if (inputWord.length < 4 || keyword.includes(' ')) {
-    return false;
-  }
-
-  if (inputWord[0] !== keyword[0]) {
-    return false;
-  }
-
-  const distance = levenshteinDistance(inputWord, keyword);
-  return distance <= 2 && Math.abs(inputWord.length - keyword.length) <= 2;
-}
-
 function guessMoodFromTone(tokens) {
   const calmWords = ['tender', 'gentle', 'soft', 'safe', 'settled'];
   const happyWords = ['effervescent', 'buoyant', 'sparkly', 'radiant'];
@@ -633,8 +630,6 @@ function guessMoodFromTone(tokens) {
   const surprisedWords = ['shocked', 'startled', 'sudden', 'abrupt', 'unexpected'];
   const sadFlatWords = ['meh', 'blah'];
   const flatWords = ['bored', 'neutral', 'whatever'];
-  const hopefulEndings = ['ful', 'ous', 'ant', 'ent', 'ive'];
-
   if (tokens.some((token) => calmWords.includes(token))) {
     return 'calm';
   }
@@ -671,58 +666,7 @@ function guessMoodFromTone(tokens) {
     return 'weird';
   }
 
-  if (tokens.some((token) => hopefulEndings.some((ending) => token.endsWith(ending)))) {
-    return 'hopeful';
-  }
-
   return 'weird';
-}
-
-function levenshteinDistance(a, b) {
-  const rows = a.length + 1;
-  const cols = b.length + 1;
-  const matrix = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-  for (let i = 0; i < rows; i += 1) {
-    matrix[i][0] = i;
-  }
-  for (let j = 0; j < cols; j += 1) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i < rows; i += 1) {
-    for (let j = 1; j < cols; j += 1) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-
-  return matrix[a.length][b.length];
-}
-
-const _similarWordCache = new Map();
-
-function findSimilarMoodWord(token) {
-  if (_similarWordCache.has(token)) {
-    return _similarWordCache.get(token);
-  }
-
-  const candidateWords = getNrcWordsByFirstLetter()[token[0]] || [];
-  let result = null;
-
-  for (const keyword of candidateWords) {
-    if (isSimilarWord(token, keyword)) {
-      result = keyword;
-      break;
-    }
-  }
-
-  _similarWordCache.set(token, result);
-  return result;
 }
 
 function buildFortunePool(analysis) {
@@ -805,6 +749,10 @@ function pickFortuneTextFromPools({
   return builtInPool[seed % builtInPool.length];
 }
 
+function pickUnknownInputFortune(seed) {
+  return UNKNOWN_INPUT_FORTUNES[seed % UNKNOWN_INPUT_FORTUNES.length];
+}
+
 function pickSceneForSelection(analysis) {
   return MOOD_SCENE_KEYS[analysis.primaryEmotion] || MOOD_SCENE_KEYS.weird;
 }
@@ -843,17 +791,20 @@ async function buildFortuneSelection(input, {
   }
 
   const analysis = analyzeMoodInput(moderationResult.sanitizedInput);
+  const isUnknownInput = analysis.source === 'fallback-weird';
   const userId = await getOrCreateUserId();
   const { builtInPool, customPool } = await buildWeightedFortunePools(analysis, {
     includeCustomFortunes,
   });
   const seed = hashString(`${userId}|${seedKey}`);
-  const fortuneText = pickFortuneTextFromPools({
-    builtInPool,
-    customPool,
-    excludeFortuneText,
-    seed,
-  });
+  const fortuneText = isUnknownInput
+    ? pickUnknownInputFortune(seed)
+    : pickFortuneTextFromPools({
+      builtInPool,
+      customPool,
+      excludeFortuneText,
+      seed,
+    });
 
   const sceneKey = pickSceneForSelection(analysis);
   const selection = {
@@ -879,12 +830,12 @@ async function buildFortuneSelection(input, {
   };
 }
 
-export async function getMoodLabSelection(input) {
+export async function getMoodLabSelection(input, { randomSeed = '' } = {}) {
   const normalizedInput = input.trim().toLowerCase();
 
   return buildFortuneSelection(normalizedInput, {
     dayKey: 'mood-lab',
-    seedKey: `mood-lab|${normalizedInput || 'empty'}`,
+    seedKey: `mood-lab|${normalizedInput || 'empty'}|${randomSeed}`,
     includeCustomFortunes: false,
     persistSelection: false,
   });

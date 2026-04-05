@@ -14,6 +14,20 @@ import { getMoodLabSelection } from '../utils/fortuneLogic';
 
 const DEFAULT_INPUT = '';
 const MAX_ROWS = 30;
+const MOOD_PILLS = [
+  'angry',
+  'anxious',
+  'calm',
+  'confused',
+  'disgusted',
+  'happy',
+  'hopeful',
+  'lonely',
+  'sad',
+  'surprised',
+  'tired',
+  'weird',
+];
 
 function formatConfidence(value) {
   if (typeof value !== 'number') {
@@ -24,24 +38,26 @@ function formatConfidence(value) {
 }
 
 export default function MoodLab() {
-  const [inputValue, setInputValue] = useState(DEFAULT_INPUT);
+  const [entries, setEntries] = useState([]);
   const [draftInput, setDraftInput] = useState('');
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const normalizedInputs = useMemo(() => (
-    inputValue
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
+  const normalizedEntries = useMemo(() => (
+    entries
+      .map((entry) => ({
+        ...entry,
+        input: entry.input.trim(),
+      }))
+      .filter((entry) => Boolean(entry.input))
       .slice(0, MAX_ROWS)
-  ), [inputValue]);
+  ), [entries]);
 
   useEffect(() => {
     let isActive = true;
 
     async function loadRows() {
-      if (normalizedInputs.length === 0) {
+      if (normalizedEntries.length === 0) {
         setIsLoading(false);
         setRows([]);
         return;
@@ -50,12 +66,14 @@ export default function MoodLab() {
       setIsLoading(true);
       try {
         const nextRows = await Promise.all(
-          normalizedInputs.map(async (input, index) => {
-            const selection = await getMoodLabSelection(input);
+          normalizedEntries.map(async (entry, index) => {
+            const selection = await getMoodLabSelection(entry.input, {
+              randomSeed: entry.nonce,
+            });
 
             return {
-              id: `${input}-${index}`,
-              input,
+              id: entry.id || `${entry.input}-${index}`,
+              input: entry.input,
               mood: selection.analysis?.primaryEmotion || 'weird',
               confidence: selection.analysis?.confidence ?? 0,
               fortuneText: selection.fortuneText || '',
@@ -86,7 +104,7 @@ export default function MoodLab() {
     return () => {
       isActive = false;
     };
-  }, [normalizedInputs]);
+  }, [normalizedEntries]);
 
   function handleSubmitWord() {
     const nextWord = draftInput.trim();
@@ -95,14 +113,14 @@ export default function MoodLab() {
       return;
     }
 
-    setInputValue((currentValue) => {
-      const existingWords = currentValue
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean);
-
-      return [...existingWords, nextWord].slice(0, MAX_ROWS).join('\n');
-    });
+    setEntries((currentEntries) => [
+      ...currentEntries,
+      {
+        id: `mood-lab-entry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        input: nextWord,
+        nonce: Math.random().toString(36).slice(2, 10),
+      },
+    ].slice(-MAX_ROWS));
     setDraftInput('');
   }
 
@@ -114,7 +132,16 @@ export default function MoodLab() {
     >
       <View style={styles.headerCard}>
         <View style={styles.headerCopy}>
-          <Text style={styles.eyebrow}>Mood Lab</Text>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.eyebrow}>Mood Lab</Text>
+            <View style={styles.moodPillRow}>
+              {MOOD_PILLS.map((mood) => (
+                <View key={mood} style={styles.moodPill}>
+                  <Text style={styles.moodPillText}>{mood}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
@@ -146,7 +173,7 @@ export default function MoodLab() {
           <Pressable
             onPress={() => {
               setDraftInput('');
-              setInputValue('');
+              setEntries([]);
             }}
             style={styles.resetButton}
           >
@@ -232,12 +259,38 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 8,
   },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
   eyebrow: {
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     color: '#7b5d43',
+  },
+  moodPillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    flex: 1,
+  },
+  moodPill: {
+    borderRadius: 999,
+    backgroundColor: '#f3e4d0',
+    borderWidth: 1,
+    borderColor: 'rgba(135, 101, 70, 0.14)',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  moodPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#775b43',
+    textTransform: 'capitalize',
   },
   headerMeta: {
     flexDirection: 'row',
