@@ -13,7 +13,8 @@ import {
 import { getMoodLabSelection } from '../utils/fortuneLogic';
 
 const DEFAULT_INPUT = '';
-const MAX_ROWS = 30;
+const MAX_ROWS = 100;
+const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:mood-lab:entries';
 const MOOD_PILLS = [
   'angry',
   'anxious',
@@ -29,6 +30,14 @@ const MOOD_PILLS = [
   'weird',
 ];
 
+function formatMoodLabel(value) {
+  if (!value) {
+    return 'Unknown';
+  }
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function formatConfidence(value) {
   if (typeof value !== 'number') {
     return '0.000';
@@ -37,14 +46,44 @@ function formatConfidence(value) {
   return value.toFixed(3);
 }
 
+function loadStoredEntries() {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(MOOD_LAB_STORAGE_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter((entry) => entry && typeof entry.input === 'string')
+      .map((entry, index) => ({
+        id: entry.id || `mood-lab-entry-restored-${index}`,
+        input: entry.input,
+        nonce: entry.nonce || Math.random().toString(36).slice(2, 10),
+      }))
+      .slice(-MAX_ROWS);
+  } catch {
+    return [];
+  }
+}
+
 export default function MoodLab() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState(() => loadStoredEntries());
   const [draftInput, setDraftInput] = useState('');
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const normalizedEntries = useMemo(() => (
-    entries
+    [...entries]
+      .reverse()
       .map((entry) => ({
         ...entry,
         input: entry.input.trim(),
@@ -52,6 +91,18 @@ export default function MoodLab() {
       .filter((entry) => Boolean(entry.input))
       .slice(0, MAX_ROWS)
   ), [entries]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(MOOD_LAB_STORAGE_KEY, JSON.stringify(entries.slice(-MAX_ROWS)));
+    } catch {
+      // Ignore local persistence failures in the dev-only lab.
+    }
+  }, [entries]);
 
   useEffect(() => {
     let isActive = true;
@@ -199,25 +250,32 @@ export default function MoodLab() {
             <Text style={[styles.headerCell, styles.fortuneColumn]}>Fortune</Text>
           </View>
 
-          {rows.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>No rows yet</Text>
-              <Text style={styles.emptyText}>Enter words above to preview the mapping.</Text>
-            </View>
-          ) : (
-            rows.map((row) => (
-              <View key={row.id} style={styles.resultRow}>
-                <Text style={[styles.bodyCell, styles.inputColumn, styles.inputValue]}>{row.input}</Text>
-                <Text style={[styles.bodyCell, styles.moodColumn, styles.moodValue]}>
-                  {row.mood}
-                  {row.moderation !== 'clean' ? ' blocked' : ''}
-                </Text>
-                <Text style={[styles.bodyCell, styles.confidenceColumn]}>{formatConfidence(row.confidence)}</Text>
-                <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
-                <Text style={[styles.bodyCell, styles.fortuneColumn]}>{row.fortuneText}</Text>
+          <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+            style={styles.resultsScroller}
+            contentContainerStyle={styles.resultsScrollerContent}
+          >
+            {rows.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>No rows yet</Text>
+                <Text style={styles.emptyText}>Enter words above to preview the mapping.</Text>
               </View>
-            ))
-          )}
+            ) : (
+              rows.map((row) => (
+                <View key={row.id} style={styles.resultRow}>
+                  <Text style={[styles.bodyCell, styles.inputColumn, styles.inputValue]}>{row.input}</Text>
+                  <Text style={[styles.bodyCell, styles.moodColumn, styles.moodValue]}>
+                    {formatMoodLabel(row.mood)}
+                    {row.moderation !== 'clean' ? ' blocked' : ''}
+                  </Text>
+                  <Text style={[styles.bodyCell, styles.confidenceColumn]}>{formatConfidence(row.confidence)}</Text>
+                  <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
+                  <Text style={[styles.bodyCell, styles.fortuneColumn]}>{row.fortuneText}</Text>
+                </View>
+              ))
+            )}
+          </ScrollView>
         </View>
       </View>
     </ScrollView>
@@ -339,6 +397,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(122, 89, 58, 0.14)',
     padding: 16,
+    gap: 10,
+    minHeight: 0,
+  },
+  resultsScroller: {
+    maxHeight: 920,
+  },
+  resultsScrollerContent: {
+    paddingBottom: 6,
     gap: 10,
   },
   panelLabel: {

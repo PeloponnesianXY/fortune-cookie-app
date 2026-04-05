@@ -121,7 +121,7 @@ const CURATED_MOOD_WORDS = {
     'cranky', 'cross', 'exasperated', 'fuming', 'grumpy', 'huffy', 'hostile', 'impatient',
     'incensed', 'indignant', 'inflamed', 'irate', 'livid', 'offended', 'peeved', 'petty',
     'provoked', 'raging', 'riled', 'seething', 'snappy', 'sore', 'spiteful', 'stormy',
-    'testy', 'touchy', 'vengeful', 'volatile', 'wrathful',
+    'testy', 'touchy', 'vengeful', 'volatile', 'wrathful', 'jealous', 'jealousy', 'envy', 'envious',
     'pissy', 'snippy', 'salty', 'crabby', 'bitchy', 'petulant', 'grouchy',
   ],
   hopeful: [
@@ -163,7 +163,10 @@ const CURATED_MOOD_WORDS = {
     'threatened', 'timid', 'twitchy', 'unnerved', 'unsafe', 'unsteady', 'vulnerable',
     'wary', 'panicky', 'frantic', 'haunted', 'petrified', 'trembling', 'foreboding',
     'frozen', 'shaken', 'hunted', 'exposed', 'skittish', 'selfconscious', 'suspicious',
-    'edgy', 'restless', 'watchful',
+    'edgy', 'restless', 'watchful', 'guilty', 'guilt', 'ashamed', 'shameful', 'remorseful',
+    'remorse', 'regretful', 'regret', 'sorry', 'selfblaming', 'selfreproachful',
+    'awkward', 'akward', 'awkwardness', 'sociallyawkward', 'selfconsciousness',
+    'embarrassed', 'embarrassing', 'sheepish',
   ],
   happy: [
     'cheerful', 'delighted', 'glad', 'grateful', 'happy', 'joyful', 'light', 'sexy',
@@ -176,11 +179,11 @@ const CURATED_MOOD_WORDS = {
   ],
   sad: [
     'depressed', 'down', 'empty', 'grieving', 'heartbroken', 'low',
-    'melancholy', 'miserable', 'numb', 'sad', 'troubled', 'ashamed',
+    'melancholy', 'miserable', 'numb', 'sad', 'troubled',
     'blue', 'broken', 'defeated', 'deflated', 'despairing', 'discouraged',
     'homesick', 'hopeless', 'hurt', 'inadequate',
-    'languishing', 'pained', 'raw', 'regretful', 'rejected', 'rueful', 'small', 'sorrowful',
-    'sorry', 'weepy', 'wounded', 'worthless',
+    'languishing', 'pained', 'raw', 'rejected', 'rueful', 'small', 'sorrowful',
+    'weepy', 'wounded', 'worthless',
     'bleak', 'crestfallen', 'hollow', 'forlorn', 'meh', 'blah',
     'dumb', 'stupid', 'idiot', 'idiotic', 'fool', 'foolish', 'moron', 'dense',
     'dimwitted', 'dopey', 'airhead', 'dunce', 'boneheaded', 'brainless', 'obtuse', 'destroyed',
@@ -238,6 +241,9 @@ const NRC_BUCKET_OVERRIDES = {
   abandoned: 'lonely',
   airhead: 'sad',
   alone: 'lonely',
+  akward: 'anxious',
+  awkward: 'anxious',
+  awkwardness: 'anxious',
   bitchy: 'angry',
   boneheaded: 'sad',
   brainless: 'sad',
@@ -250,16 +256,24 @@ const NRC_BUCKET_OVERRIDES = {
   dumb: 'sad',
   dunce: 'sad',
   exhausted: 'tired',
+  embarrassed: 'anxious',
+  embarrassing: 'anxious',
+  envious: 'angry',
+  envy: 'angry',
   famished: 'tired',
   fatigued: 'tired',
   fool: 'sad',
   foolish: 'sad',
   grouchy: 'angry',
+  guilt: 'anxious',
+  guilty: 'anxious',
   hungry: 'tired',
   imbalanced: 'confused',
   idiot: 'sad',
   idiotic: 'sad',
   isolated: 'lonely',
+  jealous: 'angry',
+  jealousy: 'angry',
   lopsided: 'confused',
   lonely: 'lonely',
   moron: 'sad',
@@ -268,15 +282,27 @@ const NRC_BUCKET_OVERRIDES = {
   petulant: 'angry',
   pissy: 'angry',
   ravenous: 'tired',
+  regret: 'anxious',
+  regretful: 'anxious',
+  remorse: 'anxious',
+  remorseful: 'anxious',
   salty: 'angry',
+  selfblaming: 'anxious',
+  selfconsciousness: 'anxious',
+  selfreproachful: 'anxious',
+  sheepish: 'anxious',
+  shameful: 'anxious',
   sleepy: 'tired',
   snippy: 'angry',
+  sorry: 'anxious',
   spent: 'tired',
   starving: 'tired',
   stupid: 'sad',
   tired: 'tired',
   unbalanced: 'confused',
   weary: 'tired',
+  sociallyawkward: 'anxious',
+  ashamed: 'anxious',
 };
 
 let _nrcWordToMoodBucket = null;
@@ -575,10 +601,10 @@ export function analyzeMoodInput(input) {
   if (rankedBuckets.length === 0) {
     const guessedMoodBucket = guessMoodFromTone(tokens);
     return {
-      primaryEmotion: guessedMoodBucket,
+      primaryEmotion: guessedMoodBucket === 'weird' ? 'unknown' : guessedMoodBucket,
       confidence: guessedMoodBucket === 'weird' ? 0 : 0.28,
       scores,
-      source: guessedMoodBucket === 'weird' ? 'fallback-weird' : 'fallback-tone',
+      source: guessedMoodBucket === 'weird' ? 'fallback-unknown' : 'fallback-tone',
     };
   }
 
@@ -671,6 +697,10 @@ function guessMoodFromTone(tokens) {
 
 function buildFortunePool(analysis) {
   const { primaryEmotion } = analysis;
+  if (primaryEmotion === 'unknown') {
+    return FORTUNE_LIBRARY.weird;
+  }
+
   const profile = MOOD_BUCKET_PROFILES[primaryEmotion] || MOOD_BUCKET_PROFILES.weird;
   if (profile.fortuneKey && FORTUNE_LIBRARY[profile.fortuneKey]) {
     return FORTUNE_LIBRARY[profile.fortuneKey];
@@ -791,7 +821,7 @@ async function buildFortuneSelection(input, {
   }
 
   const analysis = analyzeMoodInput(moderationResult.sanitizedInput);
-  const isUnknownInput = analysis.source === 'fallback-weird';
+  const isUnknownInput = analysis.primaryEmotion === 'unknown';
   const userId = await getOrCreateUserId();
   const { builtInPool, customPool } = await buildWeightedFortunePools(analysis, {
     includeCustomFortunes,
