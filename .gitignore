@@ -18,4 +18,5 @@ yarn-error.log*
 ~$*.xlsx
 fortunes.xlsx
 Mood Framework.xlsx
+data/tempBucketAudit.js
 ~WRL*.tmp

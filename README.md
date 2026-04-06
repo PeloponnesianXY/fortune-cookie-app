@@ -173,14 +173,22 @@ eas submit --platform ios
   - `calm`
   - `tired`
   - `lonely`
+  - `proud`
   - `sad`
   - `anxious`
   - `angry`
+  - `frustrated`
   - `confused`
   - `surprised`
   - `disgusted`
-  - `weird`
-- Older emotion-taxonomy writing was merged into those 12 runtime mood buckets so the content model matches the live taxonomy.
-- Unknown or unmapped inputs fall back to the `weird` path instead of generating a separate generic bucket.
+  - `awkward`
+  - `hungry`
+  - `wired`
+  - `distracted`
+  - `stressed`
+  - `numb`
+  - `unknown`
+- Older emotion-taxonomy writing was merged into the current runtime bucket system so the content model matches the live taxonomy.
+- Unknown or unmapped inputs now fall back to the dedicated `unknown` bucket.
 - Each detected emotion now maps to its own dedicated scene instead of drawing from broader positive/negative/neutral scene groups.
 - The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.
