@@ -26,12 +26,18 @@ function normalizeStoredCustomFortunes(value) {
       .map((item) => item.trim());
   }
 
+  if (Array.isArray(value.romantic)) {
+    base.loving = value.romantic
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim());
+  }
+
   for (const key of MOOD_BUCKET_KEYS) {
     const normalizedItems = Array.isArray(value[key])
       ? value[key].filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
       : [];
 
-    base[key] = key === 'disgusted'
+    base[key] = key === 'disgusted' || key === 'loving'
       ? [...new Set([...base[key], ...normalizedItems])]
       : normalizedItems;
   }

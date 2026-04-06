@@ -450,12 +450,12 @@ const FORTUNE_LIBRARY = {
   ...CORE_FORTUNE_LIBRARY,
   // TODO: Write dedicated loving fortunes instead of reusing calm.
   loving: [...BASE_FORTUNE_LIBRARY.calm],
-  // TODO: Write dedicated romantic fortunes instead of reusing happy.
-  romantic: [...BASE_FORTUNE_LIBRARY.happy],
   // TODO: Write dedicated grateful fortunes instead of reusing calm.
   grateful: [...BASE_FORTUNE_LIBRARY.calm],
   // TODO: Write dedicated amazed fortunes instead of reusing surprised.
   amazed: [...BASE_FORTUNE_LIBRARY.surprised],
+  // TODO: Write dedicated frustrated fortunes instead of reusing angry.
+  frustrated: [...BASE_FORTUNE_LIBRARY.angry],
   // TODO: Write dedicated guilty fortunes instead of reusing sad.
   guilty: [...BASE_FORTUNE_LIBRARY.sad],
   // TODO: Write dedicated jealous fortunes instead of reusing angry.
@@ -468,8 +468,8 @@ const FORTUNE_LIBRARY = {
   wired: [...BASE_FORTUNE_LIBRARY.anxious],
   // TODO: Write dedicated distracted fortunes instead of reusing confused.
   distracted: [...BASE_FORTUNE_LIBRARY.confused],
-  // TODO: Write dedicated overwhelmed fortunes instead of reusing anxious.
-  overwhelmed: [...BASE_FORTUNE_LIBRARY.anxious],
+  // TODO: Write dedicated stressed fortunes instead of reusing anxious.
+  stressed: [...BASE_FORTUNE_LIBRARY.anxious],
   // TODO: Write dedicated numb fortunes instead of reusing sad.
   numb: [...BASE_FORTUNE_LIBRARY.sad],
   // TODO: Unknown currently preserves the old mystery / weird corpus until a true unknown corpus is written.
@@ -480,14 +480,14 @@ const MOOD_BUCKET_PROFILES = {
   happy: { fortuneKey: 'happy', tone: 'uplifting', valence: 'positive', energy: 'high' },
   hopeful: { fortuneKey: 'hopeful', tone: 'encouraging', valence: 'positive', energy: 'medium' },
   calm: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
-  loving: { fortuneKey: 'loving', tone: 'warm', valence: 'positive', energy: 'low' },
-  romantic: { fortuneKey: 'romantic', tone: 'warm', valence: 'positive', energy: 'medium' },
+  loving: { fortuneKey: 'loving', tone: 'warm', valence: 'positive', energy: 'medium' },
   grateful: { fortuneKey: 'grateful', tone: 'appreciative', valence: 'positive', energy: 'low' },
   amazed: { fortuneKey: 'amazed', tone: 'expansive', valence: 'positive', energy: 'high' },
   surprised: { fortuneKey: 'surprised', tone: 'alert', valence: 'neutral', energy: 'medium' },
   confused: { fortuneKey: 'confused', tone: 'guiding', valence: 'neutral', energy: 'medium' },
   anxious: { fortuneKey: 'anxious', tone: 'reassuring', valence: 'negative', energy: 'high' },
   angry: { fortuneKey: 'angry', tone: 'grounding', valence: 'negative', energy: 'high' },
+  frustrated: { fortuneKey: 'frustrated', tone: 'steadying', valence: 'negative', energy: 'medium' },
   sad: { fortuneKey: 'sad', tone: 'comforting', valence: 'negative', energy: 'low' },
   disgusted: { fortuneKey: 'disgusted', tone: 'protective', valence: 'negative', energy: 'medium' },
   lonely: { fortuneKey: 'lonely', tone: 'companionable', valence: 'negative', energy: 'low' },
@@ -498,7 +498,7 @@ const MOOD_BUCKET_PROFILES = {
   hungry: { fortuneKey: 'hungry', tone: 'restorative', valence: 'negative', energy: 'medium' },
   wired: { fortuneKey: 'wired', tone: 'settling', valence: 'neutral', energy: 'high' },
   distracted: { fortuneKey: 'distracted', tone: 'refocusing', valence: 'neutral', energy: 'medium' },
-  overwhelmed: { fortuneKey: 'overwhelmed', tone: 'stabilizing', valence: 'negative', energy: 'high' },
+  stressed: { fortuneKey: 'stressed', tone: 'stabilizing', valence: 'negative', energy: 'high' },
   numb: { fortuneKey: 'numb', tone: 'soft', valence: 'negative', energy: 'low' },
   unknown: { fortuneKey: 'unknown', tone: 'open', valence: 'neutral', energy: 'medium' },
 };
