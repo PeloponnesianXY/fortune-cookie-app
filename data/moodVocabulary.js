@@ -7,6 +7,7 @@ import {
 const MOOD_BUCKET_KEYS = [
   'happy',
   'hopeful',
+  'proud',
   'calm',
   'loving',
   'grateful',

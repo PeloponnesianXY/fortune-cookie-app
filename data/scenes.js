@@ -82,6 +82,7 @@ const SCENE_LIBRARY = {
 const MOOD_SCENE_KEYS = {
   happy: 'sunriseBloom',
   hopeful: 'sunriseBloom',
+  proud: 'sunriseBloom',
   calm: 'sunriseBloom',
   loving: 'sunriseBloom',
   grateful: 'sunriseBloom',

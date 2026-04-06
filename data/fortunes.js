@@ -448,6 +448,8 @@ const { weird: LEGACY_WEIRD_FORTUNES, ...CORE_FORTUNE_LIBRARY } = BASE_FORTUNE_L
 
 const FORTUNE_LIBRARY = {
   ...CORE_FORTUNE_LIBRARY,
+  // TODO: Write dedicated proud fortunes instead of reusing happy.
+  proud: [...BASE_FORTUNE_LIBRARY.happy],
   // TODO: Write dedicated loving fortunes instead of reusing calm.
   loving: [...BASE_FORTUNE_LIBRARY.calm],
   // TODO: Write dedicated grateful fortunes instead of reusing calm.
@@ -479,6 +481,7 @@ const FORTUNE_LIBRARY = {
 const MOOD_BUCKET_PROFILES = {
   happy: { fortuneKey: 'happy', tone: 'uplifting', valence: 'positive', energy: 'high' },
   hopeful: { fortuneKey: 'hopeful', tone: 'encouraging', valence: 'positive', energy: 'medium' },
+  proud: { fortuneKey: 'proud', tone: 'affirming', valence: 'positive', energy: 'medium' },
   calm: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
   loving: { fortuneKey: 'loving', tone: 'warm', valence: 'positive', energy: 'medium' },
   grateful: { fortuneKey: 'grateful', tone: 'appreciative', valence: 'positive', energy: 'low' },

@@ -34,6 +34,7 @@ const MOOD_PILLS = [
   'lonely',
   'loving',
   'numb',
+  'proud',
   'stressed',
   'sad',
   'surprised',
