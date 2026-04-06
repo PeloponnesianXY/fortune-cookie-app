@@ -16,18 +16,30 @@ const DEFAULT_INPUT = '';
 const MAX_ROWS = 100;
 const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:mood-lab:entries';
 const MOOD_PILLS = [
+  'amazed',
   'angry',
   'anxious',
+  'awkward',
   'calm',
   'confused',
+  'distracted',
   'disgusted',
+  'grateful',
+  'guilty',
   'happy',
   'hopeful',
+  'hungry',
+  'jealous',
   'lonely',
+  'loving',
+  'numb',
+  'overwhelmed',
+  'romantic',
   'sad',
   'surprised',
   'tired',
-  'weird',
+  'unknown',
+  'wired',
 ];
 
 function formatMoodLabel(value) {
@@ -125,7 +137,7 @@ export default function MoodLab() {
             return {
               id: entry.id || `${entry.input}-${index}`,
               input: entry.input,
-              mood: selection.analysis?.primaryEmotion || 'weird',
+              mood: selection.analysis?.primaryEmotion || 'unknown',
               confidence: selection.analysis?.confidence ?? 0,
               fortuneText: selection.fortuneText || '',
               moderation: selection.moderation || 'clean',
