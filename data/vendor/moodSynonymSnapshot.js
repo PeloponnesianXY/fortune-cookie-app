@@ -69,7 +69,8 @@ const SNAPSHOT_EXACT_BUCKET_WORDS = {
   frustrated: [
     'frustrated', 'annoyed', 'irritable', 'aggravated', 'exasperated', 'crabby',
     'petulant', 'grouchy', 'fed up', 'worked up', 'bothered', 'vexed', 'put out',
-    'stymied', 'thwarted', 'irked', 'testy',
+    'stymied', 'thwarted', 'irked', 'testy', 'disappointed', 'disillusioned',
+    'disheartened', 'underwhelmed', 'let down',
   ],
   grateful: [
     'grateful', 'gratitude', 'appreciative', 'thankful', 'blessed', 'appreciating',
@@ -119,7 +120,7 @@ const SNAPSHOT_EXACT_BUCKET_WORDS = {
   ],
   sad: [
     'sad', 'unhappy', 'gloomy', 'hopeless', 'depressed', 'miserable', 'dismayed',
-    'displeased', 'disappointed', 'disillusioned', 'disheartened', 'hurt', 'disturbed',
+    'displeased', 'hurt', 'disturbed',
     'pain', 'hurting', 'heartbroken', 'blue', 'low', 'grieving', 'sorrowful', 'destroyed',
     'dumb', 'stupid', 'idiot', 'fool', 'worthless', 'downcast', 'glum', 'melancholy',
     'crestfallen', 'bereft', 'forlorn', 'despondent', 'wounded', 'crushed', 'mournful',
@@ -157,7 +158,7 @@ const SNAPSHOT_ALIAS_BUCKET_WORDS = {
   confused: ['all over the place', 'hard to place', 'not sure'],
   distracted: ['all over the map', 'can not focus', 'hard to focus'],
   disgusted: ['grossed out badly', 'completely grossed out'],
-  frustrated: ['at my limit', 'ready to snap', 'getting nowhere'],
+  frustrated: ['at my limit', 'ready to snap', 'getting nowhere', 'this is disappointing'],
   grateful: ['full of thanks', 'counting blessings'],
   guilty: ['full of regret', 'beating myself up', 'carrying guilt'],
   happy: ['in good spirits', 'feeling good', 'on top of the world'],
