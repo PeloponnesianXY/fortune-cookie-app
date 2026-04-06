@@ -9,6 +9,12 @@ import {
   UNKNOWN_INPUT_FORTUNES,
   PROTECTED_GROUP_TERMS,
 } from '../data/fortunes';
+import {
+  ALIAS_BUCKET_WORDS,
+  EXACT_BUCKET_WORDS,
+  LEGACY_BUCKET_NORMALIZATION,
+  MOOD_BUCKET_KEYS,
+} from '../data/moodVocabulary';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
 import { getLocalDayKey } from './dateUtils';
 
@@ -36,115 +42,7 @@ const HIGH_RISK_WORDS = new Set([
   'massacre',
 ]);
 
-const MOOD_BUCKET_KEYS = [
-  'happy',
-  'hopeful',
-  'calm',
-  'loving',
-  'grateful',
-  'amazed',
-  'surprised',
-  'confused',
-  'anxious',
-  'angry',
-  'frustrated',
-  'sad',
-  'disgusted',
-  'lonely',
-  'guilty',
-  'jealous',
-  'awkward',
-  'tired',
-  'hungry',
-  'wired',
-  'distracted',
-  'stressed',
-  'numb',
-  'unknown',
-];
-
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
-
-const LEGACY_BUCKET_NORMALIZATION = {
-  averse: 'disgusted',
-  weird: 'confused',
-  romantic: 'loving',
-  overwhelmed: 'stressed',
-  focused: 'hopeful',
-  confident: 'hopeful',
-  mysterious: 'confused',
-};
-
-const EXACT_BUCKET_WORDS = {
-  happy: [
-    'happy', 'joy', 'delighted', 'jovial', 'pleased', 'satisfied', 'content', 'cheerful',
-    'playful', 'amused', 'excited', 'enthusiastic', 'zealous', 'eager', 'stimulated',
-    'energized', 'euphoric', 'jubilant', 'elated', 'enchanted', 'rapturous', 'enthralled',
-  ],
-  hopeful: ['hopeful', 'optimistic', 'proud', 'illustrious', 'triumphant'],
-  calm: ['calm', 'peaceful', 'serene', 'tranquil'],
-  loving: [
-    'affectionate', 'warmhearted', 'tender', 'compassionate', 'caring', 'sentimental',
-    'moved', 'touched', 'romantic', 'passionate', 'enamored',
-  ],
-  grateful: ['grateful', 'gratitude', 'appreciative', 'thankful'],
-  amazed: ['amazed', 'astounded', 'awe', 'awestruck', 'awe struck', 'astonished', 'speechless', 'overcome'],
-  surprised: ['surprised', 'stunned', 'bewildered', 'shocked'],
-  confused: ['confused', 'perplexed', 'weird'],
-  anxious: [
-    'anxious', 'nervous', 'worried', 'agonized', 'fear', 'fearful', 'scared', 'frightened',
-    'terrified', 'panicked', 'hysterical', 'horrified', 'dreadful', 'insecure', 'inferior',
-    'inadequate', 'shy',
-  ],
-  angry: [
-    'angry', 'enraged', 'agitated', 'hateful', 'hostile', 'resentful', 'contemptuous',
-  ],
-  frustrated: [
-    'frustrated', 'annoyed', 'irritable', 'aggravated', 'exasperated',
-  ],
-  sad: [
-    'sad', 'unhappy', 'gloomy', 'hopeless', 'depressed', 'miserable', 'dismayed',
-    'displeased', 'disappointed', 'disillusioned', 'disheartened', 'hurt', 'disturbed',
-    'pain', 'hurting', 'heartbroken',
-  ],
-  disgusted: ['disgusted', 'revolted'],
-  lonely: ['lonely', 'isolated', 'neglected'],
-  guilty: ['guilty', 'ashamed', 'embarrassed', 'regretful', 'mortified'],
-  jealous: ['jealous', 'envious'],
-  awkward: ['awkward', 'cringe', 'self conscious', 'uncomfortable'],
-  tired: ['tired', 'exhausted', 'drained', 'weary', 'fatigued', 'sleepy'],
-  hungry: ['hungry', 'starving', 'famished', 'peckish'],
-  wired: ['wired', 'antsy', 'restless', 'jittery'],
-  distracted: ['distracted', 'scattered', 'unfocused', 'foggy'],
-  stressed: ['stressed', 'overwhelmed', 'overloaded', 'swamped', 'buried', 'burnt out', 'burned out'],
-  numb: ['numb', 'meh', 'blah', 'flat', 'empty', 'blank'],
-};
-
-const ALIAS_BUCKET_WORDS = {
-  happy: ['glad', 'joyful', 'radiant', 'buoyant', 'sparkly', 'upbeat', 'lively'],
-  hopeful: ['encouraged', 'promising', 'looking forward', 'possibility'],
-  calm: ['settled', 'steady', 'grounded', 'soft'],
-  loving: ['warm hearted', 'warm heart', 'gentle', 'kind', 'softhearted', 'flirty', 'smitten', 'in love'],
-  grateful: ['blessed', 'appreciating'],
-  amazed: ['awed', 'awe struck', 'wonderstruck', 'wowed'],
-  surprised: ['startled', 'jolted', 'blindsided', 'plot twist', 'unexpected'],
-  confused: ['unclear', 'mixed', 'uncertain', 'unbalanced', 'imbalanced', 'lopsided', 'strange'],
-  anxious: ['apprehensive', 'uneasy', 'timid', 'paranoid', 'watchful', 'self conscious'],
-  angry: ['mad', 'furious', 'heated', 'pissy', 'snippy', 'salty', 'hissy', 'bitter', 'combative'],
-  frustrated: ['crabby', 'petulant', 'grouchy', 'fed up', 'worked up', 'bothered'],
-  sad: ['blue', 'low', 'grieving', 'sorrowful', 'destroyed', 'dumb', 'stupid', 'idiot', 'fool', 'worthless'],
-  disgusted: ['grossed out', 'grossed', 'repulsed', 'icky', 'eww'],
-  lonely: ['alone', 'disconnected', 'abandoned', 'left out'],
-  guilty: ['shameful', 'remorseful', 'remorse', 'regret', 'sorry', 'self blaming', 'self reproachful'],
-  jealous: ['jealousy', 'envy'],
-  awkward: ['akward', 'awkwardness', 'socially awkward', 'self consciousness', 'sheepish'],
-  tired: ['spent', 'worn out', 'burned', 'burntout', 'burnedout', 'drowsy'],
-  hungry: ['craving', 'ravenous'],
-  wired: ['shaky', 'twitchy'],
-  distracted: ['scatterbrained', 'disorganized', 'spacey'],
-  stressed: ['burn out', 'burned out', 'loaded down', 'too much'],
-  numb: ['hollow', 'vacant'],
-};
 
 const EXACT_WORD_TO_BUCKET = createLookupTable(EXACT_BUCKET_WORDS);
 const ALIAS_WORD_TO_BUCKET = createLookupTable(ALIAS_BUCKET_WORDS);
