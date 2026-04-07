@@ -1,4 +1,4 @@
-/* Extracted from App.js for maintainability. */
+/* Shared runtime scene definitions and bucket-to-scene mapping. */
 
 const BASE_SCENE = {
   textPrimary: '#39291d',

@@ -1,4 +1,4 @@
-/* Extracted from App.js for maintainability. */
+/* Runtime fortune copy and bucket profiles. */
 
 const BASE_FORTUNE_LIBRARY = {
   calm: [
@@ -812,7 +812,7 @@ const FORTUNE_LIBRARY = {
   distracted: [...BASE_FORTUNE_LIBRARY.distracted],
   stressed: [...BASE_FORTUNE_LIBRARY.stressed],
   numb: [...BASE_FORTUNE_LIBRARY.numb],
-  // TODO: Unknown currently preserves the old mystery / weird corpus until a true unknown corpus is written.
+  // Unknown intentionally keeps the mystery-style corpus for unmatched inputs.
   unknown: [...LEGACY_WEIRD_FORTUNES],
 };
 

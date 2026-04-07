@@ -46,6 +46,29 @@ const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 
 const EXACT_WORD_TO_BUCKET = createLookupTable(EXACT_BUCKET_WORDS);
 const ALIAS_WORD_TO_BUCKET = createLookupTable(ALIAS_BUCKET_WORDS);
+const ALL_WORD_TO_BUCKET = {
+  ...ALIAS_WORD_TO_BUCKET,
+  ...EXACT_WORD_TO_BUCKET,
+};
+const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(ALL_WORD_TO_BUCKET)
+  .filter(([word]) => !word.includes(' '))
+  .map(([word, bucket]) => ({ word, bucket }));
+const MORPHOLOGY_IRREGULAR_MAP = {
+  anxiety: 'anxious',
+  confusion: 'confused',
+  frustration: 'frustrated',
+  gratitude: 'grateful',
+  happier: 'happy',
+  happiest: 'happy',
+  jealousy: 'jealous',
+  loneliness: 'lonely',
+  sadder: 'sad',
+  saddest: 'sad',
+};
+const FUZZY_MIN_LENGTH = 4;
+const FUZZY_MAX_LENGTH_DELTA = 2;
+const FUZZY_MIN_SCORE = 0.8;
+const FUZZY_MIN_MARGIN = 0.08;
 
 function createLookupTable(bucketWords) {
   return Object.fromEntries(
@@ -71,6 +94,10 @@ function normalizeMoodBucketKey(moodKey) {
 
 function tokenizeMoodInput(normalizedInput) {
   return normalizedInput.split(' ').filter(Boolean);
+}
+
+function isKnownMoodWord(candidate) {
+  return Boolean(ALL_WORD_TO_BUCKET[candidate]);
 }
 
 function createMoodScoreCard(primaryEmotion = null, score = 0) {
@@ -115,14 +142,131 @@ function findBucketInLookup(normalizedInput, tokens, lookupTable) {
   return null;
 }
 
-function normalizeLookupKeyLegacyDuplicate(value) {
-  return String(value || '')
-    .toLowerCase()
-    .trim()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+function tryMorphology(normalizedInput) {
+  const exactIrregularMatch = MORPHOLOGY_IRREGULAR_MAP[normalizedInput];
+  if (exactIrregularMatch && isKnownMoodWord(exactIrregularMatch)) {
+    return exactIrregularMatch;
+  }
+
+  const suffixTransforms = [
+    {
+      suffix: 'iest',
+      transform: (value) => `${value.slice(0, -4)}y`,
+    },
+    {
+      suffix: 'ier',
+      transform: (value) => `${value.slice(0, -3)}y`,
+    },
+    {
+      suffix: 'ily',
+      transform: (value) => `${value.slice(0, -3)}y`,
+    },
+    {
+      suffix: 'ly',
+      transform: (value) => value.slice(0, -2),
+    },
+    {
+      suffix: 'ed',
+      transform: (value) => value.slice(0, -2),
+    },
+    {
+      suffix: 'est',
+      transform: (value) => value.slice(0, -3),
+    },
+    {
+      suffix: 'er',
+      transform: (value) => value.slice(0, -2),
+    },
+    {
+      suffix: 'ing',
+      transform: (value) => value.slice(0, -3),
+    },
+  ];
+
+  for (const { suffix, transform } of suffixTransforms) {
+    if (!normalizedInput.endsWith(suffix) || normalizedInput.length <= suffix.length + 1) {
+      continue;
+    }
+
+    const transformed = transform(normalizedInput);
+    if (isKnownMoodWord(transformed)) {
+      return transformed;
+    }
+  }
+
+  return null;
+}
+
+function getDamerauLevenshteinDistance(source, target) {
+  const sourceLength = source.length;
+  const targetLength = target.length;
+  const matrix = Array.from({ length: sourceLength + 1 }, () => (
+    new Array(targetLength + 1).fill(0)
+  ));
+
+  for (let i = 0; i <= sourceLength; i += 1) {
+    matrix[i][0] = i;
+  }
+
+  for (let j = 0; j <= targetLength; j += 1) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= sourceLength; i += 1) {
+    for (let j = 1; j <= targetLength; j += 1) {
+      const cost = source[i - 1] === target[j - 1] ? 0 : 1;
+
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost,
+      );
+
+      if (
+        i > 1
+        && j > 1
+        && source[i - 1] === target[j - 2]
+        && source[i - 2] === target[j - 1]
+      ) {
+        matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
+      }
+    }
+  }
+
+  return matrix[sourceLength][targetLength];
+}
+
+function tryFuzzyMatch(normalizedInput) {
+  if (normalizedInput.length < FUZZY_MIN_LENGTH) {
+    return null;
+  }
+
+  const scoredCandidates = SINGLE_TOKEN_VOCAB_CANDIDATES
+    .filter(({ word }) => Math.abs(word.length - normalizedInput.length) <= FUZZY_MAX_LENGTH_DELTA)
+    .map(({ word, bucket }) => {
+      const distance = getDamerauLevenshteinDistance(normalizedInput, word);
+      const score = 1 - (distance / Math.max(normalizedInput.length, word.length));
+
+      return {
+        word,
+        bucket,
+        score,
+      };
+    })
+    .filter(({ score }) => score >= FUZZY_MIN_SCORE)
+    .sort((left, right) => right.score - left.score || left.word.localeCompare(right.word));
+
+  if (scoredCandidates.length === 0) {
+    return null;
+  }
+
+  const [bestCandidate, secondCandidate] = scoredCandidates;
+  const competingBucket = secondCandidate && secondCandidate.bucket !== bestCandidate.bucket;
+  if (competingBucket && (bestCandidate.score - secondCandidate.score) < FUZZY_MIN_MARGIN) {
+    return null;
+  }
+
+  return bestCandidate;
 }
 
 function normalizeStoredSelection(selection) {
@@ -305,6 +449,39 @@ export function analyzeMoodInput(input) {
       source: 'alias-map',
       score: 8,
     });
+  }
+
+  if (tokens.length === 1) {
+    const morphologyCandidate = tryMorphology(normalized);
+    if (morphologyCandidate) {
+      const morphologyTokens = tokenizeMoodInput(morphologyCandidate);
+      const exactMorphologyMatch = findBucketInLookup(morphologyCandidate, morphologyTokens, EXACT_WORD_TO_BUCKET);
+      if (exactMorphologyMatch) {
+        return buildAnalysis(exactMorphologyMatch.bucket, {
+          confidence: 0.9,
+          source: 'morphology-map',
+          score: 9,
+        });
+      }
+
+      const aliasMorphologyMatch = findBucketInLookup(morphologyCandidate, morphologyTokens, ALIAS_WORD_TO_BUCKET);
+      if (aliasMorphologyMatch) {
+        return buildAnalysis(aliasMorphologyMatch.bucket, {
+          confidence: 0.78,
+          source: 'morphology-alias-map',
+          score: 8,
+        });
+      }
+    }
+
+    const fuzzyMatch = tryFuzzyMatch(normalized);
+    if (fuzzyMatch) {
+      return buildAnalysis(fuzzyMatch.bucket, {
+        confidence: roundConfidence(fuzzyMatch.score),
+        source: 'fuzzy-map',
+        score: 7,
+      });
+    }
   }
 
   return buildAnalysis('unknown', {

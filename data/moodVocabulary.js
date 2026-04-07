@@ -1,6 +1,5 @@
 import {
-  SNAPSHOT_ALIAS_BUCKET_WORDS,
-  SNAPSHOT_EXACT_BUCKET_WORDS,
+  BUCKET_VOCAB,
   SYNONYM_SNAPSHOT_META,
 } from './vendor/moodSynonymSnapshot';
 
@@ -42,10 +41,18 @@ const LEGACY_BUCKET_NORMALIZATION = {
   mysterious: 'confused',
 };
 
-const EXACT_BUCKET_WORDS = SNAPSHOT_EXACT_BUCKET_WORDS;
-const ALIAS_BUCKET_WORDS = SNAPSHOT_ALIAS_BUCKET_WORDS;
+// Runtime helpers still distinguish direct vs broader accepted inputs,
+// but both tables now derive from the canonical BUCKET_VOCAB source.
+const EXACT_BUCKET_WORDS = Object.fromEntries(
+  Object.entries(BUCKET_VOCAB).map(([bucket, vocabulary]) => [bucket, vocabulary.core])
+);
+
+const ALIAS_BUCKET_WORDS = Object.fromEntries(
+  Object.entries(BUCKET_VOCAB).map(([bucket, vocabulary]) => [bucket, vocabulary.extended])
+);
 
 export {
+  BUCKET_VOCAB,
   ALIAS_BUCKET_WORDS,
   EXACT_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
