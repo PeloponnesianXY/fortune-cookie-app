@@ -4,8 +4,9 @@ Small Expo app that:
 
 - takes a one-word mood input
 - maps it to one detected emotion locally
-- routes that emotion into one of 12 runtime fortune buckets
+- routes that emotion into one of 25 runtime fortune buckets
 - reveals fortunes locally on device, with pacing that changes as the day goes on
+- includes a dev-only Mood Lab route on web for mood mapping inspection
 - includes a dev-only Screen Lab route on web for layout and state previews
 
 ## Project structure
@@ -18,6 +19,7 @@ components/
   FortuneHomeContent.js
   FortuneHomeScreen.js
   FortuneLibrarySheet.js
+  MoodLab.js
   CreatedFortunesSheet.js
   CustomFortuneSheet.js
   PreviewFrame.js
@@ -52,11 +54,12 @@ assets/
 - `components/FortuneCard.js`: main single-screen layout, drawer chrome, prompt, cookie presentation, action tray, and sheet entry points
 - `components/CookieShell.js`: cookie image swap + paper overlay
 - `components/FortuneLibrarySheet.js`: history/favorites sheet with tap-to-share fortune cards
+- `components/MoodLab.js`: dev-only browser lab for inspecting input-to-bucket routing, confidence, source, and fortune output
 - `components/CustomFortuneSheet.js`: create or edit a custom fortune locally on device
 - `components/CreatedFortunesSheet.js`: browse, edit, and delete created fortunes by mood
 - `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
 - `components/StreakStatus.js`: streak progress, tiers, and celebration UI
-- `data/fortunes.js`: merged 12-bucket runtime fortune library
+- `data/fortunes.js`: runtime fortune library keyed to the live mood buckets
 - `data/scenes.js`: dedicated scene per detected emotion bucket
 - `utils/fortuneLogic.js`: emotion analysis, moderation hooks, scene selection, day-state tracking, and replacement selection
 - `utils/customFortunes.js`: local persistence and validation for user-created fortunes
@@ -65,6 +68,25 @@ assets/
 - `utils/appBadge.js`: native badge sync hooks for saved-state signals
 
 Old visual experiments and export artifacts were removed so the repo reflects the current app instead of abandoned approaches.
+
+## Mood Lab
+
+Mood Lab is a dev-only browser route for checking how the live classifier routes words.
+
+- Route options:
+  - `/mood-lab`
+  - `?moodLab=1`
+  - `#/mood-lab`
+- Entry point: `App.js` only enables it in `__DEV__` on web
+- Main file: `components/MoodLab.js`
+- Runtime source: `utils/fortuneLogic.js` via `getMoodLabSelection`
+
+Current Mood Lab behavior includes:
+
+- entering single words or short phrases and appending them to a local results table
+- showing the detected bucket, confidence, analysis source, and selected fortune for each row
+- keeping up to 100 recent rows in browser `localStorage`
+- using the same bucket mapping and fortune selection logic as the app, without persisting daily fortune state
 
 ## Screen Lab
 
@@ -110,6 +132,12 @@ Open Screen Lab locally on web:
 
 ```text
 http://localhost:8081/screen-lab
+```
+
+Open Mood Lab locally on web:
+
+```text
+http://localhost:8081/mood-lab
 ```
 
 ## Standalone support page
@@ -167,21 +195,27 @@ eas submit --platform ios
 - User-created fortunes are also stored locally on device only.
 - The classifier now uses a mood-first path: a curated 500-word dictionary runs first, then the bundled NRC lexicon is flattened to one runtime mood bucket per word as fallback coverage.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
-- The runtime fortune system now uses 12 mood buckets:
+- Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
+- The runtime fortune system now uses 25 mood buckets:
   - `happy`
   - `hopeful`
-  - `calm`
-  - `tired`
-  - `lonely`
   - `proud`
-  - `sad`
+  - `calm`
+  - `loving`
+  - `grateful`
+  - `amazed`
+  - `surprised`
+  - `confused`
   - `anxious`
   - `angry`
   - `frustrated`
-  - `confused`
-  - `surprised`
+  - `sad`
   - `disgusted`
+  - `lonely`
+  - `guilty`
+  - `jealous`
   - `awkward`
+  - `tired`
   - `hungry`
   - `wired`
   - `distracted`
