@@ -9,7 +9,7 @@ Small Expo app that:
 - includes a dev-only Mood Lab route on web for mood mapping inspection
 - includes a dev-only Screen Lab route on web for layout and state previews
 
-## Project structure
+## Key project structure
 
 ```text
 App.js
@@ -30,6 +30,7 @@ components/
   StreakStatus.js
 data/
   fortunes.js
+  moodVocabulary.js
   scenes.js
 utils/
   appBadge.js
@@ -60,7 +61,8 @@ assets/
 - `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
 - `components/StreakStatus.js`: streak progress, tiers, and celebration UI
 - `data/fortunes.js`: runtime fortune library keyed to the live mood buckets
-- `data/scenes.js`: dedicated scene per detected emotion bucket
+- `data/scenes.js`: shared scene library plus bucket-to-scene mapping for the live mood set
+- `data/moodVocabulary.js`: live bucket list plus exact and alias vocabulary tables used by the classifier
 - `utils/fortuneLogic.js`: emotion analysis, moderation hooks, scene selection, day-state tracking, and replacement selection
 - `utils/customFortunes.js`: local persistence and validation for user-created fortunes
 - `utils/savedFortunes.js`: local history/favorites persistence
@@ -193,7 +195,7 @@ eas submit --platform ios
 - The app uses local persistence via `AsyncStorage` to keep the current day state on device, including pacing/count information and replacement continuity.
 - Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - User-created fortunes are also stored locally on device only.
-- The classifier now uses a mood-first path: a curated 500-word dictionary runs first, then the bundled NRC lexicon is flattened to one runtime mood bucket per word as fallback coverage.
+- The classifier now uses local exact and alias vocabulary tables from `data/moodVocabulary.js` to route input into the live bucket set.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
 - Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
 - The runtime fortune system now uses 25 mood buckets:
@@ -224,5 +226,5 @@ eas submit --platform ios
   - `unknown`
 - Older emotion-taxonomy writing was merged into the current runtime bucket system so the content model matches the live taxonomy.
 - Unknown or unmapped inputs now fall back to the dedicated `unknown` bucket.
-- Each detected emotion now maps to its own dedicated scene instead of drawing from broader positive/negative/neutral scene groups.
+- Buckets now map into a small shared scene library through `data/scenes.js`, rather than broad positive/negative/neutral scene groups.
 - The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.
