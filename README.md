@@ -64,8 +64,9 @@ assets/
 - `components/StreakStatus.js`: streak progress, tiers, and celebration UI
 - `data/fortunes.js`: runtime fortune library keyed to the live mood buckets
 - `data/scenes.js`: shared scene library plus bucket-to-scene mapping for the live mood set
-- `data/moodVocabulary.js`: live bucket list plus runtime lookup tables derived from the canonical vocabulary source
-- `data/vendor/moodSynonymSnapshot.js`: canonical bucket vocabulary source (`BUCKET_VOCAB`) for core and extended one-word routing inputs
+- `data/moodVocabulary.js`: live bucket list plus runtime handcrafted/open-fallback lookup tables derived from the canonical vocabulary sources
+- `data/vendor/moodSynonymSnapshot.js`: canonical handcrafted bucket vocabulary source (`BUCKET_VOCAB`) with one flat accepted-input list per bucket
+- `data/vendor/openFallbackVocab.js`: generated lower-priority open lexical fallback vocabulary keyed to the same 25 buckets
 - `utils/fortuneLogic.js`: input normalization, vocabulary lookup, conservative morphology/fuzzy matching, moderation hooks, scene selection, and day-state tracking
 - `utils/customFortunes.js`: local persistence and validation for user-created fortunes
 - `utils/savedFortunes.js`: local history/favorites persistence
@@ -198,9 +199,10 @@ eas submit --platform ios
 - The app uses local persistence via `AsyncStorage` to keep the current day state on device, including pacing/count information and replacement continuity.
 - Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - User-created fortunes are also stored locally on device only.
-- The classifier now derives its runtime lookups from the canonical `BUCKET_VOCAB` source in `data/vendor/moodSynonymSnapshot.js`.
+- The classifier now derives its handcrafted runtime lookups from the canonical `BUCKET_VOCAB` source in `data/vendor/moodSynonymSnapshot.js`.
+- A separate generated `OPEN_FALLBACK_VOCAB` layer in `data/vendor/openFallbackVocab.js` provides lower-priority offline lexical fallback coverage without replacing the handcrafted bucket definitions.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
-- Mood input processing is deterministic and local: normalization, exact/core lookup, extended lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, then `unknown` fallback.
+- Mood input processing is deterministic and local: normalization, handcrafted bucket lookup, open-fallback lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, then `unknown` fallback.
 - Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
 - The runtime fortune system now uses 25 mood buckets:
   - `happy`

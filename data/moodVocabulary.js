@@ -2,6 +2,9 @@ import {
   BUCKET_VOCAB,
   SYNONYM_SNAPSHOT_META,
 } from './vendor/moodSynonymSnapshot';
+import {
+  OPEN_FALLBACK_VOCAB,
+} from './vendor/openFallbackVocab';
 
 const MOOD_BUCKET_KEYS = [
   'happy',
@@ -41,21 +44,20 @@ const LEGACY_BUCKET_NORMALIZATION = {
   mysterious: 'confused',
 };
 
-// Runtime helpers still distinguish direct vs broader accepted inputs,
-// but both tables now derive from the canonical BUCKET_VOCAB source.
-const EXACT_BUCKET_WORDS = Object.fromEntries(
-  Object.entries(BUCKET_VOCAB).map(([bucket, vocabulary]) => [bucket, vocabulary.core])
+const HANDCRAFTED_BUCKET_WORDS = Object.fromEntries(
+  Object.entries(BUCKET_VOCAB).map(([bucket, words]) => [bucket, words])
 );
 
-const ALIAS_BUCKET_WORDS = Object.fromEntries(
-  Object.entries(BUCKET_VOCAB).map(([bucket, vocabulary]) => [bucket, vocabulary.extended])
+const OPEN_FALLBACK_BUCKET_WORDS = Object.fromEntries(
+  Object.entries(OPEN_FALLBACK_VOCAB).map(([bucket, words]) => [bucket, words])
 );
 
 export {
   BUCKET_VOCAB,
-  ALIAS_BUCKET_WORDS,
-  EXACT_BUCKET_WORDS,
+  HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
+  OPEN_FALLBACK_BUCKET_WORDS,
+  OPEN_FALLBACK_VOCAB,
   SYNONYM_SNAPSHOT_META,
 };

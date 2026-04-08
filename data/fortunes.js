@@ -62,6 +62,8 @@ const BASE_FORTUNE_LIBRARY = {
     'Quiet abundance is still abundance.',
     'What is working deserves more eye contact.',
     'A good life often hides in unglamorous corners.',
+    'Joy gives small moments better lighting.',
+    'A bright mood can make the ordinary feel special.',
   ],
   loving: [
     'Affection makes the world less drafty.',
@@ -121,6 +123,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Something in you has been doing serious lifting.',
     'Exhaustion often means something in you kept going too far.',
     'Your weariness may be proof that you gave a lot.',
+    'Some days are better judged after sleep.',
   ],
   hungry: [
     'Your stomach has entered the meeting without consent.',
@@ -180,6 +183,8 @@ const BASE_FORTUNE_LIBRARY = {
     'A bit of warmth may be closer than it appears.',
     'Even a passing kindness can change the weather.',
     'This ache can shrink after one decent conversation.',
+    'Heavy feelings shrink a little in decent company.',
+    'Low today? A friend - or your cat - may lift your mood.',
   ],
   happy: [
     'Your mood is making the day sparkle.',
@@ -327,6 +332,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Do not confuse quiet with absence.',
     'A flat day can still register one kind thing.',
     'Return does not always announce itself dramatically.',
+    'Tiny comforts can do serious work right now.',
   ],
   anxious: [
     'This wave will pass more gently if you stop feeding it.',
@@ -393,6 +399,9 @@ const BASE_FORTUNE_LIBRARY = {
     'This is too much, not too little grit.',
     'Priority is a rescue boat, not a spreadsheet.',
     'Your margin is part of the job, not a luxury.',
+    'Pressure is loud, but you are still the one in charge.',
+    'Stillness can reveal what pressure hides.',
+    'Calm gets more things right than rushing does.',
   ],
   wired: [
     'Your nervous system is drumming on the table again.',
@@ -420,6 +429,9 @@ const BASE_FORTUNE_LIBRARY = {
     'Some buzz is just chemistry with a drum kit.',
     'The motor can idle without auditioning for NASCAR.',
     'Too much activation makes everything look clickable.',
+    'A loud mind is not always a well-informed one.',
+    'Your mind sometimes talks faster than reality.',
+    'This feeling is persuasive, not necessarily accurate.',
   ],
   hopeful: [
     'Slow and steady progress adds up to miracles.',
@@ -514,6 +526,9 @@ const BASE_FORTUNE_LIBRARY = {
     'Being thwarted is exhausting, not enlightening.',
     'Try a smaller move. Stuck things respect increments.',
     'This problem may be difficult, not personal.',
+    'This heat may want attention, not action.',
+    'Clarity will serve you better than volume.',
+    'Heat loves bold moves and terrible timing.',
   ],
   jealous: [
     'Envy is sometimes desire wearing bad manners.',
@@ -541,6 +556,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Not every ache needs a rival.',
     'Your lane improves when your eyes come home.',
     'Wanting more for yourself beats guarding someone else.',
+    'There is a question under this. Do not rush the answer.',
   ],
   disgusted: [
     'Why force onto yourself something that is not for you.',
@@ -676,6 +692,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Even your skepticism had to blink at that.',
     'A good wow can recalibrate the whole afternoon.',
     'Some moments make language feel slightly underfunded.',
+    'This feeling invites wonder. Go along.',
   ],
   surprised: [
     'The day just swerved. A seatbelt and an open mind will help.',

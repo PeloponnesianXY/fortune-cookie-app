@@ -10,10 +10,10 @@ import {
   PROTECTED_GROUP_TERMS,
 } from '../data/fortunes';
 import {
-  ALIAS_BUCKET_WORDS,
-  EXACT_BUCKET_WORDS,
+  HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
+  OPEN_FALLBACK_BUCKET_WORDS,
 } from '../data/moodVocabulary';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
 import { getLocalDayKey } from './dateUtils';
@@ -44,11 +44,11 @@ const HIGH_RISK_WORDS = new Set([
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 
-const EXACT_WORD_TO_BUCKET = createLookupTable(EXACT_BUCKET_WORDS);
-const ALIAS_WORD_TO_BUCKET = createLookupTable(ALIAS_BUCKET_WORDS);
+const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable(HANDCRAFTED_BUCKET_WORDS);
+const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable(OPEN_FALLBACK_BUCKET_WORDS);
 const ALL_WORD_TO_BUCKET = {
-  ...ALIAS_WORD_TO_BUCKET,
-  ...EXACT_WORD_TO_BUCKET,
+  ...OPEN_FALLBACK_WORD_TO_BUCKET,
+  ...HANDCRAFTED_WORD_TO_BUCKET,
 };
 const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(ALL_WORD_TO_BUCKET)
   .filter(([word]) => !word.includes(' '))
@@ -434,20 +434,20 @@ export function analyzeMoodInput(input) {
   }
 
   const tokens = tokenizeMoodInput(normalized);
-  const exactMatch = findBucketInLookup(normalized, tokens, EXACT_WORD_TO_BUCKET);
-  if (exactMatch) {
-    return buildAnalysis(exactMatch.bucket, {
-      confidence: roundConfidence(exactMatch.source === 'phrase' ? 1 : 0.96),
-      source: exactMatch.source === 'phrase' ? 'exact-manual' : 'exact-manual-token',
+  const handcraftedMatch = findBucketInLookup(normalized, tokens, HANDCRAFTED_WORD_TO_BUCKET);
+  if (handcraftedMatch) {
+    return buildAnalysis(handcraftedMatch.bucket, {
+      confidence: roundConfidence(handcraftedMatch.source === 'phrase' ? 1 : 0.96),
+      source: 'handcrafted-map',
     });
   }
 
-  const aliasMatch = findBucketInLookup(normalized, tokens, ALIAS_WORD_TO_BUCKET);
-  if (aliasMatch) {
-    return buildAnalysis(aliasMatch.bucket, {
-      confidence: roundConfidence(aliasMatch.source === 'phrase' ? 0.86 : 0.74),
-      source: 'alias-map',
-      score: 8,
+  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
+  if (openFallbackMatch) {
+    return buildAnalysis(openFallbackMatch.bucket, {
+      confidence: roundConfidence(openFallbackMatch.source === 'phrase' ? 0.66 : 0.58),
+      source: 'open-fallback-map',
+      score: 6,
     });
   }
 
@@ -455,21 +455,16 @@ export function analyzeMoodInput(input) {
     const morphologyCandidate = tryMorphology(normalized);
     if (morphologyCandidate) {
       const morphologyTokens = tokenizeMoodInput(morphologyCandidate);
-      const exactMorphologyMatch = findBucketInLookup(morphologyCandidate, morphologyTokens, EXACT_WORD_TO_BUCKET);
-      if (exactMorphologyMatch) {
-        return buildAnalysis(exactMorphologyMatch.bucket, {
+      const handcraftedMorphologyMatch = findBucketInLookup(
+        morphologyCandidate,
+        morphologyTokens,
+        HANDCRAFTED_WORD_TO_BUCKET
+      );
+      if (handcraftedMorphologyMatch) {
+        return buildAnalysis(handcraftedMorphologyMatch.bucket, {
           confidence: 0.9,
           source: 'morphology-map',
           score: 9,
-        });
-      }
-
-      const aliasMorphologyMatch = findBucketInLookup(morphologyCandidate, morphologyTokens, ALIAS_WORD_TO_BUCKET);
-      if (aliasMorphologyMatch) {
-        return buildAnalysis(aliasMorphologyMatch.bucket, {
-          confidence: 0.78,
-          source: 'morphology-alias-map',
-          score: 8,
         });
       }
     }
