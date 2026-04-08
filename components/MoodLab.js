@@ -59,6 +59,23 @@ function formatConfidence(value) {
   return value.toFixed(3);
 }
 
+function formatSemanticDebug(semantic) {
+  if (!semantic) {
+    return '';
+  }
+
+  if (!semantic.debug) {
+    return semantic.reason || '';
+  }
+
+  const bestScore = formatConfidence(semantic.debug.bestScore);
+  const runnerUpScore = formatConfidence(semantic.debug.runnerUpScore);
+  const runnerUpBucket = semantic.debug.runnerUpBucket || 'none';
+  const status = semantic.accepted ? 'accepted' : (semantic.reason || 'rejected');
+
+  return `${status}: ${bestScore} vs ${runnerUpScore} (${runnerUpBucket})`;
+}
+
 function loadStoredEntries() {
   if (Platform.OS !== 'web' || typeof window === 'undefined') {
     return [];
@@ -139,10 +156,13 @@ export default function MoodLab() {
               id: entry.id || `${entry.input}-${index}`,
               input: entry.input,
               mood: selection.analysis?.primaryEmotion || 'unknown',
+              handcraftedMood: selection.analysis?.lab?.handcrafted?.bucket || 'unknown',
+              embeddingMood: selection.analysis?.lab?.semantic?.bucket || 'unknown',
               confidence: selection.analysis?.confidence ?? 0,
               fortuneText: selection.fortuneText || '',
               moderation: selection.moderation || 'clean',
               source: selection.analysis?.source || 'unknown',
+              semantic: selection.analysis?.lab?.semantic || null,
             };
           })
         );
@@ -257,9 +277,12 @@ export default function MoodLab() {
 
           <View style={styles.tableHeader}>
             <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Mood</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Handcrafted</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Embedding</Text>
             <Text style={[styles.headerCell, styles.confidenceColumn]}>Confidence</Text>
             <Text style={[styles.headerCell, styles.sourceColumn]}>Source</Text>
+            <Text style={[styles.headerCell, styles.semanticColumn]}>Semantic</Text>
             <Text style={[styles.headerCell, styles.fortuneColumn]}>Fortune</Text>
           </View>
 
@@ -282,8 +305,17 @@ export default function MoodLab() {
                     {formatMoodLabel(row.mood)}
                     {row.moderation !== 'clean' ? ' blocked' : ''}
                   </Text>
+                  <Text style={[styles.bodyCell, styles.moodColumn]}>
+                    {formatMoodLabel(row.handcraftedMood)}
+                  </Text>
+                  <Text style={[styles.bodyCell, styles.moodColumn]}>
+                    {formatMoodLabel(row.embeddingMood)}
+                  </Text>
                   <Text style={[styles.bodyCell, styles.confidenceColumn]}>{formatConfidence(row.confidence)}</Text>
                   <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
+                  <Text style={[styles.bodyCell, styles.semanticColumn]}>
+                    {formatSemanticDebug(row.semantic) || '-'}
+                  </Text>
                   <Text style={[styles.bodyCell, styles.fortuneColumn]}>{row.fortuneText}</Text>
                 </View>
               ))
@@ -495,7 +527,10 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   sourceColumn: {
-    width: 110,
+    width: 130,
+  },
+  semanticColumn: {
+    width: 140,
   },
   fortuneColumn: {
     flex: 1,

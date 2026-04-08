@@ -17,6 +17,7 @@ import {
 } from '../data/moodVocabulary';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
 import { getLocalDayKey } from './dateUtils';
+import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
@@ -47,7 +48,6 @@ const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable(HANDCRAFTED_BUCKET_WORDS);
 const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable(OPEN_FALLBACK_BUCKET_WORDS);
 const ALL_WORD_TO_BUCKET = {
-  ...OPEN_FALLBACK_WORD_TO_BUCKET,
   ...HANDCRAFTED_WORD_TO_BUCKET,
 };
 const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(ALL_WORD_TO_BUCKET)
@@ -111,12 +111,16 @@ function buildAnalysis(primaryEmotion, {
   confidence,
   source,
   score = 10,
+  semanticDebug = null,
+  lab = null,
 } = {}) {
   return {
     primaryEmotion,
     confidence,
     scores: createMoodScoreCard(primaryEmotion, score),
     source,
+    ...(semanticDebug ? { semanticDebug } : {}),
+    ...(lab ? { lab } : {}),
   };
 }
 
@@ -399,32 +403,7 @@ function roundConfidence(value) {
   return Math.max(0, Math.min(1, Math.round(value * 1000) / 1000));
 }
 
-export function moderateMoodInput(input) {
-  const normalized = normalizeLookupKey(input);
-  const tokens = tokenizeMoodInput(normalized);
-
-  const hasBlockedHateTerm = BLOCKED_HATE_TERMS.some((term) => (
-    term.includes(' ') ? normalized.includes(term) : tokens.includes(term)
-  ));
-  const hasBlockedPattern = HATE_PATTERNS.some((pattern) => pattern.test(normalized));
-  const hasTargetedGroupPhrase = PROTECTED_GROUP_TERMS.some((term) => normalized.includes(term))
-    && /\b(hate|against|inferior|disgusting|gross|evil|vermin|animals|suck|stink|trash|awful|horrible)\b/.test(normalized);
-
-  if (hasBlockedHateTerm || hasBlockedPattern || hasTargetedGroupPhrase) {
-    return {
-      moderation: 'blocked-hate',
-      sanitizedInput: '',
-    };
-  }
-
-  return {
-    moderation: 'clean',
-    sanitizedInput: normalized,
-  };
-}
-
-export function analyzeMoodInput(input) {
-  const normalized = normalizeLookupKey(input);
+function buildHandcraftedMoodAnalysis(normalized) {
   if (!normalized) {
     return buildAnalysis('unknown', {
       confidence: 0,
@@ -439,15 +418,6 @@ export function analyzeMoodInput(input) {
     return buildAnalysis(handcraftedMatch.bucket, {
       confidence: roundConfidence(handcraftedMatch.source === 'phrase' ? 1 : 0.96),
       source: 'handcrafted-map',
-    });
-  }
-
-  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
-  if (openFallbackMatch) {
-    return buildAnalysis(openFallbackMatch.bucket, {
-      confidence: roundConfidence(openFallbackMatch.source === 'phrase' ? 0.66 : 0.58),
-      source: 'open-fallback-map',
-      score: 6,
     });
   }
 
@@ -482,7 +452,121 @@ export function analyzeMoodInput(input) {
   return buildAnalysis('unknown', {
     confidence: 0,
     score: 0,
+    source: 'unknown-handcrafted',
+  });
+}
+
+function buildSemanticLabData(normalized) {
+  const semanticPreview = analyzeSemanticFallbackInput(normalized);
+
+  return {
+    bucket: semanticPreview.bucket || 'unknown',
+    accepted: Boolean(semanticPreview.accepted),
+    reason: semanticPreview.reason || null,
+    confidence: roundConfidence(semanticPreview.accepted ? (semanticPreview.confidence || 0) : 0),
+    debug: semanticPreview.debug || null,
+  };
+}
+
+export function moderateMoodInput(input) {
+  const normalized = normalizeLookupKey(input);
+  const tokens = tokenizeMoodInput(normalized);
+
+  const hasBlockedHateTerm = BLOCKED_HATE_TERMS.some((term) => (
+    term.includes(' ') ? normalized.includes(term) : tokens.includes(term)
+  ));
+  const hasBlockedPattern = HATE_PATTERNS.some((pattern) => pattern.test(normalized));
+  const hasTargetedGroupPhrase = PROTECTED_GROUP_TERMS.some((term) => normalized.includes(term))
+    && /\b(hate|against|inferior|disgusting|gross|evil|vermin|animals|suck|stink|trash|awful|horrible)\b/.test(normalized);
+
+  if (hasBlockedHateTerm || hasBlockedPattern || hasTargetedGroupPhrase) {
+    return {
+      moderation: 'blocked-hate',
+      sanitizedInput: '',
+    };
+  }
+
+  return {
+    moderation: 'clean',
+    sanitizedInput: normalized,
+  };
+}
+
+export function analyzeMoodInput(input) {
+  const normalized = normalizeLookupKey(input);
+  if (!normalized) {
+    return buildAnalysis('unknown', {
+      confidence: 0,
+      score: 0,
+      source: 'empty',
+      lab: {
+        handcrafted: {
+          bucket: 'unknown',
+          source: 'empty',
+          confidence: 0,
+        },
+        semantic: {
+          bucket: 'unknown',
+          accepted: false,
+          reason: 'invalid-input',
+          confidence: 0,
+          debug: null,
+        },
+      },
+    });
+  }
+
+  const handcraftedAnalysis = buildHandcraftedMoodAnalysis(normalized);
+  const semanticLab = buildSemanticLabData(normalized);
+  const lab = {
+    handcrafted: {
+      bucket: handcraftedAnalysis.primaryEmotion || 'unknown',
+      source: handcraftedAnalysis.source || 'unknown',
+      confidence: handcraftedAnalysis.confidence ?? 0,
+    },
+    semantic: semanticLab,
+  };
+
+  if (handcraftedAnalysis.primaryEmotion !== 'unknown') {
+    return {
+      ...handcraftedAnalysis,
+      lab,
+    };
+  }
+
+  const tokens = tokenizeMoodInput(normalized);
+  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
+  if (openFallbackMatch) {
+    return buildAnalysis(openFallbackMatch.bucket, {
+      confidence: roundConfidence(openFallbackMatch.source === 'phrase' ? 0.66 : 0.58),
+      source: 'open-fallback-map',
+      score: 6,
+      lab,
+    });
+  }
+
+  let semanticDebug = null;
+  if (tokens.length === 1) {
+    const semanticMatch = getSemanticFallbackMatch(normalized);
+    if (semanticMatch?.accepted) {
+      return buildAnalysis(semanticMatch.bucket, {
+        confidence: roundConfidence(semanticMatch.confidence),
+        source: 'embedding_fallback',
+        score: 5,
+        semanticDebug: semanticMatch.debug,
+        lab,
+      });
+    }
+
+    semanticDebug = semanticMatch?.debug || null;
+  }
+
+  return buildAnalysis('unknown', {
+    confidence: 0,
+    score: 0,
     source: 'unknown-fallback',
+    semanticDebug,
+    lab,
   });
 }
 
