@@ -1,0 +1,86 @@
+{
+  "allowByBucket": {
+    "anxious": [
+      "edgy"
+    ],
+    "calm": [
+      "alright"
+    ],
+    "lonely": [
+      "lonesome"
+    ],
+    "neutral": [
+      "ordinary",
+      "unremarkable"
+    ],
+    "sad": [
+      "downhearted",
+      "wistful"
+    ],
+    "sick": [
+      "fevered",
+      "ill",
+      "unwell"
+    ],
+    "stressed": [
+      "overwrought"
+    ],
+    "tired": [
+      "rundown"
+    ]
+  },
+  "denyByBucket": {
+    "anxious": [
+      "timid",
+      "shy"
+    ],
+    "awkward": [
+      "timid",
+      "shy"
+    ],
+    "confused": [
+      "curious"
+    ],
+    "frustrated": [
+      "disappointed",
+      "disheartened"
+    ],
+    "guilty": [
+      "embarrassed"
+    ],
+    "happy": [
+      "amazing",
+      "awesome",
+      "good",
+      "great"
+    ],
+    "sad": [
+      "dumb",
+      "fool",
+      "idiot",
+      "stupid",
+      "worthless"
+    ],
+    "sick": [
+      "aching"
+    ],
+    "tired": [
+      "sleepiness"
+    ]
+  },
+  "globalDeny": [
+    "ailment",
+    "emotion",
+    "feeling",
+    "illness",
+    "mood",
+    "queasiness",
+    "sadness",
+    "sickness",
+    "state",
+    "status",
+    "symptom",
+    "wellness",
+    "word"
+  ]
+}

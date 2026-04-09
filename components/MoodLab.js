@@ -164,6 +164,7 @@ export default function MoodLab() {
               parsedInput: selection.analysis?.lab?.parsed?.standardizedInput || selection.inputMood || entry.input,
               mood: selection.analysis?.primaryEmotion || 'unknown',
               handcraftedMood: selection.analysis?.lab?.handcrafted?.bucket || 'unknown',
+              openFallbackMood: selection.analysis?.lab?.openFallback?.bucket || 'unknown',
               embeddingMood: getSemanticPreviewBucket(selection.analysis?.lab?.semantic),
               fortuneText: selection.fortuneText || '',
               moderation: selection.moderation || 'clean',
@@ -285,6 +286,7 @@ export default function MoodLab() {
             <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
             <Text style={[styles.headerCell, styles.inputColumn]}>Parsed</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Handcrafted</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Open Fallback</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Vector Match</Text>
             <Text style={[styles.headerCell, styles.semanticColumn]}>Vector Audit</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
@@ -310,6 +312,9 @@ export default function MoodLab() {
                   <Text style={[styles.bodyCell, styles.inputColumn]}>{row.parsedInput}</Text>
                   <Text style={[styles.bodyCell, styles.moodColumn]}>
                     {formatMoodLabel(row.handcraftedMood)}
+                  </Text>
+                  <Text style={[styles.bodyCell, styles.moodColumn]}>
+                    {formatMoodLabel(row.openFallbackMood)}
                   </Text>
                   <Text style={[styles.bodyCell, styles.moodColumn]}>
                     {formatMoodLabel(row.embeddingMood)}
@@ -505,6 +510,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: 'uppercase',
     color: '#86674d',
+    ...(Platform.OS === 'web'
+      ? {
+          whiteSpace: 'nowrap',
+        }
+      : null),
   },
   resultRow: {
     flexDirection: 'row',
@@ -523,20 +533,16 @@ const styles = StyleSheet.create({
     color: '#392b20',
   },
   inputColumn: {
-    width: 90,
+    width: 96,
   },
   moodColumn: {
-    width: 88,
-  },
-  confidenceColumn: {
-    width: 84,
-    fontVariant: ['tabular-nums'],
+    width: 112,
   },
   sourceColumn: {
-    width: 130,
+    width: 144,
   },
   semanticColumn: {
-    width: 140,
+    width: 176,
   },
   fortuneColumn: {
     flex: 1,

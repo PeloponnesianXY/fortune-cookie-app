@@ -8,14 +8,15 @@ import {
   MOOD_BUCKET_PROFILES,
   UNKNOWN_INPUT_FORTUNES,
   PROTECTED_GROUP_TERMS,
-} from '../data/runtime/fortunes';
+} from '../data/runtime/fortunes.js';
 import {
   HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
-} from '../data/runtime/moodVocabulary';
-import { MOOD_SCENE_KEYS } from '../data/runtime/scenes';
-import { getLocalDayKey } from './dateUtils';
+  OPEN_FALLBACK_BUCKET_WORDS,
+} from '../data/runtime/moodVocabulary.js';
+import { MOOD_SCENE_KEYS } from '../data/runtime/scenes.js';
+import { getLocalDayKey } from './dateUtils.js';
 import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
@@ -45,10 +46,10 @@ const HIGH_RISK_WORDS = new Set([
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 
 const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable(HANDCRAFTED_BUCKET_WORDS);
-const ALL_WORD_TO_BUCKET = {
-  ...HANDCRAFTED_WORD_TO_BUCKET,
-};
-const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(ALL_WORD_TO_BUCKET)
+const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable(OPEN_FALLBACK_BUCKET_WORDS);
+// Routing priority is intentionally lexical-first:
+// handcrafted exact -> open fallback exact -> morphology -> fuzzy -> semantic fallback -> unknown
+const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(HANDCRAFTED_WORD_TO_BUCKET)
   .filter(([word]) => !word.includes(' '))
   .map(([word, bucket]) => ({ word, bucket }));
 const MORPHOLOGY_IRREGULAR_MAP = {
@@ -95,7 +96,7 @@ function tokenizeMoodInput(normalizedInput) {
 }
 
 function isKnownMoodWord(candidate) {
-  return Boolean(ALL_WORD_TO_BUCKET[candidate]);
+  return Boolean(HANDCRAFTED_WORD_TO_BUCKET[candidate]);
 }
 
 function createMoodScoreCard(primaryEmotion = null, score = 0) {
@@ -433,7 +434,7 @@ function buildHandcraftedMoodAnalysis(normalized) {
     return buildAnalysis('unknown', {
       confidence: 0,
       score: 0,
-      source: 'empty',
+      source: 'unknown',
     });
   }
 
@@ -442,7 +443,7 @@ function buildHandcraftedMoodAnalysis(normalized) {
   if (handcraftedMatch) {
     return buildAnalysis(handcraftedMatch.bucket, {
       confidence: roundConfidence(handcraftedMatch.source === 'phrase' ? 1 : 0.96),
-      source: 'handcrafted-map',
+      source: 'handcrafted',
     });
   }
 
@@ -458,7 +459,7 @@ function buildHandcraftedMoodAnalysis(normalized) {
       if (handcraftedMorphologyMatch) {
         return buildAnalysis(handcraftedMorphologyMatch.bucket, {
           confidence: 0.9,
-          source: 'morphology-map',
+          source: 'morphology',
           score: 9,
         });
       }
@@ -468,7 +469,7 @@ function buildHandcraftedMoodAnalysis(normalized) {
     if (fuzzyMatch) {
       return buildAnalysis(fuzzyMatch.bucket, {
         confidence: roundConfidence(fuzzyMatch.score),
-        source: 'fuzzy-map',
+        source: 'fuzzy',
         score: 7,
       });
     }
@@ -477,7 +478,33 @@ function buildHandcraftedMoodAnalysis(normalized) {
   return buildAnalysis('unknown', {
     confidence: 0,
     score: 0,
-    source: 'unknown-handcrafted',
+    source: 'unknown',
+  });
+}
+
+function buildOpenFallbackMoodAnalysis(normalized) {
+  if (!normalized) {
+    return buildAnalysis('unknown', {
+      confidence: 0,
+      score: 0,
+      source: 'unknown',
+    });
+  }
+
+  const tokens = tokenizeMoodInput(normalized);
+  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
+  if (openFallbackMatch) {
+    return buildAnalysis(openFallbackMatch.bucket, {
+      confidence: roundConfidence(openFallbackMatch.source === 'phrase' ? 0.86 : 0.82),
+      source: 'open_fallback',
+      score: 8,
+    });
+  }
+
+  return buildAnalysis('unknown', {
+    confidence: 0,
+    score: 0,
+    source: 'unknown',
   });
 }
 
@@ -509,6 +536,15 @@ function buildParsedInputLabData(normalized) {
       normalizedInput: normalized,
       standardizedInput: handcraftedMatch.matchedTerm || normalized,
       stage: 'handcrafted',
+    };
+  }
+
+  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
+  if (openFallbackMatch) {
+    return {
+      normalizedInput: normalized,
+      standardizedInput: openFallbackMatch.matchedTerm || normalized,
+      stage: 'open_fallback',
     };
   }
 
@@ -577,11 +613,16 @@ export function analyzeMoodInput(input) {
     return buildAnalysis('unknown', {
       confidence: 0,
       score: 0,
-      source: 'empty',
+      source: 'unknown',
       lab: {
         handcrafted: {
           bucket: 'unknown',
-          source: 'empty',
+          source: 'unknown',
+          confidence: 0,
+        },
+        openFallback: {
+          bucket: 'unknown',
+          source: 'unknown',
           confidence: 0,
         },
         semantic: {
@@ -596,6 +637,7 @@ export function analyzeMoodInput(input) {
   }
 
   const handcraftedAnalysis = buildHandcraftedMoodAnalysis(normalized);
+  const openFallbackAnalysis = buildOpenFallbackMoodAnalysis(normalized);
   const semanticLab = buildSemanticLabData(normalized);
   const parsedLab = buildParsedInputLabData(normalized);
   const lab = {
@@ -604,6 +646,11 @@ export function analyzeMoodInput(input) {
       bucket: handcraftedAnalysis.primaryEmotion || 'unknown',
       source: handcraftedAnalysis.source || 'unknown',
       confidence: handcraftedAnalysis.confidence ?? 0,
+    },
+    openFallback: {
+      bucket: openFallbackAnalysis.primaryEmotion || 'unknown',
+      source: openFallbackAnalysis.source || 'unknown',
+      confidence: openFallbackAnalysis.confidence ?? 0,
     },
     semantic: semanticLab,
   };
@@ -615,15 +662,22 @@ export function analyzeMoodInput(input) {
     };
   }
 
+  if (openFallbackAnalysis.primaryEmotion !== 'unknown') {
+    return {
+      ...openFallbackAnalysis,
+      lab,
+    };
+  }
+
   let semanticDebug = null;
   if (tokenizeMoodInput(normalized).length === 1) {
     const semanticMatch = getSemanticFallbackMatch(normalized);
     if (semanticMatch?.accepted) {
       return buildAnalysis(semanticMatch.bucket, {
         confidence: roundConfidence(semanticMatch.confidence),
-        source: 'embedding_fallback',
-        score: 5,
-        semanticDebug: semanticMatch.debug,
+      source: 'embedding_fallback',
+      score: 5,
+      semanticDebug: semanticMatch.debug,
         lab,
       });
     }
@@ -634,7 +688,7 @@ export function analyzeMoodInput(input) {
   return buildAnalysis('unknown', {
     confidence: 0,
     score: 0,
-    source: 'unknown-fallback',
+    source: 'unknown',
     semanticDebug,
     lab,
   });

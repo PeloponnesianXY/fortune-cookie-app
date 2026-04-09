@@ -8,7 +8,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "bootstrap:open-lexicons": "node scripts/bootstrapOpenLexicons.js",
+    "build:open-fallback": "node scripts/buildOpenFallbackVocab.js",
     "build:semantic-fallback": "node scripts/buildSemanticFallback.js",
+    "validate:open-fallback": "node scripts/validateOpenFallback.js",
     "validate:semantic-fallback": "node scripts/validateSemanticFallback.js"
   },
   "dependencies": {
