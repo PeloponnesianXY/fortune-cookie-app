@@ -82,6 +82,14 @@ function getSemanticPreviewBucket(semantic) {
   return semantic.bucket;
 }
 
+function getSemanticWinnerBucket(source, semantic) {
+  if (source !== 'embedding_fallback') {
+    return 'unknown';
+  }
+
+  return getSemanticPreviewBucket(semantic);
+}
+
 function loadStoredEntries() {
   if (Platform.OS !== 'web' || typeof window === 'undefined') {
     return [];
@@ -165,10 +173,13 @@ export default function MoodLab() {
               mood: selection.analysis?.primaryEmotion || 'unknown',
               handcraftedMood: selection.analysis?.lab?.handcrafted?.bucket || 'unknown',
               openFallbackMood: selection.analysis?.lab?.openFallback?.bucket || 'unknown',
-              embeddingMood: getSemanticPreviewBucket(selection.analysis?.lab?.semantic),
+              source: selection.analysis?.source || 'unknown',
+              embeddingMood: getSemanticWinnerBucket(
+                selection.analysis?.source || 'unknown',
+                selection.analysis?.lab?.semantic
+              ),
               fortuneText: selection.fortuneText || '',
               moderation: selection.moderation || 'clean',
-              source: selection.analysis?.source || 'unknown',
               semantic: selection.analysis?.lab?.semantic || null,
             };
           })

@@ -33,7 +33,6 @@ data/
     fortunes.js
     moodBucketVocabulary.js
     moodVocabulary.js
-    openFallbackVocab.js
     scenes.js
     semanticFallbackData.js
   build/
@@ -78,14 +77,13 @@ assets/
 - `components/StreakStatus.js`: streak progress, tiers, and celebration UI
 - `data/runtime/fortunes.js`: runtime fortune library keyed to the live mood buckets
 - `data/runtime/scenes.js`: shared scene library plus bucket-to-scene mapping for the live mood set
-- `data/runtime/moodVocabulary.js`: live bucket list plus runtime handcrafted lookup tables derived from the canonical vocabulary source
-- `data/runtime/moodBucketVocabulary.js`: canonical handcrafted bucket vocabulary source (`BUCKET_VOCAB`) with one flat accepted-input list per bucket
-- `data/runtime/openFallbackVocab.js`: generated lower-trust exact-match fallback vocabulary built offline from open lexical resources
+- `data/runtime/moodVocabulary.js`: live bucket list plus runtime lookup tables derived from the canonical vocabulary source
+- `data/runtime/moodBucketVocabulary.js`: canonical runtime vocabulary module containing the handcrafted source-of-truth bucket vocab (`BUCKET_VOCAB`) plus the generated lower-trust open fallback vocab (`OPEN_FALLBACK_VOCAB`)
 - `data/build/openFallbackOverrides.json`: human-editable allow/deny controls for the generated open fallback layer
 - `data/build/semanticFallbackConfig.js`: semantic fallback thresholds, anchors, keep-lists, and reject-lists used when rebuilding the compact semantic runtime data
 - `data/runtime/semanticFallbackData.js`: generated compact runtime semantic fallback dataset loaded by the app after lexical matching fails
 - `data/source/embedding-raw/`: optional offline staging area for heavyweight embedding assets used to build semantic runtime data
-- `data/source/open-lexicon-raw/`: vendored local raw lexical sources used to build `openFallbackVocab.js`
+- `data/source/open-lexicon-raw/`: vendored local raw lexical sources used to build the open fallback section inside `moodBucketVocabulary.js`
 - `scripts/bootstrapOpenLexicons.js`: one-time downloader that vendors the raw open lexical source files into the repo
 - `scripts/buildOpenFallbackVocab.js`: deterministic offline builder for the generated open fallback layer
 - `scripts/validateOpenFallback.js`: deterministic sanity-check helper for the open fallback path
@@ -229,7 +227,7 @@ eas submit --platform ios
 - Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - User-created fortunes are also stored locally on device only.
 - The classifier now derives its handcrafted runtime lookups from the canonical `BUCKET_VOCAB` source in `data/runtime/moodBucketVocabulary.js`.
-- The handcrafted runtime vocabulary is still the source of truth. The generated open fallback vocabulary in `data/runtime/openFallbackVocab.js` is lower trust and only runs as a later exact-match tier.
+- The handcrafted runtime vocabulary is still the source of truth. The generated open fallback vocabulary now lives in `data/runtime/moodBucketVocabulary.js`, is lower trust, and only runs as a later exact-match tier.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
 - Mood input processing is deterministic and local: safety checks, handcrafted exact lookup, generated open fallback exact lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, semantic fallback, then `unknown` fallback.
 - Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.

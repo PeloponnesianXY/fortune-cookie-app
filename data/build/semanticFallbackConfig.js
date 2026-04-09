@@ -22,7 +22,7 @@ const SEMANTIC_BUILD_SETTINGS = {
 
 const SEMANTIC_FALLBACK_SETTINGS = {
   minInputLength: 3,
-  minSimilarity: 0.52,
+  minSimilarity: 0.4,
   minMargin: 0.03,
   rejectWords: [
     'serious',

@@ -1,11 +1,9 @@
 import {
   BUCKET_VOCAB,
-  SYNONYM_SNAPSHOT_META,
-} from './moodBucketVocabulary.js';
-import {
   OPEN_FALLBACK_META,
   OPEN_FALLBACK_VOCAB,
-} from './openFallbackVocab.js';
+  SYNONYM_SNAPSHOT_META,
+} from './moodBucketVocabulary.js';
 
 const MOOD_BUCKET_KEYS = [
   'amazed',
