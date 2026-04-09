@@ -8,13 +8,13 @@ import {
   MOOD_BUCKET_PROFILES,
   UNKNOWN_INPUT_FORTUNES,
   PROTECTED_GROUP_TERMS,
-} from '../data/fortunes';
+} from '../data/runtime/fortunes';
 import {
   HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
-} from '../data/moodVocabulary';
-import { MOOD_SCENE_KEYS } from '../data/scenes';
+} from '../data/runtime/moodVocabulary';
+import { MOOD_SCENE_KEYS } from '../data/runtime/scenes';
 import { getLocalDayKey } from './dateUtils';
 import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
 

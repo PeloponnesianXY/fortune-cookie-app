@@ -188,10 +188,10 @@ function buildInputVectors({
 async function main() {
   const rootDir = path.join(__dirname, '..');
   const snapshotModule = await import(pathToFileURL(
-    path.join(rootDir, 'data', 'moods', 'moodBucketVocabulary.js')
+    path.join(rootDir, 'data', 'runtime', 'moodBucketVocabulary.js')
   ).href);
   const configModule = await import(pathToFileURL(
-    path.join(rootDir, 'data', 'moods', 'semanticFallbackConfig.js')
+    path.join(rootDir, 'data', 'build', 'semanticFallbackConfig.js')
   ).href);
 
   const { BUCKET_VOCAB } = snapshotModule;
@@ -234,7 +234,7 @@ async function main() {
     },
   };
 
-  const outputPath = path.join(rootDir, 'data', 'generated', 'semanticFallbackData.js');
+  const outputPath = path.join(rootDir, 'data', 'runtime', 'semanticFallbackData.js');
   fs.writeFileSync(outputPath, renderModule(payload), 'utf8');
 }
 

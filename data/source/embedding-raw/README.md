@@ -1,7 +1,7 @@
 Optional raw embedding assets for the semantic fallback build step can live here.
 
 Current repo state:
-- Runtime uses the committed generated data in `../semanticFallbackData.js`.
+- Runtime uses the committed compact semantic data in `../../runtime/semanticFallbackData.js`.
 - `scripts/buildSemanticFallback.js` currently builds compact bucket centroids and a pruned
   semantic input dictionary from the open-source `wink-embeddings-sg-100d` package.
 - No raw dump is required for the current build path.

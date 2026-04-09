@@ -1,7 +1,7 @@
 import {
   BUCKET_VOCAB,
   SYNONYM_SNAPSHOT_META,
-} from './moods/moodBucketVocabulary';
+} from './moodBucketVocabulary';
 
 const MOOD_BUCKET_KEYS = [
   'amazed',

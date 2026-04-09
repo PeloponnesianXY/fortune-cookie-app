@@ -1,6 +1,6 @@
 import {
   SEMANTIC_FALLBACK_DATA,
-} from '../data/generated/semanticFallbackData.js';
+} from '../data/runtime/semanticFallbackData.js';
 
 function cosineSimilarity(left, right) {
   let dot = 0;

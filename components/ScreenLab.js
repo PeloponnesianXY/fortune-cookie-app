@@ -3,7 +3,7 @@ import { Animated, Platform, ScrollView, StyleSheet, Switch, Text, View } from '
 
 import FortuneHomeContent from './FortuneHomeContent';
 import PreviewFrame from './PreviewFrame';
-import { SCENE_LIBRARY } from '../data/scenes';
+import { SCENE_LIBRARY } from '../data/runtime/scenes';
 
 const FORTUNE_PRESETS = {
   short: 'A tiny shift in perspective will clear more than today.',

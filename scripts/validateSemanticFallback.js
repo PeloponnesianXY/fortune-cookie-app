@@ -7,7 +7,7 @@ async function main() {
     path.join(rootDir, 'utils', 'semanticFallback.js')
   ).href);
   const snapshotModule = await import(pathToFileURL(
-    path.join(rootDir, 'data', 'moods', 'moodBucketVocabulary.js')
+    path.join(rootDir, 'data', 'runtime', 'moodBucketVocabulary.js')
   ).href);
 
   const { getSemanticFallbackMatch } = semanticModule;
