@@ -157,10 +157,12 @@ const MOOD_SCENE_KEYS = {
   jealous: 'emberMesa',
   awkward: 'opalMist',
   tired: 'silverHush',
+  sick: 'silverHush',
   hungry: 'silverHush',
   wired: 'neonPulse',
   distracted: 'opalMist',
   stressed: 'neonPulse',
+  neutral: 'opalMist',
   numb: 'silverHush',
   unknown: 'prismDrift',
 };

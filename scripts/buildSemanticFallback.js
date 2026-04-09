@@ -65,8 +65,9 @@ function getEmbeddingVector(word, dimensions) {
   return normalizeVector(vector);
 }
 
-function buildBucketPrototypes(bucketVocab, dimensions) {
+function buildBucketPrototypes(bucketVocab, dimensions, prototypeAnchors = {}) {
   const prototypes = {};
+  const bucketAnchors = {};
   const metadata = {};
 
   for (const [bucket, words] of Object.entries(bucketVocab)) {
@@ -74,7 +75,8 @@ function buildBucketPrototypes(bucketVocab, dimensions) {
       continue;
     }
 
-    const uniqueWords = [...new Set(words)];
+    const anchorWords = [...new Set((prototypeAnchors[bucket] || []).map((word) => String(word || '').toLowerCase()))];
+    const uniqueWords = anchorWords.length > 0 ? anchorWords : [...new Set(words)];
     const availableSeedWords = [];
     const missingSeedWords = [];
     const seedVectors = [];
@@ -94,15 +96,22 @@ function buildBucketPrototypes(bucketVocab, dimensions) {
     }
 
     prototypes[bucket] = normalizeVector(averageVectors(seedVectors));
+    bucketAnchors[bucket] = availableSeedWords.map((word, index) => ({
+      word,
+      vector: seedVectors[index],
+    }));
     metadata[bucket] = {
+      prototypeSource: anchorWords.length > 0 ? 'anchors' : 'bucket-vocab',
       availableSeedCount: availableSeedWords.length,
       missingSeedCount: missingSeedWords.length,
       availableSeedWords,
+      missingSeedWords,
     };
   }
 
   return {
     prototypes,
+    bucketAnchors,
     metadata,
   };
 }
@@ -123,6 +132,7 @@ function buildInputVectors({
   dimensions,
 }) {
   const allowedWordPattern = new RegExp(buildSettings.allowedWordPattern);
+  const forceIncludeWords = new Set((buildSettings.forceIncludeWords || []).map((word) => String(word || '').toLowerCase()));
   const handcraftedWords = new Set(
     Object.entries(bucketVocab)
       .filter(([bucket]) => bucket !== 'unknown')
@@ -130,6 +140,7 @@ function buildInputVectors({
   );
   const inputVectors = new Map();
   let candidateWordCount = 0;
+  let forceIncludedWordCount = 0;
 
   for (const word of handcraftedWords) {
     const vector = getEmbeddingVector(word, dimensions);
@@ -155,8 +166,11 @@ function buildInputVectors({
       continue;
     }
 
-    if (bestMatch.score >= buildSettings.pruneMinSimilarity) {
+    if (bestMatch.score >= buildSettings.pruneMinSimilarity || forceIncludeWords.has(word)) {
       inputVectors.set(word, vector);
+      if (forceIncludeWords.has(word) && bestMatch.score < buildSettings.pruneMinSimilarity) {
+        forceIncludedWordCount += 1;
+      }
     }
   }
 
@@ -165,6 +179,7 @@ function buildInputVectors({
     metadata: {
       handcraftedInputVectorCount: [...handcraftedWords].filter((word) => inputVectors.has(word)).length,
       candidateWordCount,
+      forceIncludedWordCount,
       retainedInputVectorCount: inputVectors.size,
     },
   };
@@ -173,23 +188,25 @@ function buildInputVectors({
 async function main() {
   const rootDir = path.join(__dirname, '..');
   const snapshotModule = await import(pathToFileURL(
-    path.join(rootDir, 'data', 'vendor', 'moodSynonymSnapshot.js')
+    path.join(rootDir, 'data', 'moods', 'moodBucketVocabulary.js')
   ).href);
   const configModule = await import(pathToFileURL(
-    path.join(rootDir, 'data', 'vendor', 'semanticFallbackConfig.js')
+    path.join(rootDir, 'data', 'moods', 'semanticFallbackConfig.js')
   ).href);
 
   const { BUCKET_VOCAB } = snapshotModule;
   const {
     SEMANTIC_BUILD_SETTINGS,
     SEMANTIC_FALLBACK_SETTINGS,
+    SEMANTIC_PROTOTYPE_ANCHORS,
   } = configModule;
 
   const dimensions = semanticEmbeddings.dimensions;
   const {
     prototypes: bucketPrototypes,
+    bucketAnchors,
     metadata: bucketMetadata,
-  } = buildBucketPrototypes(BUCKET_VOCAB, dimensions);
+  } = buildBucketPrototypes(BUCKET_VOCAB, dimensions, SEMANTIC_PROTOTYPE_ANCHORS);
 
   const {
     inputVectors,
@@ -206,6 +223,7 @@ async function main() {
     dimensions,
     settings: SEMANTIC_FALLBACK_SETTINGS,
     bucketPrototypes,
+    bucketAnchors,
     inputVectors,
     metadata: {
       source: 'wink-embeddings-sg-100d',
@@ -216,7 +234,7 @@ async function main() {
     },
   };
 
-  const outputPath = path.join(rootDir, 'data', 'vendor', 'semanticFallbackData.js');
+  const outputPath = path.join(rootDir, 'data', 'generated', 'semanticFallbackData.js');
   fs.writeFileSync(outputPath, renderModule(payload), 'utf8');
 }
 

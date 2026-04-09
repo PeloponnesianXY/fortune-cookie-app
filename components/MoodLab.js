@@ -10,38 +10,12 @@ import {
   View,
 } from 'react-native';
 
-import { getMoodLabSelection } from '../utils/fortuneLogic';
+import { getMoodLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const DEFAULT_INPUT = '';
 const MAX_ROWS = 100;
 const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:mood-lab:entries';
-const MOOD_PILLS = [
-  'amazed',
-  'angry',
-  'anxious',
-  'awkward',
-  'calm',
-  'confused',
-  'distracted',
-  'disgusted',
-  'frustrated',
-  'grateful',
-  'guilty',
-  'happy',
-  'hopeful',
-  'hungry',
-  'jealous',
-  'lonely',
-  'loving',
-  'numb',
-  'proud',
-  'stressed',
-  'sad',
-  'surprised',
-  'tired',
-  'unknown',
-  'wired',
-];
+const MOOD_PILLS = [...MOOD_BUCKET_KEYS];
 
 function formatMoodLabel(value) {
   if (!value) {
@@ -65,15 +39,47 @@ function formatSemanticDebug(semantic) {
   }
 
   if (!semantic.debug) {
+    if (semantic.reason === 'no-vector') {
+      return 'No compact vector available for this input.';
+    }
+
+    if (semantic.reason === 'too-short') {
+      return 'Semantic fallback skipped because the input is too short.';
+    }
+
+    if (semantic.reason === 'invalid-input') {
+      return 'Semantic fallback only runs on single-word inputs.';
+    }
+
+    if (semantic.reason === 'filtered-nonmood') {
+      return 'Semantic fallback skipped because this reads more like a descriptor than a mood.';
+    }
+
     return semantic.reason || '';
   }
 
   const bestScore = formatConfidence(semantic.debug.bestScore);
   const runnerUpScore = formatConfidence(semantic.debug.runnerUpScore);
-  const runnerUpBucket = semantic.debug.runnerUpBucket || 'none';
-  const status = semantic.accepted ? 'accepted' : (semantic.reason || 'rejected');
+  const bestBucket = formatMoodLabel(semantic.debug.bestBucket || semantic.bucket || 'unknown');
+  const runnerUpBucket = formatMoodLabel(semantic.debug.runnerUpBucket || 'unknown');
 
-  return `${status}: ${bestScore} vs ${runnerUpScore} (${runnerUpBucket})`;
+  if (semantic.accepted) {
+    return `Accepted semantic pick: ${bestBucket} (${bestScore}) over ${runnerUpBucket} (${runnerUpScore}).`;
+  }
+
+  if (semantic.reason === 'below-threshold') {
+    return `Rejected semantic pick: ${bestBucket} scored ${bestScore}, below the acceptance cutoff. Next was ${runnerUpBucket} at ${runnerUpScore}.`;
+  }
+
+  return `Semantic check compared ${bestBucket} (${bestScore}) with ${runnerUpBucket} (${runnerUpScore}).`;
+}
+
+function getSemanticPreviewBucket(semantic) {
+  if (!semantic?.accepted || !semantic.bucket) {
+    return 'unknown';
+  }
+
+  return semantic.bucket;
 }
 
 function loadStoredEntries() {
@@ -155,10 +161,10 @@ export default function MoodLab() {
             return {
               id: entry.id || `${entry.input}-${index}`,
               input: entry.input,
+              parsedInput: selection.analysis?.lab?.parsed?.standardizedInput || selection.inputMood || entry.input,
               mood: selection.analysis?.primaryEmotion || 'unknown',
               handcraftedMood: selection.analysis?.lab?.handcrafted?.bucket || 'unknown',
-              embeddingMood: selection.analysis?.lab?.semantic?.bucket || 'unknown',
-              confidence: selection.analysis?.confidence ?? 0,
+              embeddingMood: getSemanticPreviewBucket(selection.analysis?.lab?.semantic),
               fortuneText: selection.fortuneText || '',
               moderation: selection.moderation || 'clean',
               source: selection.analysis?.source || 'unknown',
@@ -277,12 +283,12 @@ export default function MoodLab() {
 
           <View style={styles.tableHeader}>
             <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
+            <Text style={[styles.headerCell, styles.inputColumn]}>Parsed</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Handcrafted</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Embedding</Text>
-            <Text style={[styles.headerCell, styles.confidenceColumn]}>Confidence</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Vector Match</Text>
+            <Text style={[styles.headerCell, styles.semanticColumn]}>Vector Audit</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
             <Text style={[styles.headerCell, styles.sourceColumn]}>Source</Text>
-            <Text style={[styles.headerCell, styles.semanticColumn]}>Semantic</Text>
             <Text style={[styles.headerCell, styles.fortuneColumn]}>Fortune</Text>
           </View>
 
@@ -301,21 +307,21 @@ export default function MoodLab() {
               rows.map((row) => (
                 <View key={row.id} style={styles.resultRow}>
                   <Text style={[styles.bodyCell, styles.inputColumn, styles.inputValue]}>{row.input}</Text>
-                  <Text style={[styles.bodyCell, styles.moodColumn, styles.moodValue]}>
-                    {formatMoodLabel(row.mood)}
-                    {row.moderation !== 'clean' ? ' blocked' : ''}
-                  </Text>
+                  <Text style={[styles.bodyCell, styles.inputColumn]}>{row.parsedInput}</Text>
                   <Text style={[styles.bodyCell, styles.moodColumn]}>
                     {formatMoodLabel(row.handcraftedMood)}
                   </Text>
                   <Text style={[styles.bodyCell, styles.moodColumn]}>
                     {formatMoodLabel(row.embeddingMood)}
                   </Text>
-                  <Text style={[styles.bodyCell, styles.confidenceColumn]}>{formatConfidence(row.confidence)}</Text>
-                  <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
                   <Text style={[styles.bodyCell, styles.semanticColumn]}>
                     {formatSemanticDebug(row.semantic) || '-'}
                   </Text>
+                  <Text style={[styles.bodyCell, styles.moodColumn, styles.moodValue]}>
+                    {formatMoodLabel(row.mood)}
+                    {row.moderation !== 'clean' ? ' blocked' : ''}
+                  </Text>
+                  <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
                   <Text style={[styles.bodyCell, styles.fortuneColumn]}>{row.fortuneText}</Text>
                 </View>
               ))

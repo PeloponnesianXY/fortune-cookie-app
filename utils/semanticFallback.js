@@ -1,6 +1,6 @@
 import {
   SEMANTIC_FALLBACK_DATA,
-} from '../data/vendor/semanticFallbackData.js';
+} from '../data/generated/semanticFallbackData.js';
 
 function cosineSimilarity(left, right) {
   let dot = 0;
@@ -24,6 +24,20 @@ function roundSemanticValue(value) {
   return Math.round(value * 1000) / 1000;
 }
 
+function getBucketScore(inputVector, bucket, prototype) {
+  const prototypeScore = cosineSimilarity(inputVector, prototype);
+  const anchorEntries = SEMANTIC_FALLBACK_DATA.bucketAnchors?.[bucket] || [];
+  const bestAnchorScore = anchorEntries.reduce((bestScore, entry) => (
+    Math.max(bestScore, cosineSimilarity(inputVector, entry.vector))
+  ), 0);
+
+  if (!anchorEntries.length) {
+    return prototypeScore;
+  }
+
+  return (prototypeScore * 0.65) + (bestAnchorScore * 0.35);
+}
+
 function analyzeSemanticFallbackInput(normalizedInput) {
   if (!normalizedInput || normalizedInput.includes(' ')) {
     return {
@@ -43,6 +57,15 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     };
   }
 
+  if ((SEMANTIC_FALLBACK_DATA.settings.rejectWords || []).includes(normalizedInput)) {
+    return {
+      accepted: false,
+      bucket: null,
+      debug: null,
+      reason: 'filtered-nonmood',
+    };
+  }
+
   const inputVector = SEMANTIC_FALLBACK_DATA.inputVectors[normalizedInput];
   if (!inputVector) {
     return {
@@ -56,7 +79,7 @@ function analyzeSemanticFallbackInput(normalizedInput) {
   const rankedBuckets = Object.entries(SEMANTIC_FALLBACK_DATA.bucketPrototypes)
     .map(([bucket, prototype]) => ({
       bucket,
-      score: cosineSimilarity(inputVector, prototype),
+      score: getBucketScore(inputVector, bucket, prototype),
     }))
     .sort((left, right) => right.score - left.score || left.bucket.localeCompare(right.bucket));
 
@@ -80,15 +103,6 @@ function analyzeSemanticFallbackInput(normalizedInput) {
       bucket: best.bucket,
       debug,
       reason: 'below-threshold',
-    };
-  }
-
-  if (runnerUp && (bestScore - runnerUpScore) < SEMANTIC_FALLBACK_DATA.settings.minMargin) {
-    return {
-      accepted: false,
-      bucket: best.bucket,
-      debug,
-      reason: 'ambiguous-margin',
     };
   }
 

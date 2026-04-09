@@ -8,7 +8,6 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build:open-fallback-vocab": "node scripts/buildOpenFallbackVocab.js",
     "build:semantic-fallback": "node scripts/buildSemanticFallback.js",
     "validate:semantic-fallback": "node scripts/validateSemanticFallback.js"
   },

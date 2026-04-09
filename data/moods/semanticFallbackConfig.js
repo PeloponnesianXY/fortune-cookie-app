@@ -1,0 +1,73 @@
+const SEMANTIC_BUILD_SETTINGS = {
+  allowedWordPattern: '^[a-z]+$',
+  minWordLength: 3,
+  pruneMinSimilarity: 0.38,
+  forceIncludeWords: [
+    'defeated',
+    'assaulted',
+    'attacked',
+    'excited',
+    'exhilarated',
+    'content',
+    'nostalgic',
+    'satisfied',
+    'sick',
+    'nauseated',
+    'queasy',
+    'feverish',
+    'dizzy',
+    'hungover',
+  ],
+};
+
+const SEMANTIC_FALLBACK_SETTINGS = {
+  minInputLength: 3,
+  minSimilarity: 0.52,
+  minMargin: 0.03,
+  rejectWords: [
+    'serious',
+    'flamboyant',
+    'unwilling',
+    'embarrassed',
+    'disheartened',
+    'discouraged',
+    'depressed',
+    'spent',
+    'lost',
+  ],
+};
+
+const SEMANTIC_PROTOTYPE_ANCHORS = {
+  amazed: ['amazed', 'astonished', 'awestruck', 'dazzled', 'wowed'],
+  angry: ['angry', 'furious', 'outraged', 'livid', 'resentful'],
+  anxious: ['anxious', 'worried', 'uneasy', 'nervous', 'panicked'],
+  awkward: ['awkward', 'uncomfortable', 'selfconscious', 'clumsy', 'cringe'],
+  calm: ['calm', 'peaceful', 'relaxed', 'relieved', 'balanced', 'centered'],
+  confused: ['confused', 'perplexed', 'puzzled', 'uncertain', 'bewildered'],
+  distracted: ['distracted', 'scattered', 'unfocused', 'preoccupied', 'sidetracked'],
+  disgusted: ['disgusted', 'revolted', 'repulsed', 'gross', 'nauseated'],
+  frustrated: ['frustrated', 'annoyed', 'irritable', 'aggravated', 'stuck'],
+  grateful: ['grateful', 'thankful', 'appreciative', 'blessed', 'fortunate'],
+  guilty: ['guilty', 'ashamed', 'remorseful', 'regretful', 'sorry'],
+  happy: ['happy', 'joyful', 'cheerful', 'delighted', 'excited', 'giddy', 'content', 'satisfied', 'ecstatic', 'exhilarated'],
+  hopeful: ['hopeful', 'optimistic', 'encouraged', 'reassured', 'heartened'],
+  proud: ['proud', 'accomplished', 'fulfilled', 'validated', 'triumphant'],
+  hungry: ['hungry', 'starving', 'famished', 'craving', 'ravenous'],
+  jealous: ['jealous', 'envious', 'envy', 'covetous', 'possessive'],
+  lonely: ['lonely', 'isolated', 'alone', 'abandoned', 'alienated', 'nostalgic'],
+  loving: ['loving', 'affectionate', 'tender', 'caring', 'compassionate'],
+  neutral: ['neutral', 'indifferent', 'middling', 'even', 'unbothered'],
+  numb: ['numb', 'empty', 'detached', 'blank', 'apathetic', 'bored'],
+  sad: ['sad', 'unhappy', 'miserable', 'heartbroken', 'grief', 'gloomy'],
+  sick: ['sick', 'nauseated', 'queasy', 'feverish', 'dizzy', 'hungover'],
+  stressed: ['stressed', 'overwhelmed', 'fraught', 'frazzled', 'pressured', 'strained'],
+  surprised: ['surprised', 'startled', 'shocked', 'stunned', 'blindsided'],
+  tired: ['tired', 'exhausted', 'drained', 'fatigued', 'sleepy'],
+  wired: ['wired', 'jittery', 'restless', 'antsy', 'overstimulated'],
+};
+
+export {
+  SEMANTIC_BUILD_SETTINGS,
+  SEMANTIC_FALLBACK_SETTINGS,
+  SEMANTIC_PROTOTYPE_ANCHORS,
+};

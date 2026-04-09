@@ -13,7 +13,6 @@ import {
   HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
-  OPEN_FALLBACK_BUCKET_WORDS,
 } from '../data/moodVocabulary';
 import { MOOD_SCENE_KEYS } from '../data/scenes';
 import { getLocalDayKey } from './dateUtils';
@@ -46,7 +45,6 @@ const HIGH_RISK_WORDS = new Set([
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 
 const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable(HANDCRAFTED_BUCKET_WORDS);
-const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable(OPEN_FALLBACK_BUCKET_WORDS);
 const ALL_WORD_TO_BUCKET = {
   ...HANDCRAFTED_WORD_TO_BUCKET,
 };
@@ -130,6 +128,7 @@ function findBucketInLookup(normalizedInput, tokens, lookupTable) {
     return {
       bucket: phraseMatch,
       source: 'phrase',
+      matchedTerm: normalizedInput,
     };
   }
 
@@ -139,6 +138,7 @@ function findBucketInLookup(normalizedInput, tokens, lookupTable) {
       return {
         bucket: tokenMatch,
         source: 'token',
+        matchedTerm: token,
       };
     }
   }
@@ -240,6 +240,30 @@ function getDamerauLevenshteinDistance(source, target) {
   return matrix[sourceLength][targetLength];
 }
 
+function getSharedPrefixLength(left, right) {
+  const limit = Math.min(left.length, right.length);
+  let index = 0;
+
+  while (index < limit && left[index] === right[index]) {
+    index += 1;
+  }
+
+  return index;
+}
+
+function isSafeFuzzyCandidate(inputWord, candidateWord) {
+  if (!inputWord || !candidateWord) {
+    return false;
+  }
+
+  if (inputWord[0] !== candidateWord[0]) {
+    return false;
+  }
+
+  const requiredPrefixLength = inputWord.length >= 5 ? 2 : 1;
+  return getSharedPrefixLength(inputWord, candidateWord) >= requiredPrefixLength;
+}
+
 function tryFuzzyMatch(normalizedInput) {
   if (normalizedInput.length < FUZZY_MIN_LENGTH) {
     return null;
@@ -257,6 +281,7 @@ function tryFuzzyMatch(normalizedInput) {
         score,
       };
     })
+    .filter(({ word }) => isSafeFuzzyCandidate(normalizedInput, word))
     .filter(({ score }) => score >= FUZZY_MIN_SCORE)
     .sort((left, right) => right.score - left.score || left.word.localeCompare(right.word));
 
@@ -468,6 +493,60 @@ function buildSemanticLabData(normalized) {
   };
 }
 
+function buildParsedInputLabData(normalized) {
+  if (!normalized) {
+    return {
+      normalizedInput: '',
+      standardizedInput: '',
+      stage: 'empty',
+    };
+  }
+
+  const tokens = tokenizeMoodInput(normalized);
+  const handcraftedMatch = findBucketInLookup(normalized, tokens, HANDCRAFTED_WORD_TO_BUCKET);
+  if (handcraftedMatch) {
+    return {
+      normalizedInput: normalized,
+      standardizedInput: handcraftedMatch.matchedTerm || normalized,
+      stage: 'handcrafted',
+    };
+  }
+
+  if (tokens.length === 1) {
+    const morphologyCandidate = tryMorphology(normalized);
+    if (morphologyCandidate) {
+      const morphologyMatch = findBucketInLookup(
+        morphologyCandidate,
+        tokenizeMoodInput(morphologyCandidate),
+        HANDCRAFTED_WORD_TO_BUCKET
+      );
+
+      if (morphologyMatch) {
+        return {
+          normalizedInput: normalized,
+          standardizedInput: morphologyCandidate,
+          stage: 'morphology',
+        };
+      }
+    }
+
+    const fuzzyMatch = tryFuzzyMatch(normalized);
+    if (fuzzyMatch) {
+      return {
+        normalizedInput: normalized,
+        standardizedInput: fuzzyMatch.word,
+        stage: 'fuzzy',
+      };
+    }
+  }
+
+  return {
+    normalizedInput: normalized,
+    standardizedInput: normalized,
+    stage: 'normalized',
+  };
+}
+
 export function moderateMoodInput(input) {
   const normalized = normalizeLookupKey(input);
   const tokens = tokenizeMoodInput(normalized);
@@ -518,7 +597,9 @@ export function analyzeMoodInput(input) {
 
   const handcraftedAnalysis = buildHandcraftedMoodAnalysis(normalized);
   const semanticLab = buildSemanticLabData(normalized);
+  const parsedLab = buildParsedInputLabData(normalized);
   const lab = {
+    parsed: parsedLab,
     handcrafted: {
       bucket: handcraftedAnalysis.primaryEmotion || 'unknown',
       source: handcraftedAnalysis.source || 'unknown',
@@ -534,19 +615,8 @@ export function analyzeMoodInput(input) {
     };
   }
 
-  const tokens = tokenizeMoodInput(normalized);
-  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
-  if (openFallbackMatch) {
-    return buildAnalysis(openFallbackMatch.bucket, {
-      confidence: roundConfidence(openFallbackMatch.source === 'phrase' ? 0.66 : 0.58),
-      source: 'open-fallback-map',
-      score: 6,
-      lab,
-    });
-  }
-
   let semanticDebug = null;
-  if (tokens.length === 1) {
+  if (tokenizeMoodInput(normalized).length === 1) {
     const semanticMatch = getSemanticFallbackMatch(normalized);
     if (semanticMatch?.accepted) {
       return buildAnalysis(semanticMatch.bucket, {
