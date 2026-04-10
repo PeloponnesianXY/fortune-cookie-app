@@ -248,7 +248,7 @@
       "unforeseen",
       "unheeded"
     ],
-    "loving": [
+    "affectionate": [
       "affected",
       "closing",
       "docile",
@@ -260,6 +260,18 @@
       "versed",
       "stamp",
       "nigh"
+    ],
+    "romantic": [
+      "affected",
+      "closing",
+      "docile",
+      "familiar",
+      "informal",
+      "internal",
+      "potty",
+      "stamp",
+      "nigh",
+      "versed"
     ],
     "neutral": [
       "achromatic",

@@ -26,8 +26,26 @@ function normalizeStoredCustomFortunes(value) {
       .map((item) => item.trim());
   }
 
+  if (Array.isArray(value.loving)) {
+    base.affectionate = value.loving
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim());
+  }
+
   if (Array.isArray(value.romantic)) {
-    base.loving = value.romantic
+    base.romantic = value.romantic
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim());
+  }
+
+  if (Array.isArray(value.amazed)) {
+    base.delighted = value.amazed
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim());
+  }
+
+  if (Array.isArray(value.surprised)) {
+    base.blindsided = value.surprised
       .filter((item) => typeof item === 'string' && item.trim())
       .map((item) => item.trim());
   }
@@ -37,7 +55,7 @@ function normalizeStoredCustomFortunes(value) {
       ? value[key].filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
       : [];
 
-    base[key] = key === 'disgusted' || key === 'loving'
+    base[key] = key === 'disgusted' || key === 'affectionate' || key === 'romantic'
       ? [...new Set([...base[key], ...normalizedItems])]
       : normalizedItems;
   }
@@ -52,6 +70,22 @@ function normalizeForDuplicateCheck(value) {
 export function formatMoodBucketLabel(moodKey) {
   if (moodKey === 'averse' || moodKey === 'disgusted') {
     return 'Disgusted';
+  }
+
+  if (moodKey === 'affectionate') {
+    return 'Affectionate';
+  }
+
+  if (moodKey === 'romantic') {
+    return 'Romantic';
+  }
+
+  if (moodKey === 'blindsided') {
+    return 'Blindsided';
+  }
+
+  if (moodKey === 'delighted') {
+    return 'Delighted';
   }
 
   return moodKey.charAt(0).toUpperCase() + moodKey.slice(1);

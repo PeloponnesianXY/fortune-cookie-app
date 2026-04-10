@@ -79,7 +79,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Joy gives small moments better lighting.',
     'A bright mood can make the ordinary feel special.',
   ],
-  loving: [
+  affectionate: [
     'Affection makes the world less drafty.',
     'Tenderness is strength in a softer jacket.',
     'Care is one of your more convincing talents.',
@@ -105,6 +105,23 @@ const BASE_FORTUNE_LIBRARY = {
     'Soft-hearted does not mean easy to knock over.',
     'Closeness can enlarge the ordinary on contact.',
     'A little tenderness can civilize an entire afternoon.',
+  ],
+  romantic: [
+    'Attraction has entered the room wearing better lighting.',
+    'Romance is often confidence with softer edges.',
+    'A charged glance can make the whole day misbehave.',
+    'Desire knows how to turn ordinary timing theatrical.',
+    'Flirtation is curiosity in a sharper jacket.',
+    'Some chemistry arrives before the explanation does.',
+    'Being a little smitten can improve the weather immediately.',
+    'The heart is currently writing in italics.',
+    'A romantic mood can make small details feel heavily cast.',
+    'Attraction is not always subtle, but it can still be elegant.',
+    'A little spark can reorganize an otherwise average afternoon.',
+    'You are allowed to enjoy being a little enchanted by someone.',
+    'Desire is often just attention refusing to sit still.',
+    'Some moods prefer candlelight and unnecessary eye contact.',
+    'Romance adds dramatic music where there was previously logistics.',
   ],
   tired: [
     'Today may call for less heroism and more water.',
@@ -694,7 +711,7 @@ const BASE_FORTUNE_LIBRARY = {
     'The point is not perfect focus. It is one true thing.',
     'Today may need less ambition and one visible next step.',
   ],
-  amazed: [
+  delighted: [
     'The world just got bigger without moving an inch.',
     'Wonder looks good on a nervous system.',
     'Some moments arrive wearing extra sky.',
@@ -722,7 +739,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Some moments make language feel slightly underfunded.',
     'This feeling invites wonder. Go along.',
   ],
-  surprised: [
+  blindsided: [
     'The day just swerved. A seatbelt and an open mind will help.',
     'Reality just changed the playlist. New track, same you.',
     'Today upgraded itself without asking. Explore the features.',
@@ -845,9 +862,10 @@ const { weird: LEGACY_WEIRD_FORTUNES, ...CORE_FORTUNE_LIBRARY } = BASE_FORTUNE_L
 const FORTUNE_LIBRARY = {
   ...CORE_FORTUNE_LIBRARY,
   proud: [...BASE_FORTUNE_LIBRARY.proud],
-  loving: [...BASE_FORTUNE_LIBRARY.loving],
+  affectionate: [...BASE_FORTUNE_LIBRARY.affectionate],
   grateful: [...BASE_FORTUNE_LIBRARY.grateful],
-  amazed: [...BASE_FORTUNE_LIBRARY.amazed],
+  delighted: [...BASE_FORTUNE_LIBRARY.delighted],
+  blindsided: [...BASE_FORTUNE_LIBRARY.blindsided],
   frustrated: [...BASE_FORTUNE_LIBRARY.frustrated],
   guilty: [...BASE_FORTUNE_LIBRARY.guilty],
   jealous: [...BASE_FORTUNE_LIBRARY.jealous],
@@ -859,6 +877,7 @@ const FORTUNE_LIBRARY = {
   stressed: [...BASE_FORTUNE_LIBRARY.stressed],
   neutral: [...BASE_FORTUNE_LIBRARY.neutral],
   numb: [...BASE_FORTUNE_LIBRARY.numb],
+  romantic: [...BASE_FORTUNE_LIBRARY.romantic],
   // Unknown intentionally keeps the mystery-style corpus for unmatched inputs.
   unknown: [...LEGACY_WEIRD_FORTUNES],
 };
@@ -868,10 +887,10 @@ const MOOD_BUCKET_PROFILES = {
   hopeful: { fortuneKey: 'hopeful', tone: 'encouraging', valence: 'positive', energy: 'medium' },
   proud: { fortuneKey: 'proud', tone: 'affirming', valence: 'positive', energy: 'medium' },
   calm: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
-  loving: { fortuneKey: 'loving', tone: 'warm', valence: 'positive', energy: 'medium' },
+  affectionate: { fortuneKey: 'affectionate', tone: 'warm', valence: 'positive', energy: 'medium' },
   grateful: { fortuneKey: 'grateful', tone: 'appreciative', valence: 'positive', energy: 'low' },
-  amazed: { fortuneKey: 'amazed', tone: 'expansive', valence: 'positive', energy: 'high' },
-  surprised: { fortuneKey: 'surprised', tone: 'alert', valence: 'neutral', energy: 'medium' },
+  delighted: { fortuneKey: 'delighted', tone: 'expansive', valence: 'positive', energy: 'high' },
+  blindsided: { fortuneKey: 'blindsided', tone: 'alert', valence: 'neutral', energy: 'medium' },
   confused: { fortuneKey: 'confused', tone: 'guiding', valence: 'neutral', energy: 'medium' },
   anxious: { fortuneKey: 'anxious', tone: 'reassuring', valence: 'negative', energy: 'high' },
   angry: { fortuneKey: 'angry', tone: 'grounding', valence: 'negative', energy: 'high' },
@@ -890,6 +909,7 @@ const MOOD_BUCKET_PROFILES = {
   stressed: { fortuneKey: 'stressed', tone: 'stabilizing', valence: 'negative', energy: 'high' },
   neutral: { fortuneKey: 'neutral', tone: 'plainspoken', valence: 'neutral', energy: 'low' },
   numb: { fortuneKey: 'numb', tone: 'soft', valence: 'negative', energy: 'low' },
+  romantic: { fortuneKey: 'romantic', tone: 'playful', valence: 'positive', energy: 'medium' },
   unknown: { fortuneKey: 'unknown', tone: 'open', valence: 'neutral', energy: 'medium' },
 };
 

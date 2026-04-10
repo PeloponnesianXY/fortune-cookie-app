@@ -4,7 +4,7 @@ Small Expo app that:
 
 - takes a one-word mood input
 - maps it to one detected emotion locally
-- routes that emotion into one of 27 runtime fortune buckets
+- routes that emotion into one of 28 runtime fortune buckets
 - reveals fortunes locally on device, with pacing that changes as the day goes on
 - includes a dev-only Mood Lab route on web for mood mapping inspection
 - includes a dev-only Screen Lab route on web for layout and state previews
@@ -111,6 +111,8 @@ Current Mood Lab behavior includes:
 
 - entering single words or short phrases and appending them to a local results table
 - showing the parsed input, handcrafted bucket, open fallback bucket, vector match, vector audit, final bucket, source, and selected fortune for each row
+  - `Vector Match` only shows a bucket when the embeddings layer actually wins the route
+  - `Vector Audit` shows the semantic debug comparison even when handcrafted or open fallback wins
 - keeping up to 100 recent rows in browser `localStorage`
 - using the same bucket mapping and fortune selection logic as the app, without persisting daily fortune state
 
@@ -231,15 +233,15 @@ eas submit --platform ios
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
 - Mood input processing is deterministic and local: safety checks, handcrafted exact lookup, generated open fallback exact lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, semantic fallback, then `unknown` fallback.
 - Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
-- The runtime fortune system now uses 27 mood buckets:
+- The runtime fortune system now uses 28 mood buckets:
+  - `affectionate`
   - `happy`
   - `hopeful`
   - `proud`
   - `calm`
-  - `loving`
   - `grateful`
-  - `amazed`
-  - `surprised`
+  - `delighted`
+  - `blindsided`
   - `confused`
   - `anxious`
   - `angry`
@@ -251,6 +253,7 @@ eas submit --platform ios
   - `jealous`
   - `awkward`
   - `neutral`
+  - `romantic`
   - `sick`
   - `tired`
   - `hungry`

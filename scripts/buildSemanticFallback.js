@@ -193,20 +193,23 @@ async function main() {
   const configModule = await import(pathToFileURL(
     path.join(rootDir, 'data', 'build', 'semanticFallbackConfig.js')
   ).href);
+  const seedModule = await import(pathToFileURL(
+    path.join(rootDir, 'data', 'build', 'semanticSeedVocabulary.js')
+  ).href);
 
   const { BUCKET_VOCAB } = snapshotModule;
   const {
     SEMANTIC_BUILD_SETTINGS,
     SEMANTIC_FALLBACK_SETTINGS,
-    SEMANTIC_PROTOTYPE_ANCHORS,
   } = configModule;
+  const { EMBEDDING_SEEDS } = seedModule;
 
   const dimensions = semanticEmbeddings.dimensions;
   const {
     prototypes: bucketPrototypes,
     bucketAnchors,
     metadata: bucketMetadata,
-  } = buildBucketPrototypes(BUCKET_VOCAB, dimensions, SEMANTIC_PROTOTYPE_ANCHORS);
+  } = buildBucketPrototypes(BUCKET_VOCAB, dimensions, EMBEDDING_SEEDS);
 
   const {
     inputVectors,
@@ -229,6 +232,7 @@ async function main() {
       source: 'wink-embeddings-sg-100d',
       embeddingVocabularySize: semanticEmbeddings.size,
       handcraftedBucketCount: Object.keys(BUCKET_VOCAB).filter((bucket) => bucket !== 'unknown').length,
+      semanticSeedBucketCount: Object.keys(EMBEDDING_SEEDS).filter((bucket) => bucket !== 'unknown').length,
       bucketMetadata,
       ...inputMetadata,
     },

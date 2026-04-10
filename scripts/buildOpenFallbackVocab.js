@@ -16,7 +16,7 @@ const MIN_ACCEPT_SCORE = 3.5;
 const MIN_MARGIN = 0.5;
 const MAX_BUCKET_EVIDENCE_GAPLESS = 1;
 const AUTO_ACCEPT_BUCKETS = new Set([
-  'amazed',
+  'delighted',
   'angry',
   'anxious',
   'awkward',
@@ -39,12 +39,12 @@ const AUTO_ACCEPT_BUCKETS = new Set([
   'sad',
   'sick',
   'stressed',
-  'surprised',
+  'blindsided',
   'tired',
   'wired',
 ]);
 const WORDNET_ONLY_OK_BUCKETS = new Set([
-  'amazed',
+  'delighted',
   'anxious',
   'awkward',
   'calm',
@@ -61,14 +61,14 @@ const WORDNET_ONLY_OK_BUCKETS = new Set([
   'neutral',
   'numb',
   'stressed',
-  'surprised',
+  'blindsided',
   'tired',
   'wired',
 ]);
 const PURE_EMOTION_KEYS = ['anticipation', 'joy', 'trust', 'fear', 'sadness', 'disgust', 'anger', 'surprise'];
 
 const BUCKET_COMPATIBILITY = {
-  amazed: {
+  delighted: {
     pure: ['surprise', 'joy'],
     memolonEmotions: ['surprise', 'joy'],
     memolon: { valenceMin: 0.52, arousalMin: 0.5 },
@@ -180,7 +180,7 @@ const BUCKET_COMPATIBILITY = {
     memolonEmotions: ['fear', 'anger'],
     memolon: { arousalMin: 0.55, valenceMax: 0.5 },
   },
-  surprised: {
+  blindsided: {
     pure: ['surprise'],
     memolonEmotions: ['surprise'],
     memolon: { arousalMin: 0.5 },

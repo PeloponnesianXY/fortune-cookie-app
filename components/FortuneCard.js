@@ -60,7 +60,8 @@ const MIN_CUSTOM_NOTICE_GAP = 10;
 const MAX_CUSTOM_NOTICE_GAP = 18;
 const SE_CUSTOM_NOTICE_LIFT = 30;
 
-const MOOD_OPTIONS = [...MOOD_BUCKET_KEYS]
+const MOOD_OPTIONS = MOOD_BUCKET_KEYS
+  .filter((key) => key !== 'unknown')
   .map((key) => ({
     key,
     label: formatMoodBucketLabel(key),

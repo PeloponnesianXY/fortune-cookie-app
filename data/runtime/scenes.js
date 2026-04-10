@@ -138,14 +138,14 @@ const SCENE_LIBRARY = {
 };
 
 const MOOD_SCENE_KEYS = {
+  affectionate: 'sunriseBloom',
   happy: 'sunriseBloom',
   hopeful: 'sunriseBloom',
   proud: 'sunriseBloom',
   calm: 'sunriseBloom',
-  loving: 'sunriseBloom',
   grateful: 'sunriseBloom',
-  amazed: 'prismDrift',
-  surprised: 'prismDrift',
+  delighted: 'prismDrift',
+  blindsided: 'prismDrift',
   confused: 'opalMist',
   anxious: 'silverHush',
   angry: 'emberMesa',
@@ -164,6 +164,7 @@ const MOOD_SCENE_KEYS = {
   stressed: 'neonPulse',
   neutral: 'opalMist',
   numb: 'silverHush',
+  romantic: 'sunriseBloom',
   unknown: 'prismDrift',
 };
 
