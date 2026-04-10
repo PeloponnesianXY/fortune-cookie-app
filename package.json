@@ -8,6 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "fortune-lab:server": "node scripts/fortuneLabServer.js",
     "bootstrap:open-lexicons": "node scripts/bootstrapOpenLexicons.js",
     "build:open-fallback": "node scripts/buildOpenFallbackVocab.js",
     "build:semantic-fallback": "node scripts/buildSemanticFallback.js",

@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import FortuneHomeScreen from './components/FortuneHomeScreen';
+import FortuneLab from './components/FortuneLab';
 import MoodLab from './components/MoodLab';
 import ScreenLab from './components/ScreenLab';
 
@@ -29,6 +30,11 @@ export default function App() {
   // Dev-only browser entry point for mood mapping inspection: open `/mood-lab` locally on Expo web.
   if (matchesDevRoute('mood-lab')) {
     return <MoodLab />;
+  }
+
+  // Dev-only browser entry point for canonical fortune editing: open `/fortune-lab` locally on Expo web.
+  if (matchesDevRoute('fortune-lab')) {
+    return <FortuneLab />;
   }
 
   return <FortuneHomeScreen />;
