@@ -234,7 +234,7 @@ eas submit --platform ios
 - Mood input processing is deterministic and local: safety checks, handcrafted exact lookup, generated open fallback exact lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, semantic fallback, then `unknown` fallback.
 - Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
 - The runtime fortune system now uses 28 mood buckets:
-  - `affectionate`
+  - `caring`
   - `happy`
   - `hopeful`
   - `proud`

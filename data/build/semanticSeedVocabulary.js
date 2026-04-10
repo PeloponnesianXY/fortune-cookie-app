@@ -1,5 +1,5 @@
 const EMBEDDING_SEEDS = {
-  affectionate: [
+  caring: [
     'affectionate', 'caring', 'compassionate', 'tender', 'nurturing', 'devoted',
   ],
   wowed: [
@@ -16,6 +16,9 @@ const EMBEDDING_SEEDS = {
   ],
   calm: [
     'calm', 'peaceful', 'serene', 'settled', 'grounded', 'relaxed',
+  ],
+  confident: [
+    'confident', 'assured', 'capable', 'competent', 'self assured',
   ],
   confused: [
     'confused', 'perplexed', 'puzzled', 'baffled', 'bewildered', 'disoriented',

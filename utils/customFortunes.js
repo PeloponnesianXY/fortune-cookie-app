@@ -27,9 +27,18 @@ function normalizeStoredCustomFortunes(value) {
   }
 
   if (Array.isArray(value.loving)) {
-    base.affectionate = value.loving
+    base.caring = value.loving
       .filter((item) => typeof item === 'string' && item.trim())
       .map((item) => item.trim());
+  }
+
+  if (Array.isArray(value.affectionate)) {
+    base.caring = [
+      ...base.caring,
+      ...value.affectionate
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim()),
+    ];
   }
 
   if (Array.isArray(value.romantic)) {
@@ -79,7 +88,7 @@ function normalizeStoredCustomFortunes(value) {
       ? value[key].filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
       : [];
 
-    base[key] = key === 'disgusted' || key === 'affectionate' || key === 'romantic'
+    base[key] = key === 'disgusted' || key === 'caring' || key === 'romantic'
       ? [...new Set([...base[key], ...normalizedItems])]
       : normalizedItems;
   }
@@ -96,8 +105,8 @@ export function formatMoodBucketLabel(moodKey) {
     return 'Disgusted';
   }
 
-  if (moodKey === 'affectionate') {
-    return 'Affectionate';
+  if (moodKey === 'caring') {
+    return 'Caring';
   }
 
   if (moodKey === 'romantic') {

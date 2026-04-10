@@ -27,10 +27,12 @@ const SYNONYM_SNAPSHOT_META = {
 // Canonical handcrafted bucket vocabulary for mood routing.
 // Each bucket owns one flat accepted-input list.
 const BUCKET_VOCAB = {
-  "affectionate": [
+  "caring": [
     "affectionate",
     "loving",
     "caring",
+    "friendly",
+    "gregarious",
     "compassionate",
     "tender",
     "sentimental",
@@ -85,6 +87,8 @@ const BUCKET_VOCAB = {
   ],
   "angry": [
     "angry",
+    "betrayed",
+    "slighted",
     "enraged",
     "hateful",
     "hostile",
@@ -127,6 +131,7 @@ const BUCKET_VOCAB = {
     "fear",
     "fearful",
     "scared",
+    "surrounded",
     "frightened",
     "terrified",
     "panicked",
@@ -169,6 +174,7 @@ const BUCKET_VOCAB = {
     "self consciousness",
     "sheepish",
     "bashful",
+    "silly",
     "shy",
     "timid",
     "clumsy",
@@ -226,6 +232,9 @@ const BUCKET_VOCAB = {
     "rested",
     "zen"
   ],
+  "confident": [
+    "confident"
+  ],
   "confused": [
     "confused",
     "perplexed",
@@ -234,6 +243,7 @@ const BUCKET_VOCAB = {
     "unclear",
     "mixed",
     "ambivalent",
+    "ambiguous",
     "uncertain",
     "unbalanced",
     "imbalanced",
@@ -341,7 +351,6 @@ const BUCKET_VOCAB = {
     "silenced",
     "trapped",
     "behind",
-    "rushed",
     "hassled",
     "peeved",
     "miffed"
@@ -399,7 +408,6 @@ const BUCKET_VOCAB = {
     "pleased",
     "cheerful",
     "playful",
-    "silly",
     "amused",
     "excited",
     "enthusiastic",
@@ -697,6 +705,7 @@ const BUCKET_VOCAB = {
     "up to here",
     "too much on my plate",
     "harried",
+    "rushed",
     "scrambling",
     "pressured",
     "flustered",
@@ -828,7 +837,7 @@ const BUCKET_VOCAB = {
 // Handcrafted BUCKET_VOCAB remains the source of truth and always routes first.
 const OPEN_FALLBACK_META = {
   "version": 1,
-  "generatedAt": "2026-04-10T08:12:19.972Z",
+  "generatedAt": "2026-04-10T14:44:04.369Z",
   "sourceFilesUsed": {
     "wordNet": true,
     "pureEmotionLexicon": true,
@@ -840,19 +849,20 @@ const OPEN_FALLBACK_META = {
     "note": "WordNet proposes candidates; Pure Emotion Lexicon and optional MEmoLon add only conservative fit signals."
   },
   "countsByBucket": {
-    "affectionate": 0,
+    "caring": 20,
     "wowed": 8,
     "angry": 11,
-    "anxious": 34,
-    "embarrassed": 22,
+    "anxious": 35,
+    "embarrassed": 24,
     "calm": 50,
-    "confused": 53,
+    "confident": 0,
+    "confused": 54,
     "distracted": 38,
     "disgusted": 24,
     "frustrated": 38,
     "grateful": 4,
     "guilty": 9,
-    "happy": 26,
+    "happy": 22,
     "hopeful": 14,
     "proud": 8,
     "hungry": 5,
@@ -861,7 +871,7 @@ const OPEN_FALLBACK_META = {
     "romantic": 0,
     "numb": 28,
     "neutral": 22,
-    "sad": 42,
+    "sad": 41,
     "stressed": 8,
     "shaken": 7,
     "tired": 19,
@@ -869,11 +879,32 @@ const OPEN_FALLBACK_META = {
     "unknown": 0,
     "wired": 1
   },
-  "rejectedCandidateCount": 542
+  "rejectedCandidateCount": 528
 };
 
 const OPEN_FALLBACK_VOCAB = {
-  "affectionate": [],
+  "caring": [
+    "ardent",
+    "bathetic",
+    "charitable",
+    "drippy",
+    "hokey",
+    "kindly",
+    "kitschy",
+    "lovesome",
+    "maudlin",
+    "mawkish",
+    "mushy",
+    "quick",
+    "schmaltzy",
+    "schmalzy",
+    "sensitive",
+    "slushy",
+    "soppy",
+    "soupy",
+    "strong",
+    "treasured"
+  ],
   "wowed": [
     "astonied",
     "awestricken",
@@ -905,6 +936,7 @@ const OPEN_FALLBACK_VOCAB = {
     "concern",
     "dotty",
     "edgy",
+    "encircled",
     "fearsome",
     "flighty",
     "fright",
@@ -949,7 +981,9 @@ const OPEN_FALLBACK_VOCAB = {
     "embarrassing",
     "inapt",
     "incompetent",
+    "ridiculous",
     "sheeplike",
+    "slaphappy",
     "sticky",
     "subscript",
     "substandard",
@@ -1009,6 +1043,7 @@ const OPEN_FALLBACK_VOCAB = {
     "unshakable",
     "unwavering"
   ],
+  "confident": [],
   "confused": [
     "addled",
     "askew",
@@ -1021,6 +1056,7 @@ const OPEN_FALLBACK_VOCAB = {
     "disconcerted",
     "dreamlike",
     "eldritch",
+    "equivocal",
     "foreign",
     "funny",
     "helpless",
@@ -1198,7 +1234,6 @@ const OPEN_FALLBACK_VOCAB = {
     "emotional",
     "enraptured",
     "entertained",
-    "featherbrained",
     "festive",
     "gay",
     "glow",
@@ -1210,9 +1245,6 @@ const OPEN_FALLBACK_VOCAB = {
     "rattling",
     "rhapsodic",
     "spanking",
-    "wacky",
-    "whacky",
-    "zany",
     "zippy"
   ],
   "hopeful": [
@@ -1377,7 +1409,6 @@ const OPEN_FALLBACK_VOCAB = {
     "imbecile",
     "measly",
     "morose",
-    "pathetic",
     "pitiful",
     "sombre",
     "stark",

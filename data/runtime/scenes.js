@@ -138,10 +138,11 @@ const SCENE_LIBRARY = {
 };
 
 const MOOD_SCENE_KEYS = {
-  affectionate: 'sunriseBloom',
+  caring: 'sunriseBloom',
   happy: 'sunriseBloom',
   hopeful: 'sunriseBloom',
   proud: 'sunriseBloom',
+  confident: 'sunriseBloom',
   calm: 'sunriseBloom',
   grateful: 'sunriseBloom',
   wowed: 'prismDrift',

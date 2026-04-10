@@ -32,7 +32,7 @@ const AUTO_ACCEPT_BUCKETS = new Set([
   'hungry',
   'jealous',
   'lonely',
-  'loving',
+  'caring',
   'neutral',
   'numb',
   'proud',
@@ -145,7 +145,7 @@ const BUCKET_COMPATIBILITY = {
     memolonEmotions: ['sadness'],
     memolon: { valenceMax: 0.5 },
   },
-  loving: {
+  caring: {
     pure: ['trust', 'joy'],
     memolonEmotions: ['joy'],
     memolon: { valenceMin: 0.58 },

@@ -701,7 +701,7 @@ function buildFortunePool(analysis) {
   }
 
   const profile = MOOD_BUCKET_PROFILES[primaryEmotion] || MOOD_BUCKET_PROFILES.unknown;
-  if (profile.fortuneKey && FORTUNE_LIBRARY[profile.fortuneKey]) {
+  if (profile.fortuneKey && FORTUNE_LIBRARY[profile.fortuneKey]?.length) {
     return FORTUNE_LIBRARY[profile.fortuneKey];
   }
 

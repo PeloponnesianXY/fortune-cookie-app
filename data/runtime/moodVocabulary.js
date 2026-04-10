@@ -6,12 +6,13 @@ import {
 } from './moodBucketVocabulary.js';
 
 const MOOD_BUCKET_KEYS = [
-  'affectionate',
+  'caring',
   'wowed',
   'angry',
   'anxious',
   'embarrassed',
   'calm',
+  'confident',
   'confused',
   'distracted',
   'disgusted',
@@ -39,7 +40,8 @@ const MOOD_BUCKET_KEYS = [
 const LEGACY_BUCKET_NORMALIZATION = {
   averse: 'disgusted',
   weird: 'confused',
-  loving: 'affectionate',
+  loving: 'caring',
+  affectionate: 'caring',
   surprised: 'shaken',
   blindsided: 'shaken',
   amazed: 'wowed',
@@ -48,7 +50,6 @@ const LEGACY_BUCKET_NORMALIZATION = {
   embarassed: 'embarrassed',
   overwhelmed: 'stressed',
   focused: 'hopeful',
-  confident: 'hopeful',
   mysterious: 'confused',
 };
 

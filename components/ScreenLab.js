@@ -155,7 +155,7 @@ export default function ScreenLab() {
   const [isStreakBarExpanded, setIsStreakBarExpanded] = useState(false);
   const [isKeyboardSimulated, setIsKeyboardSimulated] = useState(false);
   const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(false);
-  const [isCookieOpened, setIsCookieOpened] = useState(true);
+  const [isCookieOpened, setIsCookieOpened] = useState(false);
   const [isLockWarningVisible, setIsLockWarningVisible] = useState(false);
 
   const previewProps = useMemo(() => ({
