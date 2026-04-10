@@ -240,8 +240,8 @@ eas submit --platform ios
   - `proud`
   - `calm`
   - `grateful`
-  - `delighted`
-  - `blindsided`
+  - `wowed`
+  - `shaken`
   - `confused`
   - `anxious`
   - `angry`
@@ -251,7 +251,7 @@ eas submit --platform ios
   - `lonely`
   - `guilty`
   - `jealous`
-  - `awkward`
+  - `embarrassed`
   - `neutral`
   - `romantic`
   - `sick`

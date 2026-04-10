@@ -39,13 +39,37 @@ function normalizeStoredCustomFortunes(value) {
   }
 
   if (Array.isArray(value.amazed)) {
-    base.delighted = value.amazed
+    base.wowed = value.amazed
       .filter((item) => typeof item === 'string' && item.trim())
       .map((item) => item.trim());
   }
 
+  if (Array.isArray(value.delighted)) {
+    base.wowed = [
+      ...base.wowed,
+      ...value.delighted
+        .filter((item) => typeof item === 'string' && item.trim())
+        .map((item) => item.trim()),
+    ];
+  }
+
   if (Array.isArray(value.surprised)) {
-    base.blindsided = value.surprised
+    base.shaken = value.surprised
+      .filter((item) => typeof item === 'string' && item.trim())
+      .map((item) => item.trim());
+  }
+
+  if (Array.isArray(value.blindsided)) {
+    base.shaken = [
+      ...base.shaken,
+      ...value.blindsided
+        .filter((item) => typeof item === 'string' && item.trim())
+        .map((item) => item.trim()),
+    ];
+  }
+
+  if (Array.isArray(value.awkward)) {
+    base.embarrassed = value.awkward
       .filter((item) => typeof item === 'string' && item.trim())
       .map((item) => item.trim());
   }
@@ -80,12 +104,16 @@ export function formatMoodBucketLabel(moodKey) {
     return 'Romantic';
   }
 
-  if (moodKey === 'blindsided') {
-    return 'Blindsided';
+  if (moodKey === 'embarrassed') {
+    return 'Embarrassed';
   }
 
-  if (moodKey === 'delighted') {
-    return 'Delighted';
+  if (moodKey === 'shaken') {
+    return 'Shaken';
+  }
+
+  if (moodKey === 'wowed') {
+    return 'Wowed';
   }
 
   return moodKey.charAt(0).toUpperCase() + moodKey.slice(1);

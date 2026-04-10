@@ -56,7 +56,7 @@ const BUCKET_VOCAB = {
     "openhearted",
     "kind"
   ],
-  "delighted": [
+  "wowed": [
     "delighted",
     "pleasantly surprised",
     "wowed",
@@ -157,7 +157,7 @@ const BUCKET_VOCAB = {
     "unnerved",
     "panicky"
   ],
-  "awkward": [
+  "embarrassed": [
     "awkward",
     "cringe",
     "uncomfortable",
@@ -704,7 +704,7 @@ const BUCKET_VOCAB = {
     "chaotic",
     "spiraling"
   ],
-  "blindsided": [
+  "shaken": [
     "surprised",
     "stunned",
     "shocked",
@@ -712,6 +712,7 @@ const BUCKET_VOCAB = {
     "alarmed",
     "jolted",
     "blindsided",
+    "shaken",
     "plot twist",
     "unexpected",
     "caught off guard",
@@ -827,7 +828,7 @@ const BUCKET_VOCAB = {
 // Handcrafted BUCKET_VOCAB remains the source of truth and always routes first.
 const OPEN_FALLBACK_META = {
   "version": 1,
-  "generatedAt": "2026-04-09T21:44:22.463Z",
+  "generatedAt": "2026-04-10T08:12:19.972Z",
   "sourceFilesUsed": {
     "wordNet": true,
     "pureEmotionLexicon": true,
@@ -840,10 +841,10 @@ const OPEN_FALLBACK_META = {
   },
   "countsByBucket": {
     "affectionate": 0,
-    "amazed": 8,
+    "wowed": 8,
     "angry": 11,
     "anxious": 34,
-    "awkward": 22,
+    "embarrassed": 22,
     "calm": 50,
     "confused": 53,
     "distracted": 38,
@@ -851,7 +852,7 @@ const OPEN_FALLBACK_META = {
     "frustrated": 38,
     "grateful": 4,
     "guilty": 9,
-    "happy": 30,
+    "happy": 26,
     "hopeful": 14,
     "proud": 8,
     "hungry": 5,
@@ -862,18 +863,18 @@ const OPEN_FALLBACK_META = {
     "neutral": 22,
     "sad": 42,
     "stressed": 8,
-    "blindsided": 7,
+    "shaken": 7,
     "tired": 19,
     "sick": 8,
     "unknown": 0,
     "wired": 1
   },
-  "rejectedCandidateCount": 538
+  "rejectedCandidateCount": 542
 };
 
 const OPEN_FALLBACK_VOCAB = {
   "affectionate": [],
-  "amazed": [
+  "wowed": [
     "astonied",
     "awestricken",
     "fascinated",
@@ -932,7 +933,7 @@ const OPEN_FALLBACK_VOCAB = {
     "whiney",
     "whiny"
   ],
-  "awkward": [
+  "embarrassed": [
     "abashed",
     "artificial",
     "belittled",
@@ -1189,18 +1190,14 @@ const OPEN_FALLBACK_VOCAB = {
   "happy": [
     "alert",
     "beaming",
-    "beguiled",
     "blithe",
     "brilliant",
     "brisk",
     "bubbling",
-    "captivated",
-    "charmed",
     "dandy",
     "emotional",
     "enraptured",
     "entertained",
-    "entranced",
     "featherbrained",
     "festive",
     "gay",
@@ -1401,7 +1398,7 @@ const OPEN_FALLBACK_VOCAB = {
     "spiral",
     "spiralling"
   ],
-  "blindsided": [
+  "shaken": [
     "dumbstricken",
     "dumbstruck",
     "dumfounded",

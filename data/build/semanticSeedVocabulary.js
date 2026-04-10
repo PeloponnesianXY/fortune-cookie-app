@@ -2,7 +2,7 @@ const EMBEDDING_SEEDS = {
   affectionate: [
     'affectionate', 'caring', 'compassionate', 'tender', 'nurturing', 'devoted',
   ],
-  delighted: [
+  wowed: [
     'delighted', 'wowed', 'impressed', 'astonished', 'amazed', 'awestruck',
   ],
   angry: [
@@ -11,7 +11,7 @@ const EMBEDDING_SEEDS = {
   anxious: [
     'anxious', 'nervous', 'worried', 'uneasy', 'fearful', 'panicked',
   ],
-  awkward: [
+  embarrassed: [
     'awkward', 'embarrassed', 'self conscious', 'sheepish', 'bashful',
   ],
   calm: [
@@ -71,8 +71,8 @@ const EMBEDDING_SEEDS = {
   stressed: [
     'stressed', 'overwhelmed', 'overloaded', 'pressured', 'strained', 'burned out',
   ],
-  blindsided: [
-    'surprised', 'stunned', 'shocked', 'startled', 'blindsided', 'taken aback',
+  shaken: [
+    'surprised', 'stunned', 'shocked', 'startled', 'shaken', 'taken aback',
   ],
   tired: [
     'tired', 'exhausted', 'drained', 'weary', 'fatigued', 'sleepy', 'spent',

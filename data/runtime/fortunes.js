@@ -657,7 +657,7 @@ const BASE_FORTUNE_LIBRARY = {
     'The meaning may be late, not absent.',
     'When nothing makes sense, try following what makes less nonsense.',
   ],
-  awkward: [
+  embarrassed: [
     'Being a person in public is advanced material.',
     'Cringe is often self-awareness with sharper elbows.',
     'Awkward is not fatal. Just badly timed humanity.',
@@ -711,7 +711,7 @@ const BASE_FORTUNE_LIBRARY = {
     'The point is not perfect focus. It is one true thing.',
     'Today may need less ambition and one visible next step.',
   ],
-  delighted: [
+  wowed: [
     'The world just got bigger without moving an inch.',
     'Wonder looks good on a nervous system.',
     'Some moments arrive wearing extra sky.',
@@ -739,7 +739,7 @@ const BASE_FORTUNE_LIBRARY = {
     'Some moments make language feel slightly underfunded.',
     'This feeling invites wonder. Go along.',
   ],
-  blindsided: [
+  shaken: [
     'The day just swerved. A seatbelt and an open mind will help.',
     'Reality just changed the playlist. New track, same you.',
     'Today upgraded itself without asking. Explore the features.',
@@ -864,12 +864,12 @@ const FORTUNE_LIBRARY = {
   proud: [...BASE_FORTUNE_LIBRARY.proud],
   affectionate: [...BASE_FORTUNE_LIBRARY.affectionate],
   grateful: [...BASE_FORTUNE_LIBRARY.grateful],
-  delighted: [...BASE_FORTUNE_LIBRARY.delighted],
-  blindsided: [...BASE_FORTUNE_LIBRARY.blindsided],
+  wowed: [...BASE_FORTUNE_LIBRARY.wowed],
+  shaken: [...BASE_FORTUNE_LIBRARY.shaken],
   frustrated: [...BASE_FORTUNE_LIBRARY.frustrated],
   guilty: [...BASE_FORTUNE_LIBRARY.guilty],
   jealous: [...BASE_FORTUNE_LIBRARY.jealous],
-  awkward: [...BASE_FORTUNE_LIBRARY.awkward],
+  embarrassed: [...BASE_FORTUNE_LIBRARY.embarrassed],
   hungry: [...BASE_FORTUNE_LIBRARY.hungry],
   sick: [...BASE_FORTUNE_LIBRARY.sick],
   wired: [...BASE_FORTUNE_LIBRARY.wired],
@@ -889,8 +889,8 @@ const MOOD_BUCKET_PROFILES = {
   calm: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
   affectionate: { fortuneKey: 'affectionate', tone: 'warm', valence: 'positive', energy: 'medium' },
   grateful: { fortuneKey: 'grateful', tone: 'appreciative', valence: 'positive', energy: 'low' },
-  delighted: { fortuneKey: 'delighted', tone: 'expansive', valence: 'positive', energy: 'high' },
-  blindsided: { fortuneKey: 'blindsided', tone: 'alert', valence: 'neutral', energy: 'medium' },
+  wowed: { fortuneKey: 'wowed', tone: 'expansive', valence: 'positive', energy: 'high' },
+  shaken: { fortuneKey: 'shaken', tone: 'alert', valence: 'neutral', energy: 'medium' },
   confused: { fortuneKey: 'confused', tone: 'guiding', valence: 'neutral', energy: 'medium' },
   anxious: { fortuneKey: 'anxious', tone: 'reassuring', valence: 'negative', energy: 'high' },
   angry: { fortuneKey: 'angry', tone: 'grounding', valence: 'negative', energy: 'high' },
@@ -900,7 +900,7 @@ const MOOD_BUCKET_PROFILES = {
   lonely: { fortuneKey: 'lonely', tone: 'companionable', valence: 'negative', energy: 'low' },
   guilty: { fortuneKey: 'guilty', tone: 'gentle', valence: 'negative', energy: 'low' },
   jealous: { fortuneKey: 'jealous', tone: 'steadying', valence: 'negative', energy: 'medium' },
-  awkward: { fortuneKey: 'awkward', tone: 'light', valence: 'neutral', energy: 'medium' },
+  embarrassed: { fortuneKey: 'embarrassed', tone: 'light', valence: 'neutral', energy: 'medium' },
   tired: { fortuneKey: 'tired', tone: 'restorative', valence: 'negative', energy: 'low' },
   sick: { fortuneKey: 'sick', tone: 'restorative', valence: 'negative', energy: 'low' },
   hungry: { fortuneKey: 'hungry', tone: 'restorative', valence: 'negative', energy: 'medium' },
