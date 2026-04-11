@@ -15,13 +15,59 @@ import { getMoodLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 const DEFAULT_INPUT = '';
 const MAX_ROWS = 100;
 const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:mood-lab:entries';
-const MOOD_PILLS = [...MOOD_BUCKET_KEYS]
-  .filter((mood) => mood !== 'unknown')
-  .sort((left, right) => left.localeCompare(right));
+const CREATE_YOUR_OWN_ORDER = [
+  'caring',
+  'calm',
+  'confident',
+  'engaged',
+  'grateful',
+  'happy',
+  'hopeful',
+  'proud',
+  'romantic',
+  'wowed',
+  'confused',
+  'emotional',
+  'neutral',
+  'angry',
+  'anxious',
+  'distracted',
+  'embarrassed',
+  'frustrated',
+  'guilty',
+  'jealous',
+  'lonely',
+  'numb',
+  'sad',
+  'shaken',
+  'sick',
+  'stressed',
+  'tired',
+  'wired',
+];
+const ORDERED_BUCKETS = CREATE_YOUR_OWN_ORDER.filter((mood) => MOOD_BUCKET_KEYS.includes(mood));
+const STAGE_MARKS = [
+  { key: 'handcraftedMood', label: 'H' },
+  { key: 'openFallbackMood', label: 'O' },
+  { key: 'embeddingMood', label: 'V' },
+  { key: 'mood', label: 'F' },
+];
 
 function formatMoodLabel(value) {
   if (!value) {
     return 'Unknown';
+  }
+
+  if (value === 'caring') {
+    return 'Affectionate';
+  }
+
+  if (value === 'guilty') {
+    return 'Remorseful';
+  }
+
+  if (value === 'distracted') {
+    return 'Unbalanced';
   }
 
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -90,6 +136,13 @@ function getSemanticWinnerBucket(source, semantic) {
   }
 
   return getSemanticPreviewBucket(semantic);
+}
+
+function getBucketStageMarks(row, bucket) {
+  return STAGE_MARKS
+    .filter(({ key }) => row[key] === bucket)
+    .map(({ label }) => label)
+    .join('');
 }
 
 function loadStoredEntries() {
@@ -239,9 +292,9 @@ export default function MoodLab() {
           <View style={styles.headerTopRow}>
             <Text style={styles.eyebrow}>Mood Lab</Text>
             <View style={styles.moodPillRow}>
-              {MOOD_PILLS.map((mood) => (
+              {ORDERED_BUCKETS.map((mood) => (
                 <View key={mood} style={styles.moodPill}>
-                  <Text style={styles.moodPillText}>{mood}</Text>
+                  <Text style={styles.moodPillText}>{formatMoodLabel(mood)}</Text>
                 </View>
               ))}
             </View>
@@ -295,55 +348,59 @@ export default function MoodLab() {
             {isLoading ? <ActivityIndicator color="#8a5a31" size="small" /> : null}
           </View>
 
-          <View style={styles.tableHeader}>
-            <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
-            <Text style={[styles.headerCell, styles.inputColumn]}>Parsed</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Handcrafted</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Open Fallback</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Vector Match</Text>
-            <Text style={[styles.headerCell, styles.semanticColumn]}>Vector Audit</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
-            <Text style={[styles.headerCell, styles.sourceColumn]}>Source</Text>
-            <Text style={[styles.headerCell, styles.fortuneColumn]}>Fortune</Text>
-          </View>
-
-          <ScrollView
-            nestedScrollEnabled
-            showsVerticalScrollIndicator
-            style={styles.resultsScroller}
-            contentContainerStyle={styles.resultsScrollerContent}
-          >
-            {rows.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>No rows yet</Text>
-                <Text style={styles.emptyText}>Enter words above to preview the mapping.</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator style={styles.horizontalScroller}>
+            <View style={styles.tableInner}>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
+                <Text style={[styles.headerCell, styles.inputColumn]}>Parsed</Text>
+                {ORDERED_BUCKETS.map((mood) => (
+                  <Text key={mood} style={[styles.headerCell, styles.bucketColumn]}>
+                    {formatMoodLabel(mood)}
+                  </Text>
+                ))}
+                <Text style={[styles.headerCell, styles.semanticColumn]}>Vector Audit</Text>
+                <Text style={[styles.headerCell, styles.sourceColumn]}>Source</Text>
+                <Text style={[styles.headerCell, styles.fortuneColumn]}>Fortune</Text>
               </View>
-            ) : (
-              rows.map((row) => (
-                <View key={row.id} style={styles.resultRow}>
-                  <Text style={[styles.bodyCell, styles.inputColumn, styles.inputValue]}>{row.input}</Text>
-                  <Text style={[styles.bodyCell, styles.inputColumn]}>{row.parsedInput}</Text>
-                  <Text style={[styles.bodyCell, styles.moodColumn]}>
-                    {formatMoodLabel(row.handcraftedMood)}
-                  </Text>
-                  <Text style={[styles.bodyCell, styles.moodColumn]}>
-                    {formatMoodLabel(row.openFallbackMood)}
-                  </Text>
-                  <Text style={[styles.bodyCell, styles.moodColumn]}>
-                    {formatMoodLabel(row.embeddingMood)}
-                  </Text>
-                  <Text style={[styles.bodyCell, styles.semanticColumn]}>
-                    {formatSemanticDebug(row.semantic) || '-'}
-                  </Text>
-                  <Text style={[styles.bodyCell, styles.moodColumn, styles.moodValue]}>
-                    {formatMoodLabel(row.mood)}
-                    {row.moderation !== 'clean' ? ' blocked' : ''}
-                  </Text>
-                  <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
-                  <Text style={[styles.bodyCell, styles.fortuneColumn]}>{row.fortuneText}</Text>
-                </View>
-              ))
-            )}
+
+              <ScrollView
+                nestedScrollEnabled
+                showsVerticalScrollIndicator
+                style={styles.resultsScroller}
+                contentContainerStyle={styles.resultsScrollerContent}
+              >
+                {rows.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyTitle}>No rows yet</Text>
+                    <Text style={styles.emptyText}>Enter words above to preview the mapping.</Text>
+                  </View>
+                ) : (
+                  rows.map((row) => (
+                    <View key={row.id} style={styles.resultRow}>
+                      <Text style={[styles.bodyCell, styles.inputColumn, styles.inputValue]}>{row.input}</Text>
+                      <Text style={[styles.bodyCell, styles.inputColumn]}>{row.parsedInput}</Text>
+                      {ORDERED_BUCKETS.map((bucket) => (
+                        <Text
+                          key={`${row.id}:${bucket}`}
+                          style={[
+                            styles.bodyCell,
+                            styles.bucketColumn,
+                            getBucketStageMarks(row, bucket) ? styles.bucketMatchCell : null,
+                          ]}
+                        >
+                          {getBucketStageMarks(row, bucket) || '-'}
+                        </Text>
+                      ))}
+                      <Text style={[styles.bodyCell, styles.semanticColumn]}>
+                        {formatSemanticDebug(row.semantic) || '-'}
+                      </Text>
+                      <Text style={[styles.bodyCell, styles.sourceColumn]}>{row.source}</Text>
+                      <Text style={[styles.bodyCell, styles.fortuneColumn]}>{row.fortuneText}</Text>
+                    </View>
+                  ))
+                )}
+              </ScrollView>
+            </View>
           </ScrollView>
         </View>
       </View>
@@ -469,6 +526,12 @@ const styles = StyleSheet.create({
     gap: 10,
     minHeight: 0,
   },
+  horizontalScroller: {
+    width: '100%',
+  },
+  tableInner: {
+    minWidth: 2800,
+  },
   resultsScroller: {
     maxHeight: 920,
   },
@@ -516,6 +579,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(122, 89, 58, 0.12)',
+    alignItems: 'center',
   },
   headerCell: {
     fontSize: 11,
@@ -538,7 +602,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff8f1',
     borderWidth: 1,
     borderColor: 'rgba(122, 89, 58, 0.08)',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   bodyCell: {
     fontSize: 13,
@@ -550,6 +614,9 @@ const styles = StyleSheet.create({
   },
   moodColumn: {
     width: 112,
+  },
+  bucketColumn: {
+    width: 82,
   },
   sourceColumn: {
     width: 144,
@@ -564,6 +631,10 @@ const styles = StyleSheet.create({
   moodValue: {
     textTransform: 'capitalize',
     fontWeight: '700',
+    color: '#6d4625',
+  },
+  bucketMatchCell: {
+    fontWeight: '800',
     color: '#6d4625',
   },
   inputValue: {

@@ -14,6 +14,7 @@ import {
 const API_PORT = 4312;
 const DEFAULT_BUCKET_ORDER = [
   'caring',
+  'engaged',
   'wowed',
   'angry',
   'anxious',
@@ -23,6 +24,7 @@ const DEFAULT_BUCKET_ORDER = [
   'confused',
   'distracted',
   'disgusted',
+  'emotional',
   'frustrated',
   'grateful',
   'guilty',
@@ -40,13 +42,13 @@ const DEFAULT_BUCKET_ORDER = [
   'stressed',
   'shaken',
   'tired',
-  'unknown',
   'wired',
 ];
 const POSITIVE_BUCKETS = [
-  'calm',
   'caring',
+  'calm',
   'confident',
+  'engaged',
   'grateful',
   'happy',
   'hopeful',
@@ -56,16 +58,14 @@ const POSITIVE_BUCKETS = [
 ];
 const NEUTRAL_BUCKETS = [
   'confused',
-  'distracted',
-  'embarrassed',
+  'emotional',
   'neutral',
-  'shaken',
-  'unknown',
-  'wired',
 ];
 const NEGATIVE_BUCKETS = [
   'angry',
   'anxious',
+  'distracted',
+  'embarrassed',
   'disgusted',
   'frustrated',
   'guilty',
@@ -74,12 +74,23 @@ const NEGATIVE_BUCKETS = [
   'lonely',
   'numb',
   'sad',
+  'shaken',
   'sick',
   'stressed',
   'tired',
+  'wired',
 ];
+const HIDDEN_BUCKET_COLUMNS = ['unknown'];
 const FORTUNE_ROW_HEIGHT = 41;
 const SECTION_HEADER_HEIGHT = 30;
+const TEMP_FORTUNE_ID_PREFIX = 'temp-fortune-';
+const ALL_BUCKETS = [...new Set([
+  ...DEFAULT_BUCKET_ORDER,
+  ...POSITIVE_BUCKETS,
+  ...NEUTRAL_BUCKETS,
+  ...NEGATIVE_BUCKETS,
+  ...HIDDEN_BUCKET_COLUMNS,
+])];
 
 function getApiBaseUrl() {
   if (Platform.OS !== 'web' || typeof window === 'undefined') {
@@ -96,6 +107,18 @@ function formatBucketLabel(bucket) {
 
   if (bucket === 'unknown') {
     return 'Unknown';
+  }
+
+  if (bucket === 'caring') {
+    return 'Affectionate';
+  }
+
+  if (bucket === 'guilty') {
+    return 'Remorseful';
+  }
+
+  if (bucket === 'distracted') {
+    return 'Unbalanced';
   }
 
   return bucket.charAt(0).toUpperCase() + bucket.slice(1);
@@ -129,6 +152,18 @@ function replaceFortune(currentFortunes, nextFortune, bucketOrder) {
     )),
     bucketOrder
   );
+}
+
+function createDraftFortune(bucket) {
+  return {
+    id: `${TEMP_FORTUNE_ID_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    text: '',
+    primaryBucket: bucket,
+    alsoFits: [],
+    buckets: [bucket],
+    scope: 'specific',
+    active: true,
+  };
 }
 
 function getSectionedFortunes(fortunes, bucketOrder) {
@@ -174,6 +209,7 @@ function flattenSectionedFortunes(sectionedFortunes) {
 }
 
 function getColumnBucketOrder(bucketOrder) {
+  const visibleBuckets = bucketOrder.filter((bucket) => !HIDDEN_BUCKET_COLUMNS.includes(bucket));
   const seen = new Set();
   const preferredOrder = [
     ...POSITIVE_BUCKETS,
@@ -182,7 +218,7 @@ function getColumnBucketOrder(bucketOrder) {
   ];
 
   const ordered = preferredOrder.filter((bucket) => {
-    if (!bucketOrder.includes(bucket) || seen.has(bucket)) {
+    if (!visibleBuckets.includes(bucket) || seen.has(bucket)) {
       return false;
     }
 
@@ -190,11 +226,34 @@ function getColumnBucketOrder(bucketOrder) {
     return true;
   });
 
-  const leftovers = bucketOrder
+  const leftovers = visibleBuckets
     .filter((bucket) => !seen.has(bucket))
     .sort((left, right) => left.localeCompare(right));
 
   return [...ordered, ...leftovers];
+}
+
+function getDisplayBucketOrder(bucketOrder) {
+  const visibleBuckets = getColumnBucketOrder(bucketOrder);
+  const hiddenBuckets = bucketOrder.filter((bucket) => HIDDEN_BUCKET_COLUMNS.includes(bucket));
+  return [...visibleBuckets, ...hiddenBuckets];
+}
+
+function normalizeBucketOrder(bucketOrder) {
+  const incoming = Array.isArray(bucketOrder) ? bucketOrder : [];
+  const seen = new Set();
+  const normalized = [];
+
+  for (const bucket of [...incoming, ...ALL_BUCKETS]) {
+    if (!bucket || seen.has(bucket)) {
+      continue;
+    }
+
+    seen.add(bucket);
+    normalized.push(bucket);
+  }
+
+  return normalized;
 }
 
 function BucketCheckbox({ checked, label, onPress }) {
@@ -213,11 +272,16 @@ function BucketCheckbox({ checked, label, onPress }) {
   );
 }
 
-const SectionHeaderRow = memo(function SectionHeaderRow({ bucket, count }) {
+const SectionHeaderRow = memo(function SectionHeaderRow({ bucket, count, onAddRow }) {
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{formatBucketLabel(bucket)}</Text>
-      <Text style={styles.sectionCount}>{count}</Text>
+      <View style={styles.sectionHeaderInline}>
+        <Text style={styles.sectionTitle}>{formatBucketLabel(bucket)}</Text>
+        <Text style={styles.sectionCount}>{count}</Text>
+        <Pressable onPress={() => onAddRow(bucket)} hitSlop={6} style={styles.sectionAddInlineButton}>
+          <Text style={styles.sectionAddInlineText}>+</Text>
+        </Pressable>
+      </View>
     </View>
   );
 });
@@ -263,7 +327,7 @@ const FortuneRow = memo(function FortuneRow({
         </Pressable>
       </View>
       {columnBucketOrder.map((bucket) => (
-        <View key={`${fortune.id}:${bucket}`} style={styles.bucketColumn}>
+        <View key={`${fortune.id}:${bucket}`} style={[styles.bucketColumn, styles.bucketCell]}>
           <BucketCheckbox
             checked={fortune.buckets.includes(bucket)}
             label={`${fortune.id}-${bucket}`}
@@ -285,7 +349,11 @@ export default function FortuneLab() {
   const [saveError, setSaveError] = useState('');
   const [focusedFortuneId, setFocusedFortuneId] = useState(null);
   const [isProcessingChanges, setIsProcessingChanges] = useState(false);
-  const sectionedFortunes = useMemo(() => getSectionedFortunes(fortunes, bucketOrder), [bucketOrder, fortunes]);
+  const displayBucketOrder = useMemo(() => getDisplayBucketOrder(bucketOrder), [bucketOrder]);
+  const sectionedFortunes = useMemo(
+    () => getSectionedFortunes(fortunes, displayBucketOrder),
+    [displayBucketOrder, fortunes]
+  );
   const flatListItems = useMemo(() => flattenSectionedFortunes(sectionedFortunes), [sectionedFortunes]);
   const flatListMetrics = useMemo(() => {
     let offset = 0;
@@ -297,10 +365,7 @@ export default function FortuneLab() {
       return metric;
     });
   }, [flatListItems]);
-  const columnBucketOrder = useMemo(
-    () => getColumnBucketOrder(bucketOrder),
-    [bucketOrder]
-  );
+  const columnBucketOrder = useMemo(() => getColumnBucketOrder(bucketOrder), [bucketOrder]);
   const hasPendingChanges = useMemo(() => {
     const baselineMap = new Map(baselineFortunes.map((fortune) => [fortune.id, fortune]));
     const currentMap = new Map(fortunes.map((fortune) => [fortune.id, fortune]));
@@ -341,7 +406,7 @@ export default function FortuneLab() {
       }
 
       const payload = await response.json();
-      const nextBucketOrder = Array.isArray(payload.bucketOrder) ? payload.bucketOrder : DEFAULT_BUCKET_ORDER;
+      const nextBucketOrder = normalizeBucketOrder(payload.bucketOrder || DEFAULT_BUCKET_ORDER);
       const nextFortunes = Array.isArray(payload.fortunes) ? payload.fortunes : [];
 
       setBucketOrder(nextBucketOrder);
@@ -420,9 +485,22 @@ export default function FortuneLab() {
     setSaveError('');
   }, []);
 
+  const handleAddFortuneRow = useCallback((bucket) => {
+    const nextFortune = createDraftFortune(bucket);
+    setFortunes((current) => sortFortunes([...current, nextFortune], displayBucketOrder));
+    setFocusedFortuneId(nextFortune.id);
+    setSaveError('');
+  }, [displayBucketOrder]);
+
   const renderFlatListItem = useCallback(({ item }) => {
     if (item.kind === 'section') {
-      return <SectionHeaderRow bucket={item.bucket} count={item.count} />;
+      return (
+        <SectionHeaderRow
+          bucket={item.bucket}
+          count={item.count}
+          onAddRow={handleAddFortuneRow}
+        />
+      );
     }
 
     return (
@@ -440,6 +518,7 @@ export default function FortuneLab() {
   }, [
     columnBucketOrder,
     focusedFortuneId,
+    handleAddFortuneRow,
     handleDelete,
     handleTextBlur,
     handleTextChange,
@@ -459,7 +538,12 @@ export default function FortuneLab() {
     const deletions = baselineFortunes
       .filter((fortune) => !currentMap.has(fortune.id))
       .map((fortune) => fortune.id);
+    const creations = fortunes.filter((fortune) => fortune.id.startsWith(TEMP_FORTUNE_ID_PREFIX));
     const updates = fortunes.filter((fortune) => {
+      if (fortune.id.startsWith(TEMP_FORTUNE_ID_PREFIX)) {
+        return false;
+      }
+
       const baselineFortune = baselineMap.get(fortune.id);
       if (!baselineFortune) {
         return false;
@@ -472,7 +556,7 @@ export default function FortuneLab() {
       );
     });
 
-    if (deletions.length === 0 && updates.length === 0) {
+    if (deletions.length === 0 && creations.length === 0 && updates.length === 0) {
       return;
     }
 
@@ -487,6 +571,23 @@ export default function FortuneLab() {
         const body = await response.json();
         if (!response.ok) {
           throw new Error(body.error || 'Unable to delete fortune.');
+        }
+      }
+
+      for (const fortune of creations) {
+        const response = await fetch(`${apiBaseUrl}/api/fortunes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: fortune.text,
+            buckets: fortune.buckets,
+          }),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          throw new Error(body.error || 'Unable to create fortune.');
         }
       }
 
@@ -580,7 +681,10 @@ export default function FortuneLab() {
                 <Text style={[styles.headerCell, styles.lenColumn]}>Len</Text>
                 <Text style={[styles.headerCell, styles.deleteColumn]}>Del</Text>
                 {columnBucketOrder.map((bucket) => (
-                  <View key={bucket} style={[styles.headerCell, styles.bucketColumn, styles.verticalHeaderWrap]}>
+                  <View
+                    key={bucket}
+                    style={[styles.headerCell, styles.bucketColumn, styles.verticalHeaderWrap, styles.bucketCell]}
+                  >
                     <Text style={styles.verticalHeaderText}>{formatBucketLabel(bucket)}</Text>
                   </View>
                 ))}
@@ -737,7 +841,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fffdf9',
     borderWidth: 1,
     borderColor: 'rgba(122, 89, 58, 0.14)',
-    padding: 10,
+    paddingTop: 14,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
   },
   loadingCard: {
     minHeight: 220,
@@ -760,10 +867,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     paddingHorizontal: 4,
-    paddingBottom: 8,
+    paddingTop: 0,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(122, 89, 58, 0.12)',
     alignItems: 'flex-end',
+    overflow: 'visible',
   },
   headerCell: {
     fontSize: 10,
@@ -774,9 +883,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   verticalHeaderWrap: {
-    minHeight: 50,
+    height: 82,
     alignItems: 'center',
     justifyContent: 'flex-end',
+    position: 'relative',
+    overflow: 'visible',
+    paddingBottom: 12,
   },
   verticalHeaderText: {
     fontSize: 10,
@@ -786,21 +898,30 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     ...(Platform.OS === 'web'
       ? {
+          position: 'absolute',
+          bottom: 14,
+          left: -14,
           writingDirection: 'ltr',
           transform: [{ rotate: '-60deg' }],
-          width: 48,
+          width: 72,
           textAlign: 'center',
+          lineHeight: 10,
           whiteSpace: 'nowrap',
+          overflow: 'visible',
         }
       : null),
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     paddingHorizontal: 4,
     paddingVertical: 6,
     height: 30,
+  },
+  sectionHeaderInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   sectionTitle: {
     fontSize: 13,
@@ -811,6 +932,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#8d7158',
+  },
+  sectionAddInlineButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionAddInlineText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#8d7158',
+    lineHeight: 12,
   },
   row: {
     flexDirection: 'row',
@@ -826,7 +957,7 @@ const styles = StyleSheet.create({
     height: 38,
   },
   textColumn: {
-    width: 300,
+    width: 344,
   },
   scopeColumn: {
     width: 52,
@@ -841,6 +972,11 @@ const styles = StyleSheet.create({
     width: 26,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  bucketCell: {
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(122, 89, 58, 0.24)',
+    backgroundColor: 'rgba(168, 133, 98, 0.05)',
   },
   textInput: {
     height: 32,

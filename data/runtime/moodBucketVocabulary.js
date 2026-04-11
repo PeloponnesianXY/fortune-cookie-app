@@ -88,7 +88,6 @@ const BUCKET_VOCAB = {
   "angry": [
     "angry",
     "betrayed",
-    "slighted",
     "enraged",
     "hateful",
     "hostile",

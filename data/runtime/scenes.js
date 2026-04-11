@@ -145,6 +145,8 @@ const MOOD_SCENE_KEYS = {
   confident: 'sunriseBloom',
   calm: 'sunriseBloom',
   grateful: 'sunriseBloom',
+  emotional: 'silverHush',
+  engaged: 'neonPulse',
   wowed: 'prismDrift',
   shaken: 'prismDrift',
   confused: 'opalMist',

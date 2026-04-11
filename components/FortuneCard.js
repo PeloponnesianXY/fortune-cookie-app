@@ -60,13 +60,66 @@ const MIN_CUSTOM_NOTICE_GAP = 10;
 const MAX_CUSTOM_NOTICE_GAP = 18;
 const SE_CUSTOM_NOTICE_LIFT = 30;
 
-const MOOD_OPTIONS = MOOD_BUCKET_KEYS
-  .filter((key) => key !== 'unknown')
-  .map((key) => ({
-    key,
-    label: formatMoodBucketLabel(key),
-  }))
-  .sort((left, right) => left.label.localeCompare(right.label));
+const CREATE_FORTUNE_MOOD_SECTIONS = [
+  {
+    key: 'positive',
+    label: 'Positive',
+    moods: [
+      'calm',
+      'caring',
+      'confident',
+      'engaged',
+      'grateful',
+      'happy',
+      'hopeful',
+      'proud',
+      'romantic',
+      'wowed',
+    ],
+  },
+  {
+    key: 'neutral',
+    label: 'Neutral',
+    moods: [
+      'confused',
+      'emotional',
+      'neutral',
+    ],
+  },
+  {
+    key: 'negative',
+    label: 'Negative',
+    moods: [
+      'angry',
+      'anxious',
+      'distracted',
+      'embarrassed',
+      'frustrated',
+      'guilty',
+      'jealous',
+      'lonely',
+      'numb',
+      'sad',
+      'shaken',
+      'sick',
+      'stressed',
+      'tired',
+      'wired',
+    ],
+  },
+].map((section) => {
+  const options = section.moods
+    .map((key) => ({
+      key,
+      label: formatMoodBucketLabel(key),
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label));
+
+  return {
+    ...section,
+    options,
+  };
+});
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -361,6 +414,7 @@ export default function FortuneCard({
   onShareSavedFortune,
   onShareFortune,
   onSubmitMoodInput,
+  onTriggerSafetyLock,
   onToggleSavedFavorite,
   onToggleFavorite,
   paperProgress,
@@ -1157,7 +1211,7 @@ export default function FortuneCard({
         initialFortuneText={editingCustomFortune?.text || ''}
         initialMoodKey={editingCustomFortune?.moodKey || null}
         isEditing={Boolean(editingCustomFortune)}
-        moodOptions={MOOD_OPTIONS}
+        moodSections={CREATE_FORTUNE_MOOD_SECTIONS}
         onCancel={() => {
           if (isCustomFortuneSheetForced) {
             return;
@@ -1185,6 +1239,14 @@ export default function FortuneCard({
                 });
 
             if (!result.ok) {
+              if (result.moderation === 'blocked-danger') {
+                setCustomFortuneError('');
+                setEditingCustomFortune(null);
+                setIsCustomFortuneSheetVisible(false);
+                onTriggerSafetyLock?.();
+                return false;
+              }
+
               setCustomFortuneError(result.error);
               return false;
             }

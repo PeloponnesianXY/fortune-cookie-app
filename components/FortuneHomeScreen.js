@@ -633,6 +633,7 @@ export default function FortuneHomeScreen() {
               onShareFortune={handleShareFortune}
               onSaveCreatedFortuneFavorite={handleSaveCreatedFortuneFavorite}
               onSubmitMoodInput={submitMoodInput}
+              onTriggerSafetyLock={() => setIsSafetyLocked(true)}
               onToggleSavedFavorite={handleToggleSavedFavorite}
               onToggleFavorite={handleToggleFavorite}
               paperProgress={paperProgress}

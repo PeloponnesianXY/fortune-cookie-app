@@ -87,11 +87,25 @@ const HATE_PATTERNS = [
 ];
 
 const { weird: LEGACY_WEIRD_FORTUNES, ...CORE_FORTUNE_LIBRARY } = BASE_FORTUNE_LIBRARY;
+const EMOTIONAL_FORTUNES = [
+  ...BASE_FORTUNE_LIBRARY.caring,
+  ...BASE_FORTUNE_LIBRARY.grateful,
+  ...BASE_FORTUNE_LIBRARY.sad,
+  ...BASE_FORTUNE_LIBRARY.romantic,
+];
+const ENGAGED_FORTUNES = [
+  ...BASE_FORTUNE_LIBRARY.confident,
+  ...BASE_FORTUNE_LIBRARY.happy,
+  ...BASE_FORTUNE_LIBRARY.hopeful,
+  ...BASE_FORTUNE_LIBRARY.wowed,
+];
 
 const FORTUNE_LIBRARY = {
   ...CORE_FORTUNE_LIBRARY,
   proud: [...BASE_FORTUNE_LIBRARY.proud],
   caring: [...BASE_FORTUNE_LIBRARY.caring],
+  emotional: [...new Set(EMOTIONAL_FORTUNES)],
+  engaged: [...new Set(ENGAGED_FORTUNES)],
   grateful: [...BASE_FORTUNE_LIBRARY.grateful],
   wowed: [...BASE_FORTUNE_LIBRARY.wowed],
   shaken: [...BASE_FORTUNE_LIBRARY.shaken],
@@ -119,6 +133,8 @@ const MOOD_BUCKET_PROFILES = {
   confident: { fortuneKey: 'confident', tone: 'affirming', valence: 'positive', energy: 'medium' },
   calm: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
   caring: { fortuneKey: 'caring', tone: 'warm', valence: 'positive', energy: 'medium' },
+  emotional: { fortuneKey: 'emotional', tone: 'tender', valence: 'neutral', energy: 'low' },
+  engaged: { fortuneKey: 'engaged', tone: 'energizing', valence: 'positive', energy: 'medium' },
   grateful: { fortuneKey: 'grateful', tone: 'appreciative', valence: 'positive', energy: 'low' },
   wowed: { fortuneKey: 'wowed', tone: 'expansive', valence: 'positive', energy: 'high' },
   shaken: { fortuneKey: 'shaken', tone: 'alert', valence: 'neutral', energy: 'medium' },

@@ -11,6 +11,8 @@ const MOOD_BUCKET_KEYS = [
   'angry',
   'anxious',
   'embarrassed',
+  'emotional',
+  'engaged',
   'calm',
   'confident',
   'confused',
@@ -42,6 +44,8 @@ const LEGACY_BUCKET_NORMALIZATION = {
   weird: 'confused',
   loving: 'caring',
   affectionate: 'caring',
+  remorseful: 'guilty',
+  unbalanced: 'distracted',
   surprised: 'shaken',
   blindsided: 'shaken',
   amazed: 'wowed',
@@ -49,7 +53,7 @@ const LEGACY_BUCKET_NORMALIZATION = {
   awkward: 'embarrassed',
   embarassed: 'embarrassed',
   overwhelmed: 'stressed',
-  focused: 'hopeful',
+  focused: 'engaged',
   mysterious: 'confused',
 };
 

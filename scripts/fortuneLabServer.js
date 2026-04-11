@@ -18,7 +18,7 @@ function sendJson(response, statusCode, payload) {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   });
   response.end(JSON.stringify(payload));
@@ -111,6 +111,21 @@ function parseBody(request) {
   });
 }
 
+function createNextFortuneId(fortunes) {
+  let highestNumber = 0;
+
+  for (const fortune of fortunes) {
+    const match = /^f_(\d+)$/.exec(fortune.id || '');
+    if (!match) {
+      continue;
+    }
+
+    highestNumber = Math.max(highestNumber, Number(match[1] || 0));
+  }
+
+  return `f_${String(highestNumber + 1).padStart(4, '0')}`;
+}
+
 function listResponsePayload() {
   const registry = readRegistry();
   const fortunes = registry.fortunes
@@ -181,6 +196,45 @@ async function handlePatchFortune(request, response, fortuneId) {
   });
 }
 
+async function handleCreateFortune(request, response) {
+  const body = await parseBody(request);
+  const registry = readRegistry();
+  const nextText = typeof body.text === 'string' ? body.text.trim() : '';
+
+  if (!nextText) {
+    sendJson(response, 400, { error: 'Fortune text cannot be empty.' });
+    return;
+  }
+
+  const bucketUpdate = normalizeSelectedBuckets(
+    Array.isArray(body.buckets) ? body.buckets : [],
+    Array.isArray(body.buckets) ? body.buckets[0] : null
+  );
+
+  if (!bucketUpdate) {
+    sendJson(response, 400, { error: 'Select at least one bucket.' });
+    return;
+  }
+
+  const nextFortune = {
+    id: createNextFortuneId(registry.fortunes),
+    text: nextText,
+    primaryBucket: bucketUpdate.primaryBucket,
+    alsoFits: bucketUpdate.alsoFits,
+    scope: bucketUpdate.scope,
+    active: true,
+  };
+
+  writeRegistry({
+    fortunes: [...registry.fortunes, nextFortune],
+    bucketKeys: registry.bucketKeys,
+  });
+
+  sendJson(response, 201, {
+    fortune: toApiFortune(nextFortune),
+  });
+}
+
 function handleDeleteFortune(response, fortuneId) {
   const registry = readRegistry();
   const fortuneIndex = registry.fortunes.findIndex((fortune) => fortune.id === fortuneId);
@@ -226,6 +280,15 @@ const server = http.createServer(async (request, response) => {
 
   if (request.method === 'GET' && url.pathname === '/api/fortunes') {
     sendJson(response, 200, listResponsePayload());
+    return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/fortunes') {
+    try {
+      await handleCreateFortune(request, response);
+    } catch (error) {
+      sendJson(response, 500, { error: error.message || 'Unable to create fortune.' });
+    }
     return;
   }
 

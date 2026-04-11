@@ -42,11 +42,31 @@ const HIGH_RISK_WORDS = new Set([
   'shooting',
   'massacre',
 ]);
+const CUSTOM_HANDCRAFTED_BUCKET_WORDS = {
+  caring: ['affectionate'],
+  distracted: ['unbalanced'],
+  emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
+  engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
+  guilty: ['remorseful'],
+};
+const CUSTOM_OPEN_FALLBACK_BUCKET_WORDS = {
+  caring: ['affectionate'],
+  distracted: ['unbalanced'],
+  emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
+  engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
+  guilty: ['remorseful', 'regretful', 'contrite'],
+};
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 
-const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable(HANDCRAFTED_BUCKET_WORDS);
-const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable(OPEN_FALLBACK_BUCKET_WORDS);
+const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable({
+  ...HANDCRAFTED_BUCKET_WORDS,
+  ...CUSTOM_HANDCRAFTED_BUCKET_WORDS,
+});
+const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable({
+  ...OPEN_FALLBACK_BUCKET_WORDS,
+  ...CUSTOM_OPEN_FALLBACK_BUCKET_WORDS,
+});
 // Routing priority is intentionally lexical-first:
 // handcrafted exact -> open fallback exact -> morphology -> fuzzy -> semantic fallback -> unknown
 const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(HANDCRAFTED_WORD_TO_BUCKET)
@@ -63,6 +83,7 @@ const MORPHOLOGY_IRREGULAR_MAP = {
   loneliness: 'lonely',
   sadder: 'sad',
   saddest: 'sad',
+  slighted: 'betrayed',
 };
 const FUZZY_MIN_LENGTH = 4;
 const FUZZY_MAX_LENGTH_DELTA = 2;

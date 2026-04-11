@@ -106,7 +106,15 @@ export function formatMoodBucketLabel(moodKey) {
   }
 
   if (moodKey === 'caring') {
-    return 'Caring';
+    return 'Affectionate';
+  }
+
+  if (moodKey === 'emotional') {
+    return 'Emotional';
+  }
+
+  if (moodKey === 'engaged') {
+    return 'Engaged';
   }
 
   if (moodKey === 'romantic') {
@@ -123,6 +131,14 @@ export function formatMoodBucketLabel(moodKey) {
 
   if (moodKey === 'wowed') {
     return 'Wowed';
+  }
+
+  if (moodKey === 'guilty') {
+    return 'Remorseful';
+  }
+
+  if (moodKey === 'distracted') {
+    return 'Unbalanced';
   }
 
   return moodKey.charAt(0).toUpperCase() + moodKey.slice(1);
@@ -180,7 +196,10 @@ async function validateCustomFortuneForSave({
   if (moderation.moderation !== 'clean') {
     return {
       ok: false,
-      error: 'This fortune can’t be saved because it contains unsafe language.',
+      moderation: moderation.moderation,
+      error: moderation.moderation === 'blocked-danger'
+        ? 'This fortune cannot be saved.'
+        : 'This fortune cannot be saved because it contains hate or unsafe language.',
     };
   }
 
