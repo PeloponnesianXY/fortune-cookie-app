@@ -181,8 +181,7 @@ function getSectionedFortunes(fortunes, bucketOrder) {
     .map((bucket) => ({
       bucket,
       fortunes: grouped.get(bucket) || [],
-    }))
-    .filter((section) => section.fortunes.length > 0);
+    }));
 }
 
 function flattenSectionedFortunes(sectionedFortunes) {
