@@ -367,7 +367,7 @@ const FORTUNES = [
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0039",
@@ -375,7 +375,7 @@ const FORTUNES = [
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0040",
@@ -383,7 +383,7 @@ const FORTUNES = [
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0041",
@@ -407,7 +407,7 @@ const FORTUNES = [
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0044",
@@ -415,7 +415,7 @@ const FORTUNES = [
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0045",
@@ -423,7 +423,7 @@ const FORTUNES = [
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0046",
@@ -791,7 +791,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0092",
@@ -799,7 +799,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0093",
@@ -807,7 +807,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0094",
@@ -815,7 +815,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0095",
@@ -823,7 +823,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0096",
@@ -831,7 +831,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0097",
@@ -839,7 +839,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0098",
@@ -847,7 +847,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0099",
@@ -855,7 +855,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0100",
@@ -863,7 +863,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0101",
@@ -879,7 +879,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0103",
@@ -887,7 +887,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0104",
@@ -903,7 +903,7 @@ const FORTUNES = [
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0106",
@@ -1159,7 +1159,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0138",
@@ -1167,7 +1167,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0139",
@@ -1175,7 +1175,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0140",
@@ -1191,7 +1191,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0142",
@@ -1207,7 +1207,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0144",
@@ -1215,7 +1215,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0145",
@@ -1223,7 +1223,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0146",
@@ -1231,7 +1231,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0147",
@@ -1239,7 +1239,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0148",
@@ -1417,7 +1417,7 @@ const FORTUNES = [
     primaryBucket: "hungry",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0170",
@@ -1433,7 +1433,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0172",
@@ -1441,7 +1441,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0173",
@@ -1465,7 +1465,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0176",
@@ -1489,7 +1489,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0179",
@@ -1505,7 +1505,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0181",
@@ -1513,7 +1513,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0182",
@@ -1521,7 +1521,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0183",
@@ -1529,7 +1529,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0184",
@@ -1545,7 +1545,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0186",
@@ -1569,7 +1569,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0189",
@@ -1577,7 +1577,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0190",
@@ -1593,7 +1593,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0192",
@@ -1601,7 +1601,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0193",
@@ -1657,7 +1657,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0200",
@@ -1960,7 +1960,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0227",
@@ -1968,7 +1968,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0228",
@@ -1984,7 +1984,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0230",
@@ -1992,7 +1992,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0231",
@@ -2000,7 +2000,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0232",
@@ -2016,7 +2016,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0234",
@@ -2024,7 +2024,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0235",
@@ -2032,7 +2032,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0236",
@@ -2048,7 +2048,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0238",
@@ -2064,7 +2064,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0240",
@@ -2072,7 +2072,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0241",
@@ -2080,7 +2080,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0242",
@@ -2088,7 +2088,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0243",
@@ -2096,7 +2096,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0244",
@@ -2120,7 +2120,7 @@ const FORTUNES = [
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0247",
@@ -2136,7 +2136,7 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0249",
@@ -2144,7 +2144,7 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0250",
@@ -2176,7 +2176,7 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0254",
@@ -2264,7 +2264,7 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0265",
@@ -2488,7 +2488,7 @@ const FORTUNES = [
     primaryBucket: "guilty",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0293",
@@ -2496,7 +2496,7 @@ const FORTUNES = [
     primaryBucket: "guilty",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0294",
@@ -2576,7 +2576,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0304",
@@ -2600,7 +2600,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0307",
@@ -2608,7 +2608,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0308",
@@ -2624,7 +2624,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0310",
@@ -2632,7 +2632,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0311",
@@ -2640,7 +2640,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0312",
@@ -2648,7 +2648,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0313",
@@ -2656,7 +2656,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0314",
@@ -2672,7 +2672,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0316",
@@ -2680,7 +2680,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0317",
@@ -2688,7 +2688,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0318",
@@ -2696,7 +2696,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0319",
@@ -2704,7 +2704,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0320",
@@ -2712,7 +2712,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0321",
@@ -2728,7 +2728,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0323",
@@ -2736,7 +2736,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0324",
@@ -2744,7 +2744,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0325",
@@ -2760,7 +2760,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0327",
@@ -2768,7 +2768,7 @@ const FORTUNES = [
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0328",
@@ -3122,7 +3122,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0365",
@@ -3130,7 +3130,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0366",
@@ -3146,7 +3146,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0368",
@@ -3162,7 +3162,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0370",
@@ -3170,7 +3170,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0371",
@@ -3194,7 +3194,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0374",
@@ -3202,7 +3202,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0375",
@@ -3554,7 +3554,7 @@ const FORTUNES = [
     primaryBucket: "hopeful",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0419",
@@ -3634,7 +3634,7 @@ const FORTUNES = [
     primaryBucket: "hopeful",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0429",
@@ -5559,7 +5559,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0662",
@@ -5591,7 +5591,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0666",
@@ -5599,7 +5599,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0667",
@@ -5607,7 +5607,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0668",
@@ -5615,7 +5615,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0669",
@@ -5623,7 +5623,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0670",
@@ -5631,7 +5631,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0671",
@@ -5639,7 +5639,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0672",
@@ -5647,7 +5647,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0673",
@@ -5655,7 +5655,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0674",
@@ -5663,7 +5663,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0675",
@@ -5671,7 +5671,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0676",
@@ -5679,7 +5679,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0677",
@@ -5687,7 +5687,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0678",
@@ -5695,7 +5695,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0679",
@@ -5703,7 +5703,7 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0680",
@@ -5711,12 +5711,172 @@ const FORTUNES = [
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0681",
     text: "The omens favor a gentler reading.",
     primaryBucket: "weird",
+    alsoFits: [],
+    scope: "specific",
+    active: false
+  },
+  {
+    id: "f_0682",
+    text: "A warm heart changes the room before words do.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0683",
+    text: "Warmth can reach places words never do.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0684",
+    text: "A kind heart can leave a big mark.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0685",
+    text: "Affection is its own kind of wisdom.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0686",
+    text: "This feeling does not need to be loud to be real.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0687",
+    text: "Self-trust is a quiet kind of power.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0688",
+    text: "You do not need perfect certainty to move well.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0689",
+    text: "Your strength does not ask permission to exist.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0690",
+    text: "Confidence grows every time you back yourself.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0691",
+    text: "The next move does not need a louder voice, only yours.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0692",
+    text: "Stand like someone who has met hard things before.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0693",
+    text: "You are alive to this moment in all the right ways.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0694",
+    text: "This mood is pulling you toward something worth finding.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0695",
+    text: "Your mind is open, awake, and ready to move.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0696",
+    text: "This is a good mood for following what pulls you forward.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0697",
+    text: "This is the kind of energy that opens doors.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0698",
+    text: "Something in you is ready for motion, discovery, or both.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0699",
+    text: "You are in a good place to notice what sparks.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0700",
+    text: "This is a strong moment for interest, motion, and lightness.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0701",
+    text: "You are closer than usual to something that clicks.",
+    primaryBucket: "engaged",
     alsoFits: [],
     scope: "specific",
     active: true
