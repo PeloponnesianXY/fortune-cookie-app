@@ -32,7 +32,7 @@ data/
   runtime/
     fortunes.js
     moodBucketVocabulary.js
-    moodVocabulary.js
+    moodVocabularyRuntimeWrapper.js
     scenes.js
     semanticFallbackData.js
   build/
@@ -77,7 +77,7 @@ assets/
 - `components/StreakStatus.js`: streak progress, tiers, and celebration UI
 - `data/runtime/fortunes.js`: runtime fortune library keyed to the live mood buckets
 - `data/runtime/scenes.js`: shared scene library plus bucket-to-scene mapping for the live mood set
-- `data/runtime/moodVocabulary.js`: live bucket list plus runtime lookup tables derived from the canonical vocabulary source
+- `data/runtime/moodVocabularyRuntimeWrapper.js`: live bucket list plus runtime lookup tables derived from the canonical vocabulary source
 - `data/runtime/moodBucketVocabulary.js`: canonical runtime vocabulary module containing the handcrafted source-of-truth bucket vocab (`BUCKET_VOCAB`) plus the generated lower-trust open fallback vocab (`OPEN_FALLBACK_VOCAB`)
 - `data/build/openFallbackOverrides.json`: human-editable allow/deny controls for the generated open fallback layer
 - `data/build/semanticFallbackConfig.js`: semantic fallback thresholds, anchors, keep-lists, and reject-lists used when rebuilding the compact semantic runtime data

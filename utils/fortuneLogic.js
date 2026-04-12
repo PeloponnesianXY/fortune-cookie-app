@@ -14,7 +14,7 @@ import {
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
   OPEN_FALLBACK_BUCKET_WORDS,
-} from '../data/runtime/moodVocabulary.js';
+} from '../data/runtime/moodVocabularyRuntimeWrapper.js';
 import { MOOD_SCENE_KEYS } from '../data/runtime/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
 import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
