@@ -925,10 +925,15 @@ const FORTUNES = [
   },
   {
     id: "f_0106",
-    text: "Today may call for less heroism and more water.",
+    text: "Today may call for less heroism and more tea.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted",
+      "sick",
+      "stressed",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -943,24 +948,32 @@ const FORTUNES = [
     id: "f_0108",
     text: "Rest never gets added to the agenda. It should.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0109",
     text: "Your body has filed a complaint. Consider settling.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0110",
     text: "Some victories look suspiciously like a nap.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -969,30 +982,36 @@ const FORTUNES = [
     primaryBucket: "tired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0112",
     text: "One less thing may be today’s masterpiece.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0113",
     text: "No cat says, “I’ll nap, but first, a few more emails.”",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0114",
     text: "An empty tank does not need motivation. It needs fuel.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -1015,32 +1034,41 @@ const FORTUNES = [
     id: "f_0117",
     text: "A wilting plant does not need a pep talk.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0118",
     text: "Today’s major accomplishment may be cancelling one thing.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0119",
-    text: "Usually willpower wins. Today, maybe the couch and the remote.",
+    text: "Usually willpower wins. Today, let the couch and the remote.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0120",
     text: "Your thoughts may need a pillow more than another brainstorm.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -1055,24 +1083,33 @@ const FORTUNES = [
     id: "f_0122",
     text: "A drained battery needs a charger, not a lecture.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "sick"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0123",
     text: "“Sleep on it” is wisdom, not weakness.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0124",
-    text: "A weary brain makes everything look oddly uphill.",
+    text: "A weary brain makes every road look uphill.",
     primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "distracted",
+      "stressed",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -1137,7 +1174,7 @@ const FORTUNES = [
     primaryBucket: "tired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0133",
@@ -1201,7 +1238,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0141",
@@ -1217,7 +1254,7 @@ const FORTUNES = [
     primaryBucket: "sick",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0143",
@@ -1475,7 +1512,7 @@ const FORTUNES = [
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0175",
@@ -2185,22 +2222,42 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0251",
     text: "This heaviness may visit, but it does not own you.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0252",
     text: "You're allowed to need comfort first today.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "hungry",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed",
+      "shaken",
+      "tired",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -2215,80 +2272,159 @@ const FORTUNES = [
     id: "f_0254",
     text: "Heavy hearts still get decent sunsets.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "lonely",
+      "numb",
+      "shaken"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0255",
     text: "This feeling is real; it is also a terrible narrator.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0256",
     text: "You do not need a comeback arc by tonight.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "embarrassed",
+      "distracted",
+      "guilty"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0257",
     text: "Not every dark day is a deep truth.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "embarrassed",
+      "jealous",
+      "lonely",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0258",
     text: "Tiny comforts can do serious work right now.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed",
+      "shaken",
+      "tired",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0259",
     text: "Getting through today still counts as progress.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "frustrated",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed",
+      "shaken",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0260",
     text: "Foggy days distort the view; wait before trusting it.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "distracted",
+      "frustrated",
+      "shaken"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0261",
     text: "The clouds in you are not the whole sky.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted",
+      "lonely",
+      "numb"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0262",
     text: "Heavy feelings shrink a little in decent company.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "disgusted",
+      "frustrated",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed",
+      "shaken",
+      "tired"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0263",
     text: "Even today can still hold one beautiful moment.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "frustrated",
+      "guilty",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed",
+      "shaken",
+      "tired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -2303,40 +2439,70 @@ const FORTUNES = [
     id: "f_0265",
     text: "Heavy feelings can be sincere and still exaggerate.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "guilty",
+      "jealous",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0266",
     text: "Even a gray day can catch a few sun rays.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "lonely",
+      "numb"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0267",
     text: "This feeling is eloquent, not necessarily correct.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0268",
     text: "Some days are better judged after sleep.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "frustrated",
+      "jealous",
+      "lonely",
+      "sick",
+      "stressed",
+      "shaken",
+      "tired",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0269",
     text: "One small errand can be a tiny rebellion today.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted",
+      "lonely",
+      "numb"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -2351,32 +2517,55 @@ const FORTUNES = [
     id: "f_0271",
     text: "A walk with a dog can drag the soul into daylight.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "lonely",
+      "numb"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0272",
     text: "A guitar can talk a mood down without using words.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "numb",
+      "stressed",
+      "shaken"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0273",
     text: "Some moods improve after contact with dumbbells.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "anxious",
+      "frustrated"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0274",
     text: "Cheer up your dog and borrow the results.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "embarrassed",
+      "guilty",
+      "numb",
+      "tired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -2385,14 +2574,18 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0276",
     text: "A good song can sand down the edges of a hard day.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "distracted",
+      "shaken"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -2407,8 +2600,20 @@ const FORTUNES = [
     id: "f_0278",
     text: "Laughter can trick your body and mind into easing up.",
     primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "angry",
+      "anxious",
+      "embarrassed",
+      "distracted",
+      "frustrated",
+      "jealous",
+      "lonely",
+      "numb",
+      "sick",
+      "stressed",
+      "shaken"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -2807,11 +3012,9 @@ const FORTUNES = [
     id: "f_0328",
     text: "This wave will pass more gently if you stop feeding it.",
     primaryBucket: "anxious",
-    alsoFits: [
-      "stressed"
-    ],
-    scope: "shared",
-    active: true
+    alsoFits: [],
+    scope: "specific",
+    active: false
   },
   {
     id: "f_0329",
@@ -3183,7 +3386,7 @@ const FORTUNES = [
   },
   {
     id: "f_0368",
-    text: "Compression makes everything feel falsely urgent.",
+    text: "Stress makes the choice of socks a major crisis..",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3239,7 +3442,7 @@ const FORTUNES = [
   },
   {
     id: "f_0375",
-    text: "A full plate is not a dare.",
+    text: "A full plate is not a dare. It's a truth.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3251,7 +3454,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0377",
@@ -3267,11 +3470,11 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0379",
-    text: "Not all demands deserve equal seating.",
+    text: "Not all demands deserve equal attention.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3279,7 +3482,7 @@ const FORTUNES = [
   },
   {
     id: "f_0380",
-    text: "A shorter list can be an act of intelligence.",
+    text: "A shorter list can be an act of intelligence and self-care.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3291,11 +3494,11 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0382",
-    text: "This is too much, not too little grit.",
+    text: "Sometimes it is too much, not too little grit.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3303,7 +3506,7 @@ const FORTUNES = [
   },
   {
     id: "f_0383",
-    text: "Your margin is part of the job, not a luxury.",
+    text: "Buffers are sanity, not a luxury.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3323,7 +3526,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0386",
@@ -3331,7 +3534,7 @@ const FORTUNES = [
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0387",
@@ -3339,7 +3542,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0388",
@@ -3347,7 +3550,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0389",
@@ -3355,7 +3558,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0390",
@@ -3363,7 +3566,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0391",
@@ -3379,7 +3582,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0393",
@@ -3387,7 +3590,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0394",
@@ -3395,7 +3598,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0395",
@@ -3403,7 +3606,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0396",
@@ -3419,7 +3622,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0398",
@@ -3427,7 +3630,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0399",
@@ -3443,7 +3646,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0401",
@@ -3451,7 +3654,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0402",
@@ -3459,7 +3662,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0403",
@@ -3467,7 +3670,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0404",
@@ -3483,7 +3686,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0406",
@@ -3491,7 +3694,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0407",
@@ -3503,7 +3706,7 @@ const FORTUNES = [
   },
   {
     id: "f_0408",
-    text: "Too much activation makes everything look clickable.",
+    text: "Too much activation makes everything look like a crisis.",
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
@@ -3515,7 +3718,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0410",
@@ -3531,7 +3734,7 @@ const FORTUNES = [
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0412",
@@ -3786,7 +3989,7 @@ const FORTUNES = [
   },
   {
     id: "f_0439",
-    text: "Keep your composure; don't give it to what upset you.",
+    text: "Keeping your composure means not surrendering to the trigger.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated",
@@ -3799,11 +4002,9 @@ const FORTUNES = [
     id: "f_0440",
     text: "Guard your calm; don't surrender it to the trigger.",
     primaryBucket: "angry",
-    alsoFits: [
-      "frustrated"
-    ],
-    scope: "shared",
-    active: true
+    alsoFits: [],
+    scope: "specific",
+    active: false
   },
   {
     id: "f_0441",
@@ -5371,10 +5572,12 @@ const FORTUNES = [
   },
   {
     id: "f_0630",
-    text: "The day just swerved. A seatbelt and an open mind will help.",
+    text: "Today swerved. A seatbelt and an open mind will help.",
     primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -5435,7 +5638,7 @@ const FORTUNES = [
   },
   {
     id: "f_0638",
-    text: "A plot twist can still be a favor in costume.",
+    text: "A plot twist can still be a favor in disguise.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
@@ -5451,10 +5654,12 @@ const FORTUNES = [
   },
   {
     id: "f_0640",
-    text: "Not every curveball is thrown to ruin your inning.",
+    text: "Not every curveball can ruin your inning.",
     primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -5463,7 +5668,7 @@ const FORTUNES = [
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0642",
@@ -5471,7 +5676,7 @@ const FORTUNES = [
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0643",
@@ -5493,8 +5698,10 @@ const FORTUNES = [
     id: "f_0645",
     text: "Sometimes a stumble sends you into a flower meadow.",
     primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -5507,7 +5714,7 @@ const FORTUNES = [
   },
   {
     id: "f_0647",
-    text: "If life came with spoilers, people would complain.",
+    text: "If life came with spoilers, people would ask for a refund.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
@@ -5515,7 +5722,7 @@ const FORTUNES = [
   },
   {
     id: "f_0648",
-    text: "Surprises, like whisky, taste better when you let them breathe.",
+    text: "Surprises, like wine, taste better when you let them breathe.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
@@ -5527,7 +5734,7 @@ const FORTUNES = [
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0650",
@@ -5541,13 +5748,15 @@ const FORTUNES = [
     id: "f_0651",
     text: "The unplanned note may improve the whole melody.",
     primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted"
+    ],
+    scope: "shared",
     active: true
   },
   {
     id: "f_0652",
-    text: "A break in pattern can lead to an epiphany.",
+    text: "A break in pattern can lead to a new appreciation.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
@@ -5581,8 +5790,10 @@ const FORTUNES = [
     id: "f_0656",
     text: "The odd gust may be what lifts the kite.",
     primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -5599,14 +5810,16 @@ const FORTUNES = [
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0659",
     text: "If you are always on autopilot, you'll forget how to drive.",
     primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted"
+    ],
+    scope: "shared",
     active: true
   },
   {

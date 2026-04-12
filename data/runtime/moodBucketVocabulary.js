@@ -232,12 +232,16 @@ const BUCKET_VOCAB = {
     "zen"
   ],
   "confident": [
-    "confident"
+    "confident",
+    "capable",
+    "competent",
+    "assured",
+    "bold"
   ],
   "confused": [
     "confused",
     "perplexed",
-    "curious",
+    "befuddled",
     "weird",
     "unclear",
     "mixed",
@@ -717,6 +721,7 @@ const BUCKET_VOCAB = {
     "stunned",
     "shocked",
     "startled",
+    "reeling",
     "alarmed",
     "jolted",
     "blindsided",
@@ -809,6 +814,7 @@ const BUCKET_VOCAB = {
     "wired",
     "antsy",
     "restless",
+    "frenetic",
     "jittery",
     "buzzy",
     "shaky",
