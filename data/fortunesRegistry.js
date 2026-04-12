@@ -46,8 +46,11 @@ const FORTUNES = [
     id: "f_0002",
     text: "You do not have to delay peace to prove anything.",
     primaryBucket: "calm",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "stressed",
+      "wired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -55,6 +58,7 @@ const FORTUNES = [
     text: "Let peace arrive before everything is figured out.",
     primaryBucket: "calm",
     alsoFits: [
+      "stressed",
       "shaken"
     ],
     scope: "shared",
@@ -66,7 +70,7 @@ const FORTUNES = [
     primaryBucket: "calm",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0005",
@@ -106,11 +110,9 @@ const FORTUNES = [
     id: "f_0009",
     text: "A peaceful heart knows what matters.",
     primaryBucket: "calm",
-    alsoFits: [
-      "happy"
-    ],
-    scope: "shared",
-    active: true
+    alsoFits: [],
+    scope: "specific",
+    active: false
   },
   {
     id: "f_0010",
@@ -130,7 +132,7 @@ const FORTUNES = [
   },
   {
     id: "f_0012",
-    text: "A steady mind beats a perfect plan in the long run.",
+    text: "A serene mind beats a perfect plan.",
     primaryBucket: "calm",
     alsoFits: [],
     scope: "specific",
@@ -148,11 +150,9 @@ const FORTUNES = [
     id: "f_0014",
     text: "Calmness quietly changes more than drama ever does.",
     primaryBucket: "calm",
-    alsoFits: [
-      "shaken"
-    ],
-    scope: "shared",
-    active: true
+    alsoFits: [],
+    scope: "specific",
+    active: false
   },
   {
     id: "f_0015",
@@ -169,18 +169,20 @@ const FORTUNES = [
     text: "Trust the calmer part of you to set the pace.",
     primaryBucket: "calm",
     alsoFits: [
-      "confused"
+      "confused",
+      "shaken"
     ],
     scope: "shared",
     active: true
   },
   {
     id: "f_0017",
-    text: "Your calmer mind may already know what matters.",
+    text: "Your quieter mind may already know what matters.",
     primaryBucket: "calm",
     alsoFits: [
       "confused",
-      "stressed"
+      "stressed",
+      "shaken"
     ],
     scope: "shared",
     active: true
@@ -189,11 +191,9 @@ const FORTUNES = [
     id: "f_0018",
     text: "A quieter mind can tell what matters.",
     primaryBucket: "calm",
-    alsoFits: [
-      "confused"
-    ],
-    scope: "shared",
-    active: true
+    alsoFits: [],
+    scope: "specific",
+    active: false
   },
   {
     id: "f_0019",
@@ -201,8 +201,12 @@ const FORTUNES = [
     primaryBucket: "calm",
     alsoFits: [
       "anxious",
+      "distracted",
+      "numb",
+      "sad",
       "stressed",
-      "shaken"
+      "shaken",
+      "wired"
     ],
     scope: "shared",
     active: true
@@ -219,8 +223,10 @@ const FORTUNES = [
     id: "f_0021",
     text: "Life has a soft place for the person who does not force it.",
     primaryBucket: "calm",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "frustrated"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -229,6 +235,8 @@ const FORTUNES = [
     primaryBucket: "calm",
     alsoFits: [
       "confused",
+      "distracted",
+      "frustrated",
       "stressed",
       "shaken"
     ],
@@ -241,6 +249,7 @@ const FORTUNES = [
     primaryBucket: "calm",
     alsoFits: [
       "confused",
+      "distracted",
       "shaken"
     ],
     scope: "shared",
@@ -264,10 +273,14 @@ const FORTUNES = [
   },
   {
     id: "f_0026",
-    text: "Sometimes stillness is the best movement.",
+    text: "Sometimes not moving is the best move.",
     primaryBucket: "calm",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted",
+      "shaken",
+      "tired"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -637,8 +650,10 @@ const FORTUNES = [
     id: "f_0072",
     text: "Warmth travels farther than most arguments.",
     primaryBucket: "caring",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "grateful"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -655,7 +670,7 @@ const FORTUNES = [
     primaryBucket: "caring",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0075",
@@ -711,7 +726,7 @@ const FORTUNES = [
     primaryBucket: "caring",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0082",
@@ -751,7 +766,7 @@ const FORTUNES = [
     primaryBucket: "caring",
     alsoFits: [],
     scope: "specific",
-    active: true
+    active: false
   },
   {
     id: "f_0087",
@@ -5731,7 +5746,7 @@ const FORTUNES = [
   },
   {
     id: "f_0683",
-    text: "Warmth can reach places words never do.",
+    text: "Kindness can reach places words never do.",
     primaryBucket: "caring",
     alsoFits: [],
     scope: "specific",

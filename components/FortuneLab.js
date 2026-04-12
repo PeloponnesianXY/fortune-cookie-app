@@ -211,9 +211,9 @@ function getColumnBucketOrder(bucketOrder) {
   const visibleBuckets = bucketOrder.filter((bucket) => !HIDDEN_BUCKET_COLUMNS.includes(bucket));
   const seen = new Set();
   const preferredOrder = [
-    ...POSITIVE_BUCKETS,
-    ...NEUTRAL_BUCKETS,
-    ...NEGATIVE_BUCKETS,
+    ...[...POSITIVE_BUCKETS].sort((left, right) => formatBucketLabel(left).localeCompare(formatBucketLabel(right))),
+    ...[...NEUTRAL_BUCKETS].sort((left, right) => formatBucketLabel(left).localeCompare(formatBucketLabel(right))),
+    ...[...NEGATIVE_BUCKETS].sort((left, right) => formatBucketLabel(left).localeCompare(formatBucketLabel(right))),
   ];
 
   const ordered = preferredOrder.filter((bucket) => {
