@@ -744,6 +744,7 @@ const BUCKET_VOCAB = {
   "tired": [
     "tired",
     "exhausted",
+    "depleted",
     "jetlagged",
     "sleepdeprived",
     "drained",
@@ -772,6 +773,7 @@ const BUCKET_VOCAB = {
   ],
   "sick": [
     "sick",
+    "unwell",
     "fluish",
     "congested",
     "shivery",
