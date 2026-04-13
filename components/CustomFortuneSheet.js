@@ -16,34 +16,33 @@ import PreviewModal from './PreviewModal';
 import { usePreviewLayout } from './PreviewLayoutContext';
 
 const MAX_LENGTH = 140;
-const EXPANDED_MOOD_KEYS = ['caring', 'guilty', 'embarrassed', 'distracted'];
 
 function getMoodPillTypography(width, height) {
   if (height < 720 || width <= 375) {
-    return { fontSize: 10, lineHeight: 11, minimumFontScale: 0.62 };
+    return { fontSize: 12.3, lineHeight: 14.2 };
   }
 
   if (height >= 900 || width >= 430) {
-    return { fontSize: 14, lineHeight: 16, minimumFontScale: 0.92 };
+    return { fontSize: 14, lineHeight: 16 };
   }
 
   if (height >= 800 || width >= 390) {
-    return { fontSize: 13, lineHeight: 15, minimumFontScale: 0.74 };
+    return { fontSize: 13, lineHeight: 15 };
   }
 
-  return { fontSize: 11.5, lineHeight: 13, minimumFontScale: 0.82 };
+  return { fontSize: 12, lineHeight: 14 };
 }
 
 function getMoodPillLayout(width, height) {
   if (height < 720 || width <= 375) {
-    return { gap: 3, width: '19%' };
+    return { gap: 4 };
   }
 
   if (height >= 800 || width >= 390) {
-    return { gap: 3, width: '24.25%' };
+    return { gap: 6 };
   }
 
-  return { gap: 5, width: '23.5%' };
+  return { gap: 5 };
 }
 
 function getSheetWidth(width) {
@@ -75,7 +74,6 @@ export default function CustomFortuneSheet({
 }) {
   const [selectedMood, setSelectedMood] = useState(initialMoodKey || null);
   const [fortuneText, setFortuneText] = useState(initialFortuneText || '');
-  const [hoveredMoodKey, setHoveredMoodKey] = useState(null);
   const [collapsedHeight, setCollapsedHeight] = useState(collapsedEstimatedHeight || 0);
   const [anchoredTop, setAnchoredTop] = useState(null);
   const previewLayout = usePreviewLayout();
@@ -99,7 +97,6 @@ export default function CustomFortuneSheet({
     if (visible) {
       setSelectedMood(initialMoodKey || null);
       setFortuneText(initialFortuneText || '');
-      setHoveredMoodKey(null);
       setCollapsedHeight(collapsedEstimatedHeight || 0);
       setAnchoredTop(null);
     }
@@ -209,21 +206,9 @@ export default function CustomFortuneSheet({
                     <View style={[styles.moodGrid, { gap: moodPillLayout.gap }]}>
                       {section.options.map((option) => {
                         const isSelected = option.key === selectedMood;
-                        const isAlwaysExpanded = EXPANDED_MOOD_KEYS.includes(option.key);
-                        const isExpandedOnHover = Platform.OS === 'web'
-                          && isAlwaysExpanded
-                          && hoveredMoodKey === option.key;
                         return (
                           <Pressable
                             key={option.key}
-                            onHoverIn={() => {
-                              if (isAlwaysExpanded) {
-                                setHoveredMoodKey(option.key);
-                              }
-                            }}
-                            onHoverOut={() => setHoveredMoodKey((current) => (
-                              current === option.key ? null : current
-                            ))}
                             onPress={() => {
                               if (errorMessage) {
                                 onDismissError?.();
@@ -233,24 +218,16 @@ export default function CustomFortuneSheet({
                             style={[
                               styles.moodPill,
                               isVeryCompactSheet ? styles.moodPillCompact : null,
-                              { width: moodPillLayout.width },
-                              isExpandedOnHover ? styles.moodPillHoverExpanded : null,
                               isSelected ? styles.moodPillSelected : null,
                             ]}
                           >
                             <Text
-                              adjustsFontSizeToFit
-                              minimumFontScale={moodPillTypography.minimumFontScale}
-                              numberOfLines={1}
                               style={[
                                 styles.moodPillText,
                                 {
                                   fontSize: moodPillTypography.fontSize,
                                   lineHeight: moodPillTypography.lineHeight,
                                 },
-                                isAlwaysExpanded ? styles.moodPillTextAlwaysExpanded : null,
-                                isVeryCompactSheet && isAlwaysExpanded ? styles.moodPillTextCompactLong : null,
-                                isExpandedOnHover ? styles.moodPillTextHoverExpanded : null,
                                 isSelected ? styles.moodPillTextSelected : null,
                               ]}
                             >
@@ -338,7 +315,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    maxHeight: '78%',
+    maxHeight: '74%',
     backgroundColor: '#fff8f1',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -346,21 +323,21 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
     overflow: 'hidden',
     paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 10,
-  },
-  sheetCompact: {
-    maxHeight: '78%',
-    paddingHorizontal: 10,
     paddingTop: 10,
     paddingBottom: 8,
+  },
+  sheetCompact: {
+    maxHeight: '74%',
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 7,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: 12,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   title: {
     fontSize: 20,
@@ -373,7 +350,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   subtitle: {
-    marginTop: 4,
+    marginTop: 2,
     fontSize: 12,
     lineHeight: 16,
     color: '#8f6b4f',
@@ -393,13 +370,13 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
   },
   scrollContent: {
-    paddingBottom: 2,
+    paddingBottom: 0,
   },
   moodSection: {
-    marginTop: 6,
+    marginTop: 4,
   },
   moodSectionHeader: {
-    marginBottom: 4,
+    marginBottom: 3,
     paddingLeft: 2,
   },
   moodSectionLabel: {
@@ -425,56 +402,47 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(149, 114, 85, 0.16)',
     backgroundColor: '#fffdf9',
-    width: '23.5%',
-    minHeight: 28,
-    paddingHorizontal: 8,
-    paddingVertical: 0,
+    minHeight: 30,
+    maxWidth: '100%',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   moodPillCompact: {
-    minHeight: 25,
-    paddingHorizontal: 4,
-  },
-  moodPillHoverExpanded: {
-    zIndex: 2,
+    minHeight: 28,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
   },
   moodPillSelected: {
     backgroundColor: '#f6dcc0',
     borderColor: '#ddb17a',
   },
   moodPillText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#5d4330',
-    letterSpacing: -0.12,
-    lineHeight: 15,
+    letterSpacing: -0.08,
+    lineHeight: 14,
     textAlign: 'center',
+    flexShrink: 1,
   },
   moodPillTextSelected: {
     color: '#4f3622',
   },
-  moodPillTextAlwaysExpanded: {
-    fontSize: 10.5,
-  },
-  moodPillTextHoverExpanded: {
-    fontSize: 10.25,
-  },
-  moodPillTextCompactLong: {
-    fontSize: 9.35,
-  },
   formCard: {
-    marginTop: 8,
+    marginTop: 6,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(149, 114, 85, 0.16)',
     backgroundColor: 'rgba(255, 251, 245, 0.96)',
     paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 6,
   },
   input: {
-    minHeight: 62,
+    minHeight: 54,
     fontSize: 15,
     lineHeight: 20,
     color: '#3f2c20',
@@ -482,12 +450,12 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   inputCompact: {
-    minHeight: 52,
+    minHeight: 46,
     fontSize: 14,
     lineHeight: 18,
   },
   formFooter: {
-    marginTop: 6,
+    marginTop: 4,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -520,14 +488,14 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: 8,
+    marginTop: 6,
   },
   actionsCompact: {
     gap: 8,
-    marginTop: 6,
+    marginTop: 4,
   },
   actionButton: {
-    minHeight: 36,
+    minHeight: 34,
     borderRadius: 14,
     borderWidth: 1,
     justifyContent: 'center',
@@ -536,7 +504,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionButtonCompact: {
-    minHeight: 32,
+    minHeight: 30,
     borderRadius: 12,
     paddingHorizontal: 12,
   },

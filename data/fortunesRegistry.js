@@ -1201,14 +1201,6 @@ const FORTUNES = [
     active: true
   },
   {
-    id: "f_0136",
-    text: "Some days are better judged after sleep.",
-    primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
     id: "f_0137",
     text: "Your body may want gentleness more than productivity today.",
     primaryBucket: "sick",
@@ -1717,14 +1709,6 @@ const FORTUNES = [
   {
     id: "f_0200",
     text: "This ache can shrink after one decent conversation.",
-    primaryBucket: "lonely",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
-    id: "f_0201",
-    text: "Heavy feelings shrink a little in decent company.",
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific",
@@ -2245,10 +2229,15 @@ const FORTUNES = [
     text: "You're allowed to need comfort first today.",
     primaryBucket: "sad",
     alsoFits: [
+      "angry",
       "anxious",
+      "confused",
+      "disgusted",
       "embarrassed",
       "distracted",
+      "frustrated",
       "hungry",
+      "jealous",
       "lonely",
       "numb",
       "sick",
@@ -2291,6 +2280,9 @@ const FORTUNES = [
       "anxious",
       "embarrassed",
       "distracted",
+      "guilty",
+      "jealous",
+      "shaken",
       "stressed"
     ],
     scope: "shared",
@@ -2327,9 +2319,13 @@ const FORTUNES = [
     text: "Tiny comforts can do serious work right now.",
     primaryBucket: "sad",
     alsoFits: [
+      "angry",
       "anxious",
+      "confused",
       "embarrassed",
       "distracted",
+      "frustrated",
+      "jealous",
       "lonely",
       "numb",
       "sick",
@@ -2347,9 +2343,12 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
+      "confused",
       "embarrassed",
       "distracted",
       "frustrated",
+      "guilty",
+      "jealous",
       "lonely",
       "numb",
       "sick",
@@ -2445,6 +2444,8 @@ const FORTUNES = [
       "distracted",
       "guilty",
       "jealous",
+      "lonely",
+      "shaken",
       "stressed"
     ],
     scope: "shared",
@@ -2467,7 +2468,11 @@ const FORTUNES = [
     text: "This feeling is eloquent, not necessarily correct.",
     primaryBucket: "sad",
     alsoFits: [
-      "anxious"
+      "anxious",
+      "guilty",
+      "jealous",
+      "lonely",
+      "shaken"
     ],
     scope: "shared",
     active: true
@@ -2567,14 +2572,6 @@ const FORTUNES = [
     ],
     scope: "shared",
     active: true
-  },
-  {
-    id: "f_0275",
-    text: "Low today? A friend - or your cat - may lift your mood.",
-    primaryBucket: "sad",
-    alsoFits: [],
-    scope: "specific",
-    active: false
   },
   {
     id: "f_0276",
@@ -3001,14 +2998,6 @@ const FORTUNES = [
     active: false
   },
   {
-    id: "f_0327",
-    text: "Tiny comforts can do serious work right now.",
-    primaryBucket: "numb",
-    alsoFits: [],
-    scope: "specific",
-    active: false
-  },
-  {
     id: "f_0328",
     text: "This wave will pass more gently if you stop feeding it.",
     primaryBucket: "anxious",
@@ -3097,7 +3086,8 @@ const FORTUNES = [
     text: "A loud mind is not always a well-informed one.",
     primaryBucket: "anxious",
     alsoFits: [
-      "stressed"
+      "stressed",
+      "wired"
     ],
     scope: "shared",
     active: true
@@ -3185,7 +3175,12 @@ const FORTUNES = [
     text: "This feeling is persuasive, not necessarily accurate.",
     primaryBucket: "anxious",
     alsoFits: [
-      "stressed"
+      "embarrassed",
+      "guilty",
+      "jealous",
+      "shaken",
+      "stressed",
+      "wired"
     ],
     scope: "shared",
     active: true
@@ -3205,7 +3200,8 @@ const FORTUNES = [
     text: "Your mind sometimes talks faster than reality.",
     primaryBucket: "anxious",
     alsoFits: [
-      "stressed"
+      "stressed",
+      "wired"
     ],
     scope: "shared",
     active: true
@@ -3386,7 +3382,7 @@ const FORTUNES = [
   },
   {
     id: "f_0368",
-    text: "Stress makes the choice of socks a major crisis..",
+    text: "Stress makes the choice of socks a major crisis.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific",
@@ -3711,30 +3707,6 @@ const FORTUNES = [
     alsoFits: [],
     scope: "specific",
     active: true
-  },
-  {
-    id: "f_0409",
-    text: "A loud mind is not always a well-informed one.",
-    primaryBucket: "wired",
-    alsoFits: [],
-    scope: "specific",
-    active: false
-  },
-  {
-    id: "f_0410",
-    text: "Your mind sometimes talks faster than reality.",
-    primaryBucket: "wired",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
-    id: "f_0411",
-    text: "This feeling is persuasive, not necessarily accurate.",
-    primaryBucket: "wired",
-    alsoFits: [],
-    scope: "specific",
-    active: false
   },
   {
     id: "f_0412",
@@ -4782,9 +4754,12 @@ const FORTUNES = [
     text: "Your next move may be simpler than you think.",
     primaryBucket: "confused",
     alsoFits: [
+      "anxious",
       "distracted",
       "frustrated",
-      "shaken"
+      "shaken",
+      "stressed",
+      "wired"
     ],
     scope: "shared",
     active: true
@@ -4805,7 +4780,9 @@ const FORTUNES = [
     primaryBucket: "confused",
     alsoFits: [
       "frustrated",
-      "stressed"
+      "shaken",
+      "stressed",
+      "wired"
     ],
     scope: "shared",
     active: true
@@ -4898,8 +4875,14 @@ const FORTUNES = [
     id: "f_0546",
     text: "The next step does not need the whole map.",
     primaryBucket: "confused",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "anxious",
+      "distracted",
+      "frustrated",
+      "shaken",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -4914,8 +4897,12 @@ const FORTUNES = [
     id: "f_0548",
     text: "Directionally right is better than precisely wrong.",
     primaryBucket: "confused",
-    alsoFits: [],
-    scope: "specific",
+    alsoFits: [
+      "distracted",
+      "frustrated",
+      "stressed"
+    ],
+    scope: "shared",
     active: true
   },
   {
@@ -6168,7 +6155,7 @@ const FORTUNES = [
   },
   {
     id: "f_0703",
-    text: "When in doubt, chose the kinder interpretation.",
+    text: "When in doubt, choose the kinder interpretation.",
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
@@ -6184,7 +6171,7 @@ const FORTUNES = [
   },
   {
     id: "f_0705",
-    text: "Let things unfold before you decided what they mean.",
+    text: "Let things unfold before you decide what they mean.",
     primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
@@ -6340,7 +6327,7 @@ const FORTUNES = [
   },
   {
     id: "f_0725",
-    text: "Don't let hunger bring you down -- use it for comedy.",
+    text: "Don't let hunger bring you down; use it for comedy.",
     primaryBucket: "hungry",
     alsoFits: [],
     scope: "specific",
@@ -6582,7 +6569,7 @@ const FORTUNES = [
   },
   {
     id: "f_0755",
-    text: "Little is needed to to be happy; it is all within yourself",
+    text: "Little is needed to be happy; it is all within yourself.",
     primaryBucket: "happy",
     alsoFits: [],
     scope: "specific",
@@ -6673,14 +6660,6 @@ const FORTUNES = [
     active: true
   },
   {
-    id: "f_0766",
-    text: "Engage with your potential instead of your limitations.",
-    primaryBucket: "engaged",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
     id: "f_0767",
     text: "Focus on remedies, not faults.",
     primaryBucket: "guilty",
@@ -6689,40 +6668,8 @@ const FORTUNES = [
     active: true
   },
   {
-    id: "f_0768",
-    text: "Love is the silent saying and saying of a single name.",
-    primaryBucket: "romantic",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
-    id: "f_0769",
-    text: "A loving heart is the truest wisdom.",
-    primaryBucket: "romantic",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
     id: "f_0770",
     text: "The human heart opens to the heart that opens in return.",
-    primaryBucket: "romantic",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
-    id: "f_0771",
-    text: "Love is an attempt to change a piece of a dream into reality.",
-    primaryBucket: "romantic",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
-    id: "f_0772",
-    text: "Love is the master key that opens the gates of happiness.",
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific",
