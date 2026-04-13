@@ -45,6 +45,22 @@ function getMoodPillLayout(width, height) {
   return { gap: 5 };
 }
 
+function getMoodSectionGap(sectionKey, width, height) {
+  const { gap } = getMoodPillLayout(width, height);
+
+  // Keep the negative row a touch tighter on SE and Max widths so
+  // the final pill can stay on the second row without shrinking all sections.
+  if (sectionKey === 'negative' && width <= 375) {
+    return Math.max(3, gap - 1);
+  }
+
+  if (sectionKey === 'negative' && width >= 430) {
+    return Math.max(2, gap - 2);
+  }
+
+  return gap;
+}
+
 function getSheetWidth(width) {
   if (width <= 375) {
     return '98%';
@@ -161,13 +177,12 @@ export default function CustomFortuneSheet({
               onLayout={handleSheetLayout}
               style={[
                 styles.sheet,
-                { width: sheetWidth, alignSelf: 'center' },
+                {
+                  width: sheetWidth,
+                  alignSelf: 'center',
+                  maxWidth: collapsedMaxWidth || '100%',
+                },
                 isVeryCompactSheet ? styles.sheetCompact : null,
-                isCollapsed
-                  ? {
-                      maxWidth: collapsedMaxWidth || '100%',
-                    }
-                  : null,
               ]}
             >
               <View style={styles.header}>
@@ -196,16 +211,28 @@ export default function CustomFortuneSheet({
                 {moodSections.map((section, sectionIndex) => (
                   <View
                     key={section.key}
-                    style={sectionIndex > 0 ? styles.moodSection : null}
+                    style={sectionIndex === 0 ? styles.firstMoodSection : sectionIndex > 0 ? styles.moodSection : null}
                   >
                     <View style={styles.moodSectionHeader}>
                       <Text style={[styles.moodSectionLabel, isVeryCompactSheet ? styles.moodSectionLabelCompact : null]}>
                         {section.label}
                       </Text>
                     </View>
-                    <View style={[styles.moodGrid, { gap: moodPillLayout.gap }]}>
+                    <View
+                      style={[
+                        styles.moodGrid,
+                        {
+                          gap: getMoodSectionGap(section.key, previewLayout.width, previewLayout.height),
+                        },
+                      ]}
+                    >
                       {section.options.map((option) => {
                         const isSelected = option.key === selectedMood;
+                        const useTighterNegativePills =
+                          section.key === 'negative' &&
+                          (previewLayout.width <= 375 || previewLayout.width >= 430);
+                        const useTightestNegativePills =
+                          section.key === 'negative' && previewLayout.width >= 430;
                         return (
                           <Pressable
                             key={option.key}
@@ -218,6 +245,9 @@ export default function CustomFortuneSheet({
                             style={[
                               styles.moodPill,
                               isVeryCompactSheet ? styles.moodPillCompact : null,
+                              useTighterNegativePills ? styles.moodPillTight : null,
+                              useTighterNegativePills && isVeryCompactSheet ? styles.moodPillCompactTight : null,
+                              useTightestNegativePills ? styles.moodPillWideScreenTight : null,
                               isSelected ? styles.moodPillSelected : null,
                             ]}
                           >
@@ -372,6 +402,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 0,
   },
+  firstMoodSection: {
+    marginTop: 4,
+  },
   moodSection: {
     marginTop: 4,
   },
@@ -414,6 +447,15 @@ const styles = StyleSheet.create({
     minHeight: 28,
     paddingHorizontal: 9,
     paddingVertical: 5,
+  },
+  moodPillTight: {
+    paddingHorizontal: 9,
+  },
+  moodPillCompactTight: {
+    paddingHorizontal: 7,
+  },
+  moodPillWideScreenTight: {
+    paddingHorizontal: 7,
   },
   moodPillSelected: {
     backgroundColor: '#f6dcc0',
