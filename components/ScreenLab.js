@@ -106,6 +106,13 @@ function getDisplayWidthInches({ displayDiagonalInches, height, width }) {
 
 const DISPLAY_REFERENCE_DEVICE = PREVIEW_DEVICES.find((device) => device.key === DISPLAY_REFERENCE_KEY);
 const DISPLAY_REFERENCE_WIDTH_RATIO = getDisplayWidthInches(DISPLAY_REFERENCE_DEVICE) / DISPLAY_REFERENCE_DEVICE.width;
+const SCENE_OPTIONS = [
+  { key: 'all', label: 'All' },
+  ...Object.keys(SCENE_LIBRARY).map((key) => ({
+    key,
+    label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
+  })),
+];
 
 function getDisplayPreviewScale(device) {
   const widthRatio = getDisplayWidthInches(device) / device.width;
@@ -148,6 +155,7 @@ function ToggleRow({ label, onValueChange, value }) {
 
 export default function ScreenLab() {
   const [fortuneLength, setFortuneLength] = useState('medium');
+  const [selectedSceneKey, setSelectedSceneKey] = useState('all');
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const [isActionTrayExpanded, setIsActionTrayExpanded] = useState(false);
   const [isCreateFortuneSheetOpen, setIsCreateFortuneSheetOpen] = useState(false);
@@ -188,7 +196,7 @@ export default function ScreenLab() {
     onToggleSavedFavorite: () => {},
     onToggleFavorite: () => {},
     paperProgress: new Animated.Value(1),
-    scene: SCENE_LIBRARY.apricotMorning,
+    scene: SCENE_LIBRARY[selectedSceneKey] || SCENE_LIBRARY.plainLight,
     shellProgress: new Animated.Value(1),
     streakCelebrationToken: 0,
     streakCount: 12,
@@ -205,7 +213,23 @@ export default function ScreenLab() {
     isHistorySheetOpen,
     isLockWarningVisible,
     isStreakBarExpanded,
+    selectedSceneKey,
   ]);
+
+  const sceneGroups = selectedSceneKey === 'all'
+    ? SCENE_OPTIONS.filter((option) => option.key !== 'all').map((option) => ({
+      key: option.key,
+      label: option.label,
+      previewProps: {
+        ...previewProps,
+        scene: SCENE_LIBRARY[option.key] || SCENE_LIBRARY.plainLight,
+      },
+    }))
+    : [{
+      key: selectedSceneKey,
+      label: SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene',
+      previewProps,
+    }];
 
   return (
     <ScrollView
@@ -233,6 +257,25 @@ export default function ScreenLab() {
               />
             </View>
 
+            <View style={styles.sceneBlock}>
+              <Text style={styles.controlLabel}>Color Scheme</Text>
+              <View style={styles.sceneOptions}>
+                {SCENE_OPTIONS.map((option) => {
+                  const isActive = selectedSceneKey === option.key;
+
+                  return (
+                    <Text
+                      key={option.key}
+                      onPress={() => setSelectedSceneKey(option.key)}
+                      style={[styles.sceneOption, isActive ? styles.sceneOptionActive : null]}
+                    >
+                      {option.label}
+                    </Text>
+                  );
+                })}
+              </View>
+            </View>
+
             <View style={styles.togglesGrid}>
               <ToggleRow label="Action tray" onValueChange={setIsActionTrayExpanded} value={isActionTrayExpanded} />
               <ToggleRow label="Create sheet" onValueChange={setIsCreateFortuneSheetOpen} value={isCreateFortuneSheetOpen} />
@@ -249,18 +292,25 @@ export default function ScreenLab() {
       </View>
 
       <View style={styles.framesWrap}>
-        {PREVIEW_DEVICES.map((device) => (
-          <PreviewFrame
-            key={device.key}
-            height={device.height}
-            insets={isSafeAreaSimulated ? device.insets : { top: 0, right: 0, bottom: 0, left: 0 }}
-            keyboardVisible={isKeyboardSimulated}
-            label={device.label}
-            visualScale={getDisplayPreviewScale(device)}
-            width={device.width}
-          >
-            <FortuneHomeContent {...previewProps} />
-          </PreviewFrame>
+        {sceneGroups.map((group) => (
+          <View key={group.key} style={styles.sceneGroup}>
+            {selectedSceneKey === 'all' ? <Text style={styles.sceneGroupTitle}>{group.label}</Text> : null}
+            <View style={styles.sceneFramesWrap}>
+              {PREVIEW_DEVICES.map((device) => (
+                <PreviewFrame
+                  key={`${group.key}-${device.key}`}
+                  height={device.height}
+                  insets={isSafeAreaSimulated ? device.insets : { top: 0, right: 0, bottom: 0, left: 0 }}
+                  keyboardVisible={isKeyboardSimulated}
+                  label={device.label}
+                  visualScale={getDisplayPreviewScale(device)}
+                  width={device.width}
+                >
+                  <FortuneHomeContent {...group.previewProps} />
+                </PreviewFrame>
+              ))}
+            </View>
+          </View>
         ))}
       </View>
     </ScrollView>
@@ -321,6 +371,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  sceneBlock: {
+    gap: 8,
+    minWidth: 280,
+  },
   controlLabel: {
     fontSize: 11,
     fontWeight: '700',
@@ -348,6 +402,28 @@ const styles = StyleSheet.create({
     borderColor: '#d8a66b',
     color: '#3d2c1e',
   },
+  sceneOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    maxWidth: 640,
+  },
+  sceneOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#f5ecdf',
+    borderWidth: 1,
+    borderColor: 'rgba(136, 102, 72, 0.16)',
+    color: '#5b4534',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  sceneOptionActive: {
+    backgroundColor: '#f0d4ad',
+    borderColor: '#d8a66b',
+    color: '#3d2c1e',
+  },
   togglesGrid: {
     flex: 1,
     flexDirection: 'row',
@@ -370,6 +446,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   framesWrap: {
+    width: '100%',
+    gap: 24,
+  },
+  sceneGroup: {
+    gap: 10,
+  },
+  sceneGroupTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#2d241d',
+    letterSpacing: 0.2,
+  },
+  sceneFramesWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 16,

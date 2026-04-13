@@ -1,13 +1,14 @@
-/* Shared runtime scene definitions and bucket-to-scene mapping. */
+/* Shared runtime scene definitions and mood-to-scene mapping.
+   Keep this file as the single source of truth for scene names and palette tuning. */
 
 const BASE_SCENE = {
-  textPrimary: '#39291d',
-  accent: '#8e6345',
-  accentSoft: '#b28a6f',
-  panel: 'rgba(255, 251, 245, 0.96)',
-  panelBorder: 'rgba(146, 111, 83, 0.15)',
-  input: 'rgba(255, 255, 252, 0.99)',
-  inputBorder: 'rgba(149, 114, 85, 0.16)',
+  textPrimary: '#4d473f',
+  accent: '#9f9385',
+  accentSoft: '#d4ccc2',
+  panel: 'rgba(250, 248, 244, 0.96)',
+  panelBorder: 'rgba(124, 114, 102, 0.14)',
+  input: 'rgba(255, 255, 252, 0.98)',
+  inputBorder: 'rgba(150, 139, 126, 0.18)',
   statusBar: 'dark',
   stars: [],
 };
@@ -21,154 +22,132 @@ function hexToRgba(hex, alpha) {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
-function createPaletteScene({
-  backgroundDeep,
-  backgroundMid,
+function createAtmosphericScene({
+  sky,
+  wash,
   glow,
   accent,
   textDark,
 }) {
   return {
     ...BASE_SCENE,
-    sky: backgroundDeep,
-    wash: hexToRgba(backgroundMid, 0.86),
+    sky,
+    wash: hexToRgba(wash, 0.82),
     celestial: glow,
-    celestialHalo: hexToRgba(glow, 0.5),
-    cloud: hexToRgba(accent, 0.28),
+    celestialHalo: hexToRgba(glow, 0.28),
+    cloud: hexToRgba(accent, 0.12),
     textPrimary: textDark,
     accent,
-    accentSoft: glow,
-    panel: hexToRgba(glow, 0.92),
-    panelBorder: hexToRgba(textDark, 0.14),
-    input: hexToRgba('#FFFFFF', 0.96),
-    inputBorder: hexToRgba(accent, 0.24),
+    accentSoft: hexToRgba(accent, 0.5),
+    panel: hexToRgba(glow, 0.88),
+    panelBorder: hexToRgba(textDark, 0.11),
+    input: hexToRgba('#FFFFFF', 0.95),
+    inputBorder: hexToRgba(accent, 0.16),
   };
 }
 
-const APRICOT_MORNING_SCENE = {
-  sky: '#f7e6ce',
-  wash: 'rgba(255, 244, 219, 0.86)',
-  celestial: '#f8bf67',
-  celestialHalo: 'rgba(249, 201, 115, 0.54)',
-  cloud: 'rgba(255, 248, 234, 0.42)',
-};
-
-const SUNRISE_BLOOM_SCENE = createPaletteScene({
-  backgroundDeep: '#F7C873',
-  backgroundMid: '#F6A85C',
-  glow: '#FFDFA3',
-  accent: '#F28C8C',
-  textDark: '#5C3A21',
-});
-
-const PRISM_DRIFT_SCENE = createPaletteScene({
-  backgroundDeep: '#6B6FF2',
-  backgroundMid: '#9A8CFF',
-  glow: '#C7F0FF',
-  accent: '#E7D7FF',
-  textDark: '#2B2757',
-});
-
-const OPAL_MIST_SCENE = createPaletteScene({
-  backgroundDeep: '#A8B7C9',
-  backgroundMid: '#D9E2EA',
-  glow: '#F4F7FA',
-  accent: '#CFC7DF',
-  textDark: '#46515E',
-});
-
-const EMBER_MESA_SCENE = createPaletteScene({
-  backgroundDeep: '#8F3B2E',
-  backgroundMid: '#C96B4A',
-  glow: '#F2B079',
-  accent: '#D94F4F',
-  textDark: '#3B1E18',
-});
-
-const NEON_PULSE_SCENE = createPaletteScene({
-  backgroundDeep: '#243B64',
-  backgroundMid: '#3D67A8',
-  glow: '#78D7FF',
-  accent: '#A6F0D6',
-  textDark: '#162033',
-});
-
-const SILVER_HUSH_SCENE = createPaletteScene({
-  backgroundDeep: '#6E7C96',
-  backgroundMid: '#9AA8BF',
-  glow: '#DCE4F2',
-  accent: '#C7B0BA',
-  textDark: '#334055',
-});
-
-const STONE_VEIL_SCENE = createPaletteScene({
-  backgroundDeep: '#5F6660',
-  backgroundMid: '#8B948B',
-  glow: '#C9D1C8',
-  accent: '#B7C47A',
-  textDark: '#2F352F',
-});
-
 const SCENE_LIBRARY = {
-  apricotMorning: {
-    ...BASE_SCENE,
-    ...APRICOT_MORNING_SCENE,
-  },
-  sunriseBloom: {
-    ...SUNRISE_BLOOM_SCENE,
-  },
-  prismDrift: {
-    ...PRISM_DRIFT_SCENE,
-  },
-  silverHush: {
-    ...SILVER_HUSH_SCENE,
-  },
-  emberMesa: {
-    ...EMBER_MESA_SCENE,
-  },
-  neonPulse: {
-    ...NEON_PULSE_SCENE,
-  },
-  stoneVeil: {
-    ...STONE_VEIL_SCENE,
-  },
-  opalMist: {
-    ...OPAL_MIST_SCENE,
-  },
+  goldenQuiet: createAtmosphericScene({
+    sky: '#F7E6CE',
+    wash: '#FFF4DB',
+    glow: '#F8BF67',
+    accent: '#B78D63',
+    textDark: '#5B4634',
+  }),
+  firstLight: createAtmosphericScene({
+    sky: '#F3E7D6',
+    wash: '#FAF1E5',
+    glow: '#F6D79B',
+    accent: '#BFAE9A',
+    textDark: '#625548',
+  }),
+  emberField: createAtmosphericScene({
+    sky: '#D6C6BF',
+    wash: '#E8DCD7',
+    glow: '#F6F1ED',
+    accent: '#B28F87',
+    textDark: '#65534D',
+  }),
+  blueHush: createAtmosphericScene({
+    sky: '#C7CFD8',
+    wash: '#DDE3EB',
+    glow: '#F3F6F9',
+    accent: '#A7B1BE',
+    textDark: '#53606E',
+  }),
+  softStatic: createAtmosphericScene({
+    sky: '#D0CFD7',
+    wash: '#E4E2E8',
+    glow: '#F5F4F7',
+    accent: '#ADA8B5',
+    textDark: '#5C5964',
+  }),
+  plainLight: createAtmosphericScene({
+    sky: '#D8D6D1',
+    wash: '#E9E7E2',
+    glow: '#F5F4F1',
+    accent: '#AAA7A0',
+    textDark: '#59574F',
+  }),
+  unknownSky: createAtmosphericScene({
+    sky: '#AAB0BA',
+    wash: '#C7CCD3',
+    glow: '#E7EAEF',
+    accent: '#8C93A0',
+    textDark: '#535A67',
+  }),
+  fogDrift: createAtmosphericScene({
+    sky: '#CFD1D8',
+    wash: '#E5E3E8',
+    glow: '#F4F3F6',
+    accent: '#B3AEB8',
+    textDark: '#615F68',
+  }),
 };
 
 const MOOD_SCENE_KEYS = {
-  caring: 'sunriseBloom',
-  happy: 'sunriseBloom',
-  hopeful: 'sunriseBloom',
-  proud: 'sunriseBloom',
-  confident: 'sunriseBloom',
-  calm: 'sunriseBloom',
-  grateful: 'sunriseBloom',
-  emotional: 'silverHush',
-  engaged: 'neonPulse',
-  wowed: 'prismDrift',
-  shaken: 'prismDrift',
-  confused: 'opalMist',
-  anxious: 'silverHush',
-  angry: 'emberMesa',
-  frustrated: 'emberMesa',
-  sad: 'silverHush',
-  disgusted: 'stoneVeil',
-  lonely: 'silverHush',
-  guilty: 'silverHush',
-  jealous: 'emberMesa',
-  embarrassed: 'opalMist',
-  tired: 'silverHush',
-  sick: 'silverHush',
-  hungry: 'silverHush',
-  wired: 'neonPulse',
-  distracted: 'opalMist',
-  stressed: 'neonPulse',
-  neutral: 'opalMist',
-  numb: 'silverHush',
-  romantic: 'sunriseBloom',
-  unknown: 'prismDrift',
+  // Warm, tender, and clearly positive.
+  caring: 'goldenQuiet',
+  emotional: 'goldenQuiet',
+  grateful: 'goldenQuiet',
+  happy: 'goldenQuiet',
+  hopeful: 'goldenQuiet',
+  proud: 'goldenQuiet',
+  confident: 'goldenQuiet',
+  romantic: 'goldenQuiet',
+
+  // Open, airy positive energy.
+  calm: 'firstLight',
+  engaged: 'firstLight',
+  wowed: 'firstLight',
+
+  // Heated defensive states.
+  angry: 'emberField',
+  disgusted: 'emberField',
+  frustrated: 'emberField',
+  jealous: 'emberField',
+
+  // Quiet heavy and restorative.
+  anxious: 'blueHush',
+  guilty: 'blueHush',
+  lonely: 'blueHush',
+  numb: 'blueHush',
+  sad: 'blueHush',
+  sick: 'blueHush',
+  tired: 'blueHush',
+
+  // Activated static and social friction.
+  distracted: 'softStatic',
+  embarrassed: 'softStatic',
+  hungry: 'softStatic',
+  shaken: 'softStatic',
+  stressed: 'softStatic',
+  wired: 'softStatic',
+
+  // Intentionally isolated singletons. Do not merge these with adjacent moods.
+  neutral: 'plainLight',
+  unknown: 'unknownSky',
+  confused: 'fogDrift',
 };
 
 export { SCENE_LIBRARY, MOOD_SCENE_KEYS };

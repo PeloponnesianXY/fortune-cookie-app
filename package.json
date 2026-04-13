@@ -12,6 +12,7 @@
     "bootstrap:open-lexicons": "node scripts/bootstrapOpenLexicons.js",
     "build:open-fallback": "node scripts/buildOpenFallbackVocab.js",
     "build:semantic-fallback": "node scripts/buildSemanticFallback.js",
+    "validate:scene-mapping": "node scripts/validateSceneMapping.js",
     "validate:open-fallback": "node scripts/validateOpenFallback.js",
     "validate:semantic-fallback": "node scripts/validateSemanticFallback.js"
   },

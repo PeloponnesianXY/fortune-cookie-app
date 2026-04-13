@@ -15,13 +15,13 @@ import {
   MOOD_BUCKET_KEYS,
   OPEN_FALLBACK_BUCKET_WORDS,
 } from '../data/runtime/moodVocabularyRuntimeWrapper.js';
-import { MOOD_SCENE_KEYS } from '../data/runtime/scenes.js';
+import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
 import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
-const DEFAULT_SCENE_KEY = 'apricotMorning';
+const DEFAULT_SCENE_KEY = 'plainLight';
 const HIGH_RISK_WORDS = new Set([
   'suicide',
   'suicidal',
@@ -352,10 +352,10 @@ function normalizeStoredSelection(selection) {
 
   if (
     normalizedSelection.analysis?.primaryEmotion
-    && normalizedSelection.sceneKey === 'stoneVeil'
+    && !SCENE_LIBRARY[normalizedSelection.sceneKey]
   ) {
     normalizedSelection.sceneKey = MOOD_SCENE_KEYS[normalizedSelection.analysis.primaryEmotion]
-      || normalizedSelection.sceneKey;
+      || DEFAULT_SCENE_KEY;
   }
 
   return normalizedSelection;

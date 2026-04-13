@@ -78,33 +78,28 @@ const CREATE_FORTUNE_MOOD_SECTIONS = [
     ],
   },
   {
-    key: 'neutral',
-    label: 'Neutral',
-    moods: [
-      'confused',
-      'emotional',
-      'neutral',
-    ],
-  },
-  {
     key: 'negative',
     label: 'Negative',
     moods: [
       'angry',
       'anxious',
-      'distracted',
       'embarrassed',
       'frustrated',
-      'guilty',
       'jealous',
-      'lonely',
       'numb',
       'sad',
       'shaken',
-      'sick',
-      'stressed',
       'tired',
       'wired',
+    ],
+  },
+  {
+    key: 'neutral',
+    label: 'Could go either way',
+    moods: [
+      'confused',
+      'emotional',
+      'neutral',
     ],
   },
 ].map((section) => {
@@ -214,6 +209,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
   );
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
+  const dailyWisdomBottom = isVeryCompact ? 34 : isCompact ? 24 : isRoomy ? 26 : 20;
   const cookieRoominessDrop = clamp(
     Math.round(
       extraUsableHeight * COOKIE_ROOMINESS_DROP_FACTOR
@@ -290,6 +286,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     cookieScale,
     cookieStageMinHeight,
     cookieTopSpacing,
+    dailyWisdomBottom,
     dailyWisdomSlotHeight,
     headerTop,
     horizontalPadding,
@@ -966,7 +963,11 @@ export default function FortuneCard({
               style={[
                 styles.dailyWisdomCard,
                 dailyWisdomAnimatedStyle,
-                { backgroundColor: scene.panel, borderColor: scene.panelBorder },
+                {
+                  bottom: metrics.dailyWisdomBottom,
+                  backgroundColor: scene.panel,
+                  borderColor: scene.panelBorder,
+                },
               ]}
             >
               <Text
@@ -1043,16 +1044,15 @@ export default function FortuneCard({
             <View
               style={[
                 styles.inputCard,
+                styles.inputCardNeutral,
                 {
                   maxWidth: metrics.contentMaxWidth,
-                  backgroundColor: scene.panel,
-                  borderColor: scene.panelBorder,
                 },
               ]}
             >
               <Text style={[
                 styles.inputLabel,
-                { color: scene.accent },
+                styles.inputLabelNeutral,
                 isPromptTemporarilyLocked ? styles.inputLabelLocked : null,
               ]}>
                 Describe your mood in one word
@@ -1396,13 +1396,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 14,
-    paddingTop: 6,
-    paddingBottom: 5,
+    paddingTop: 8,
+    paddingBottom: 7,
     shadowColor: '#6d4e37',
     shadowOpacity: 0.045,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 5 },
     elevation: 2,
+  },
+  inputCardNeutral: {
+    backgroundColor: 'rgba(251, 247, 242, 0.96)',
+    borderColor: 'rgba(120, 106, 92, 0.12)',
   },
   inputLabel: {
     marginBottom: 4,
@@ -1413,13 +1417,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     opacity: 0.7,
   },
+  inputLabelNeutral: {
+    color: '#2f2924',
+  },
   inputLabelLocked: {
     opacity: 0.45,
   },
   inputRow: {
     borderRadius: 14,
     borderWidth: 1,
-    minHeight: 30,
+    minHeight: 34,
     paddingHorizontal: 12,
     justifyContent: 'center',
     zIndex: 3,

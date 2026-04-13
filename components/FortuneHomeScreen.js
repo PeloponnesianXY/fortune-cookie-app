@@ -140,7 +140,7 @@ export default function FortuneHomeScreen() {
   const replacementAttemptRef = useRef(0);
   const revealSessionRef = useRef(0);
 
-  const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.apricotMorning;
+  const scene = SCENE_LIBRARY[sceneKey] || SCENE_LIBRARY.plainLight;
   const isAnimating = revealPhase === REVEAL_PHASE.OPENING;
   const isResetCommandActive = isResetFortuneCommand(moodInput);
   const hasActionableInput = Boolean(moodInput.trim());

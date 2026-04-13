@@ -35,10 +35,7 @@ const FORTUNES = [
     id: "f_0001",
     text: "Things improve when you stop fighting your own limits.",
     primaryBucket: "calm",
-    alsoFits: [
-      "confident",
-      "proud"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -202,7 +199,6 @@ const FORTUNES = [
     alsoFits: [
       "anxious",
       "distracted",
-      "numb",
       "sad",
       "stressed",
       "shaken",
@@ -249,7 +245,6 @@ const FORTUNES = [
     primaryBucket: "calm",
     alsoFits: [
       "confused",
-      "distracted",
       "shaken"
     ],
     scope: "shared",
@@ -650,9 +645,7 @@ const FORTUNES = [
     id: "f_0072",
     text: "Warmth travels farther than most arguments.",
     primaryBucket: "caring",
-    alsoFits: [
-      "grateful"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -885,8 +878,7 @@ const FORTUNES = [
     text: "A little spark can light up an otherwise average afternoon.",
     primaryBucket: "romantic",
     alsoFits: [
-      "caring",
-      "wowed"
+      "caring"
     ],
     scope: "shared",
     active: true
@@ -928,7 +920,6 @@ const FORTUNES = [
     text: "Today may call for less heroism and more tea.",
     primaryBucket: "tired",
     alsoFits: [
-      "distracted",
       "sick",
       "stressed",
       "wired"
@@ -1105,7 +1096,6 @@ const FORTUNES = [
     primaryBucket: "tired",
     alsoFits: [
       "anxious",
-      "distracted",
       "stressed",
       "wired"
     ],
@@ -1765,7 +1755,6 @@ const FORTUNES = [
     text: "This feeling may know exactly what it needs. Listen to it.",
     primaryBucket: "happy",
     alsoFits: [
-      "caring",
       "calm",
       "confident",
       "hopeful",
@@ -1782,11 +1771,9 @@ const FORTUNES = [
       "caring",
       "wowed",
       "calm",
-      "confident",
       "grateful",
       "hopeful",
-      "proud",
-      "romantic"
+      "proud"
     ],
     scope: "shared",
     active: true
@@ -1799,8 +1786,7 @@ const FORTUNES = [
       "confident",
       "confused",
       "frustrated",
-      "hopeful",
-      "numb"
+      "hopeful"
     ],
     scope: "shared",
     active: true
@@ -1826,7 +1812,6 @@ const FORTUNES = [
     text: "Your energy is smoothing things out in your favor.",
     primaryBucket: "happy",
     alsoFits: [
-      "calm",
       "confident",
       "hopeful"
     ],
@@ -1838,7 +1823,6 @@ const FORTUNES = [
     text: "This bright version of you is creating momentum.",
     primaryBucket: "happy",
     alsoFits: [
-      "calm",
       "confident",
       "hopeful"
     ],
@@ -1870,8 +1854,7 @@ const FORTUNES = [
       "wowed",
       "calm",
       "grateful",
-      "proud",
-      "romantic"
+      "proud"
     ],
     scope: "shared",
     active: true
@@ -1886,7 +1869,6 @@ const FORTUNES = [
       "calm",
       "grateful",
       "hopeful",
-      "proud",
       "romantic"
     ],
     scope: "shared",
@@ -1897,7 +1879,6 @@ const FORTUNES = [
     text: "Today may reward your willingness to enjoy it.",
     primaryBucket: "happy",
     alsoFits: [
-      "wowed",
       "calm",
       "hopeful"
     ],
@@ -1910,10 +1891,8 @@ const FORTUNES = [
     primaryBucket: "happy",
     alsoFits: [
       "caring",
-      "confident",
       "grateful",
-      "hopeful",
-      "romantic"
+      "hopeful"
     ],
     scope: "shared",
     active: true
@@ -1923,7 +1902,6 @@ const FORTUNES = [
     text: "One bright minute can redeem a forgettable day.",
     primaryBucket: "happy",
     alsoFits: [
-      "caring",
       "wowed",
       "grateful",
       "hopeful"
@@ -1938,8 +1916,7 @@ const FORTUNES = [
     alsoFits: [
       "wowed",
       "grateful",
-      "hopeful",
-      "romantic"
+      "hopeful"
     ],
     scope: "shared",
     active: true
@@ -1951,8 +1928,7 @@ const FORTUNES = [
     alsoFits: [
       "calm",
       "confident",
-      "grateful",
-      "proud"
+      "grateful"
     ],
     scope: "shared",
     active: true
@@ -1963,8 +1939,7 @@ const FORTUNES = [
     primaryBucket: "happy",
     alsoFits: [
       "calm",
-      "hopeful",
-      "proud"
+      "hopeful"
     ],
     scope: "shared",
     active: true
@@ -1990,9 +1965,7 @@ const FORTUNES = [
     text: "You did not borrow this feeling. You built it.",
     primaryBucket: "proud",
     alsoFits: [
-      "calm",
       "confident",
-      "grateful",
       "happy"
     ],
     scope: "shared",
@@ -2232,11 +2205,9 @@ const FORTUNES = [
       "angry",
       "anxious",
       "confused",
-      "disgusted",
       "embarrassed",
       "distracted",
       "frustrated",
-      "hungry",
       "jealous",
       "lonely",
       "numb",
@@ -2307,7 +2278,6 @@ const FORTUNES = [
     alsoFits: [
       "angry",
       "embarrassed",
-      "jealous",
       "lonely",
       "stressed"
     ],
@@ -2325,14 +2295,12 @@ const FORTUNES = [
       "embarrassed",
       "distracted",
       "frustrated",
-      "jealous",
       "lonely",
       "numb",
       "sick",
       "stressed",
       "shaken",
-      "tired",
-      "wired"
+      "tired"
     ],
     scope: "shared",
     active: true
@@ -2348,13 +2316,11 @@ const FORTUNES = [
       "distracted",
       "frustrated",
       "guilty",
-      "jealous",
       "lonely",
       "numb",
       "sick",
       "stressed",
-      "shaken",
-      "wired"
+      "shaken"
     ],
     scope: "shared",
     active: true
@@ -2393,7 +2359,6 @@ const FORTUNES = [
       "anxious",
       "embarrassed",
       "distracted",
-      "disgusted",
       "frustrated",
       "lonely",
       "numb",
@@ -2415,7 +2380,6 @@ const FORTUNES = [
       "embarrassed",
       "distracted",
       "frustrated",
-      "guilty",
       "lonely",
       "numb",
       "sick",
@@ -2443,7 +2407,6 @@ const FORTUNES = [
       "embarrassed",
       "distracted",
       "guilty",
-      "jealous",
       "lonely",
       "shaken",
       "stressed"
@@ -2487,7 +2450,6 @@ const FORTUNES = [
       "embarrassed",
       "distracted",
       "frustrated",
-      "jealous",
       "lonely",
       "sick",
       "stressed",
@@ -2524,7 +2486,6 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
-      "embarrassed",
       "lonely",
       "numb"
     ],
@@ -2538,7 +2499,6 @@ const FORTUNES = [
     alsoFits: [
       "angry",
       "anxious",
-      "embarrassed",
       "distracted",
       "numb",
       "stressed",
@@ -2566,7 +2526,6 @@ const FORTUNES = [
     alsoFits: [
       "anxious",
       "embarrassed",
-      "guilty",
       "numb",
       "tired"
     ],
@@ -2603,10 +2562,8 @@ const FORTUNES = [
       "embarrassed",
       "distracted",
       "frustrated",
-      "jealous",
       "lonely",
       "numb",
-      "sick",
       "stressed",
       "shaken"
     ],
@@ -3177,7 +3134,6 @@ const FORTUNES = [
     alsoFits: [
       "embarrassed",
       "guilty",
-      "jealous",
       "shaken",
       "stressed",
       "wired"
@@ -3742,8 +3698,7 @@ const FORTUNES = [
     primaryBucket: "hopeful",
     alsoFits: [
       "confident",
-      "confused",
-      "grateful"
+      "confused"
     ],
     scope: "shared",
     active: true
@@ -3821,7 +3776,6 @@ const FORTUNES = [
     alsoFits: [
       "distracted",
       "frustrated",
-      "numb",
       "stressed",
       "shaken"
     ],
@@ -3865,7 +3819,6 @@ const FORTUNES = [
     text: "A small bright thought can change the whole perspective.",
     primaryBucket: "hopeful",
     alsoFits: [
-      "angry",
       "anxious",
       "distracted",
       "frustrated",
@@ -3953,8 +3906,7 @@ const FORTUNES = [
     primaryBucket: "angry",
     alsoFits: [
       "anxious",
-      "frustrated",
-      "jealous"
+      "frustrated"
     ],
     scope: "shared",
     active: true
@@ -4131,8 +4083,7 @@ const FORTUNES = [
     text: "Refusing to give others power over our feelings is a win.",
     primaryBucket: "angry",
     alsoFits: [
-      "frustrated",
-      "jealous"
+      "frustrated"
     ],
     scope: "shared",
     active: true
@@ -4189,7 +4140,6 @@ const FORTUNES = [
     primaryBucket: "angry",
     alsoFits: [
       "frustrated",
-      "jealous",
       "stressed"
     ],
     scope: "shared",
@@ -4755,7 +4705,6 @@ const FORTUNES = [
     primaryBucket: "confused",
     alsoFits: [
       "anxious",
-      "distracted",
       "frustrated",
       "shaken",
       "stressed",
@@ -4781,8 +4730,7 @@ const FORTUNES = [
     alsoFits: [
       "frustrated",
       "shaken",
-      "stressed",
-      "wired"
+      "stressed"
     ],
     scope: "shared",
     active: true
@@ -4807,9 +4755,7 @@ const FORTUNES = [
     id: "f_0538",
     text: "Not knowing is uncomfortable, not catastrophic.",
     primaryBucket: "confused",
-    alsoFits: [
-      "shaken"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -4817,9 +4763,7 @@ const FORTUNES = [
     id: "f_0539",
     text: "Perfect clarity is like perfect pitch: lovely, not necessary.",
     primaryBucket: "confused",
-    alsoFits: [
-      "shaken"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -4925,9 +4869,7 @@ const FORTUNES = [
     id: "f_0551",
     text: "Your instincts may take you farther than overthinking.",
     primaryBucket: "confused",
-    alsoFits: [
-      "shaken"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -4935,9 +4877,7 @@ const FORTUNES = [
     id: "f_0552",
     text: "Perfect clarity is not required; decent instincts will do.",
     primaryBucket: "confused",
-    alsoFits: [
-      "shaken"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -6198,9 +6138,7 @@ const FORTUNES = [
     text: "Some feelings arrive softly and stay a long time.",
     primaryBucket: "caring",
     alsoFits: [
-      "wowed",
-      "grateful",
-      "proud"
+      "grateful"
     ],
     scope: "shared",
     active: true
@@ -6481,9 +6419,7 @@ const FORTUNES = [
     id: "f_0744",
     text: "The way to change others' minds is with affection, not anger.",
     primaryBucket: "caring",
-    alsoFits: [
-      "angry"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
@@ -6596,9 +6532,7 @@ const FORTUNES = [
     text: "Stress is who you think you should be, calm is who you are.",
     primaryBucket: "stressed",
     alsoFits: [
-      "anxious",
-      "calm",
-      "distracted"
+      "anxious"
     ],
     scope: "shared",
     active: true

@@ -83,7 +83,7 @@ function CookieShell({
     paperMaxWidth || Number.POSITIVE_INFINITY
   );
   const paperMinHeight = scaleValue(PAPER_SIZE.minHeight, scale);
-  const sePaperLift = scale < 0.86 ? scaleValue(8, scale) : 0;
+  const sePaperLift = scale < 0.86 ? scaleValue(14, scale) : 0;
   const paperTop = scaleValue(-28, scale) - sePaperLift;
   const paperShadowTop = scaleValue(-6, scale) - sePaperLift;
   const paperShadowWidth = scaleValue(214, scale);
