@@ -6199,14 +6199,6 @@ const FORTUNES = [
     active: true
   },
   {
-    id: "f_0707",
-    text: "Something good may be taking shape.",
-    primaryBucket: "weird",
-    alsoFits: [],
-    scope: "specific",
-    active: true
-  },
-  {
     id: "f_0708",
     text: "There is meaning in what is stirring inside you.",
     primaryBucket: "hopeful",
@@ -6310,6 +6302,772 @@ const FORTUNES = [
     id: "f_0720",
     text: "Some emotions arrive like a tide carrying meaning.",
     primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0721",
+    text: "Laughter is the spice of life; so is a well-seasoned burrito.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0722",
+    text: "Hunger conquers the impossible, like eating a whole pizza.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0723",
+    text: "When hunger strikes, logic and reason take a backseat.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0724",
+    text: "A bit of laughter and a bit of food can change the day.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0725",
+    text: "Don't let hunger bring you down -- use it for comedy.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0726",
+    text: "Small gestures are the currency of relationships that last.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0727",
+    text: "Romance flourishes when curiosity about the other is a habit.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0728",
+    text: "Love is discovering small miracles within another human.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0729",
+    text: "Wonder is life showing off a little.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0730",
+    text: "Some moments move the ceiling on ordinary.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0731",
+    text: "Wisdom begins with wonder.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0732",
+    text: "Wonder may be the aura of truth, the halo of it.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0733",
+    text: "To marvel is to become a traveler in your own life.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0734",
+    text: "Each question carries a spark; each spark a world to be lit.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0735",
+    text: "Children teach us how to marvel without apology.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0736",
+    text: "A single hush of awe can shift an entire year.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0737",
+    text: "Awe is the past and the future meeting in the present.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0738",
+    text: "No one can make you feel inferior without your consent.",
+    primaryBucket: "distracted",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0739",
+    text: "Your attention knows where it wants to go.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0740",
+    text: "Energy becomes flow when it finds direction.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0741",
+    text: "The successful warrior is an average man, with laser focus.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0742",
+    text: "A kind heart is the beginning of all knowledge.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0743",
+    text: "Passion gives a kiss its sweetness; affection sanctifies it.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0744",
+    text: "The way to change others' minds is with affection, not anger.",
+    primaryBucket: "caring",
+    alsoFits: [
+      "angry"
+    ],
+    scope: "shared",
+    active: true
+  },
+  {
+    id: "f_0745",
+    text: "The charge in you wants a target.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0746",
+    text: "The current is with you now. Swim.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0747",
+    text: "Something in you has already said yes.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0748",
+    text: "You and this moment are facing the same way.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0749",
+    text: "The moment is giving you more to work with.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0750",
+    text: "Warmth has a way of finding its mark.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0751",
+    text: "The heart does some of its best work quietly.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0752",
+    text: "The gentlest things often reach the deepest.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0753",
+    text: "The heart is often clearest in its gentler moments.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0754",
+    text: "Happiness does not just appear; it's made of your own actions.",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0755",
+    text: "Little is needed to to be happy; it is all within yourself",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0756",
+    text: "The recipe for happiness: avoid dwelling on the past.",
+    primaryBucket: "guilty",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0757",
+    text: "Most people are as happy as they make up their minds to be.",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0758",
+    text: "Stress is who you think you should be, calm is who you are.",
+    primaryBucket: "stressed",
+    alsoFits: [
+      "anxious",
+      "calm",
+      "distracted"
+    ],
+    scope: "shared",
+    active: true
+  },
+  {
+    id: "f_0759",
+    text: "Count your life by smiles, not tears.",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0760",
+    text: "Some victories sit quietly and still shine.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0761",
+    text: "This feeling was earned one step at a time.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0762",
+    text: "There is dignity in what you made happen.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0763",
+    text: "Some pride comes from simply not giving up.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0764",
+    text: "Focus and simplicity can move mountains.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0765",
+    text: "If you focus on change, you will get results.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0766",
+    text: "Engage with your potential instead of your limitations.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0767",
+    text: "Focus on remedies, not faults.",
+    primaryBucket: "guilty",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0768",
+    text: "Love is the silent saying and saying of a single name.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0769",
+    text: "A loving heart is the truest wisdom.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0770",
+    text: "The human heart opens to the heart that opens in return.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0771",
+    text: "Love is an attempt to change a piece of a dream into reality.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0772",
+    text: "Love is the master key that opens the gates of happiness.",
+    primaryBucket: "romantic",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0773",
+    text: "The heart remembers in its own strange light.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0774",
+    text: "A full heart can make time feel thin.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0775",
+    text: "Some feelings glow longer than the moment that made them.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0776",
+    text: "Time folds easily around a tender memory.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0777",
+    text: "A moved heart can make the world feel brighter.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0778",
+    text: "Not every moment asks to be more than it is.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0779",
+    text: "Some days are meant to pass without a headline.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0780",
+    text: "This moment may be plain, but it is still yours.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0781",
+    text: "Evenness can be its own kind of mercy.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0782",
+    text: "You do not have to be lit up to be alive.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0783",
+    text: "Some moods are simply room to breathe.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0784",
+    text: "The middle has its own kind of balance.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0785",
+    text: "A quiet state can hold more than it shows.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0786",
+    text: "A flat road still gets you somewhere.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0787",
+    text: "The ordinary can be a resting place.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0788",
+    text: "You do not need a wave to know the sea is there.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0789",
+    text: "There is grace in a day that asks little of you.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0790",
+    text: "Not every day needs color to have shape.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0791",
+    text: "There is relief in a mood that does not insist.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0792",
+    text: "Sometimes enough is exactly what a moment should be.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0793",
+    text: "A quieter state can leave more room around you.",
+    primaryBucket: "neutral",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0794",
+    text: "A jealous feeling sometimes reveals a wish asking for room.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0795",
+    text: "What catches in you may also be telling you where you ache.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0796",
+    text: "Sometimes envy is desire before it has found its language.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0797",
+    text: "Some envy points forward. Some points nowhere.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0798",
+    text: "Some longing is real. Some is borrowed.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0799",
+    text: "Envy can be a compass or a mirage.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0800",
+    text: "Some wants should be fed. Others outgrown.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0801",
+    text: "Jealousy can sort wish from illusion.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0802",
+    text: "Envy can reveal what is yours to want.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0803",
+    text: "Envy asks to be understood, not obeyed.",
+    primaryBucket: "jealous",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0804",
+    text: "What hits the heart rarely does so by accident.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0805",
+    text: "What lands deeply usually has deep meaning.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0806",
+    text: "Hunger is a bad time for problem solving.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0807",
+    text: "A snack may now qualify as emotional support.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0808",
+    text: "Your wisdom is currently under review by your stomach.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0809",
+    text: "Right now, your best idea may be lunch.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0810",
+    text: "Greatest thinkers also need something crunchy.",
+    primaryBucket: "hungry",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0811",
+    text: "Not every feeling arrives with a clean label.",
+    primaryBucket: "weird",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0812",
+    text: "Unclear does not mean unimportant.",
+    primaryBucket: "weird",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0813",
+    text: "Not everything true is immediately legible.",
+    primaryBucket: "weird",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0814",
+    text: "Some feelings show up before their meaning does.",
+    primaryBucket: "weird",
+    alsoFits: [],
+    scope: "specific",
+    active: true
+  },
+  {
+    id: "f_0815",
+    text: "What feels murky now may sharpen with time.",
+    primaryBucket: "weird",
     alsoFits: [],
     scope: "specific",
     active: true

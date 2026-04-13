@@ -128,6 +128,10 @@ function createNextFortuneId(fortunes) {
 
 function listResponsePayload() {
   const registry = readRegistry();
+  return buildListResponsePayload(registry);
+}
+
+function buildListResponsePayload(registry) {
   const fortunes = registry.fortunes
     .filter((fortune) => fortune.active !== false)
     .map((fortune) => toApiFortune(fortune));
@@ -137,6 +141,116 @@ function listResponsePayload() {
     bucketOrder: getUiBucketOrder(),
     userFacingBucketCount: FIRST_USER_BUCKET_COUNT,
     storageBucketOrder: registry.bucketKeys,
+  };
+}
+
+function buildProcessIssue(id, error, kind) {
+  return { id, error, kind };
+}
+
+function processBatchChanges(body) {
+  const registry = readRegistry();
+  const nextFortunes = [...registry.fortunes];
+  const issues = [];
+  let didChange = false;
+
+  const deletions = Array.isArray(body.deletions) ? body.deletions : [];
+  const creations = Array.isArray(body.creations) ? body.creations : [];
+  const updates = Array.isArray(body.updates) ? body.updates : [];
+
+  for (const fortuneId of deletions) {
+    const fortuneIndex = nextFortunes.findIndex((fortune) => fortune.id === fortuneId);
+    if (fortuneIndex === -1 || nextFortunes[fortuneIndex].active === false) {
+      continue;
+    }
+
+    nextFortunes[fortuneIndex] = {
+      ...nextFortunes[fortuneIndex],
+      active: false,
+      alsoFits: [],
+      scope: 'specific',
+    };
+    didChange = true;
+  }
+
+  for (const draftFortune of creations) {
+    const nextText = typeof draftFortune?.text === 'string' ? draftFortune.text.trim() : '';
+    if (!nextText) {
+      issues.push(buildProcessIssue(draftFortune?.id, 'Fortune text cannot be empty.', 'create'));
+      continue;
+    }
+
+    const bucketUpdate = normalizeSelectedBuckets(
+      Array.isArray(draftFortune?.buckets) ? draftFortune.buckets : [],
+      Array.isArray(draftFortune?.buckets) ? draftFortune.buckets[0] : null
+    );
+
+    if (!bucketUpdate) {
+      issues.push(buildProcessIssue(draftFortune?.id, 'Select at least one bucket.', 'create'));
+      continue;
+    }
+
+    nextFortunes.push({
+      id: createNextFortuneId(nextFortunes),
+      text: nextText,
+      primaryBucket: bucketUpdate.primaryBucket,
+      alsoFits: bucketUpdate.alsoFits,
+      scope: bucketUpdate.scope,
+      active: true,
+    });
+    didChange = true;
+  }
+
+  for (const updatedFortune of updates) {
+    const fortuneIndex = nextFortunes.findIndex((fortune) => fortune.id === updatedFortune?.id);
+    if (fortuneIndex === -1 || nextFortunes[fortuneIndex].active === false) {
+      continue;
+    }
+
+    const currentFortune = nextFortunes[fortuneIndex];
+    const nextText = typeof updatedFortune?.text === 'string' ? updatedFortune.text.trim() : currentFortune.text;
+    if (!nextText) {
+      issues.push(buildProcessIssue(updatedFortune?.id, 'Fortune text cannot be empty.', 'update'));
+      continue;
+    }
+
+    const bucketUpdate = Array.isArray(updatedFortune?.buckets)
+      ? normalizeSelectedBuckets(updatedFortune.buckets, currentFortune.primaryBucket)
+      : {
+          primaryBucket: currentFortune.primaryBucket,
+          alsoFits: currentFortune.alsoFits || [],
+          scope: currentFortune.scope === 'shared' ? 'shared' : 'specific',
+        };
+
+    if (!bucketUpdate) {
+      issues.push(buildProcessIssue(updatedFortune?.id, 'Select at least one bucket.', 'update'));
+      continue;
+    }
+
+    nextFortunes[fortuneIndex] = {
+      ...currentFortune,
+      text: nextText,
+      primaryBucket: bucketUpdate.primaryBucket,
+      alsoFits: bucketUpdate.alsoFits,
+      scope: bucketUpdate.scope,
+      active: true,
+    };
+    didChange = true;
+  }
+
+  if (didChange) {
+    writeRegistry({
+      fortunes: nextFortunes,
+      bucketKeys: registry.bucketKeys,
+    });
+  }
+
+  return {
+    ...buildListResponsePayload({
+      fortunes: nextFortunes,
+      bucketKeys: registry.bucketKeys,
+    }),
+    issues,
   };
 }
 
@@ -288,6 +402,16 @@ const server = http.createServer(async (request, response) => {
       await handleCreateFortune(request, response);
     } catch (error) {
       sendJson(response, 500, { error: error.message || 'Unable to create fortune.' });
+    }
+    return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/fortunes/process') {
+    try {
+      const body = await parseBody(request);
+      sendJson(response, 200, processBatchChanges(body));
+    } catch (error) {
+      sendJson(response, 500, { error: error.message || 'Unable to process fortunes.' });
     }
     return;
   }

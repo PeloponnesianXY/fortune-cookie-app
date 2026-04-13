@@ -84,6 +84,7 @@ const HIDDEN_BUCKET_COLUMNS = ['unknown'];
 const FORTUNE_ROW_HEIGHT = 41;
 const SECTION_HEADER_HEIGHT = 30;
 const TEMP_FORTUNE_ID_PREFIX = 'temp-fortune-';
+const FORTUNE_LAB_DRAFT_STORAGE_KEY = 'fortune-lab:staged-draft:v2';
 const ALL_BUCKETS = [...new Set([
   ...DEFAULT_BUCKET_ORDER,
   ...POSITIVE_BUCKETS,
@@ -98,6 +99,10 @@ function getApiBaseUrl() {
   }
 
   return `http://${window.location.hostname || '127.0.0.1'}:${API_PORT}`;
+}
+
+function canUseBrowserStorage() {
+  return Platform.OS === 'web' && typeof window !== 'undefined' && Boolean(window.localStorage);
 }
 
 function formatBucketLabel(bucket) {
@@ -255,6 +260,138 @@ function normalizeBucketOrder(bucketOrder) {
   return normalized;
 }
 
+function getDraftChanges(baselineFortunes, fortunes) {
+  const baselineMap = new Map(baselineFortunes.map((fortune) => [fortune.id, fortune]));
+  const currentMap = new Map(fortunes.map((fortune) => [fortune.id, fortune]));
+  const deletions = baselineFortunes
+    .filter((fortune) => !currentMap.has(fortune.id))
+    .map((fortune) => fortune.id);
+  const creations = fortunes.filter((fortune) => fortune.id.startsWith(TEMP_FORTUNE_ID_PREFIX));
+  const updates = fortunes.filter((fortune) => {
+    if (fortune.id.startsWith(TEMP_FORTUNE_ID_PREFIX)) {
+      return false;
+    }
+
+    const baselineFortune = baselineMap.get(fortune.id);
+    if (!baselineFortune) {
+      return false;
+    }
+
+    return (
+      baselineFortune.text !== fortune.text
+      || baselineFortune.primaryBucket !== fortune.primaryBucket
+      || (baselineFortune.buckets || []).join('|') !== (fortune.buckets || []).join('|')
+    );
+  });
+
+  return {
+    creations,
+    deletions,
+    updates,
+  };
+}
+
+function readPersistedDraft() {
+  if (!canUseBrowserStorage()) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(FORTUNE_LAB_DRAFT_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.baselineFortunes) || !Array.isArray(parsed.fortunes)) {
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writePersistedDraft(snapshot) {
+  if (!canUseBrowserStorage()) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(FORTUNE_LAB_DRAFT_STORAGE_KEY, JSON.stringify(snapshot));
+  } catch {
+    // Ignore local draft persistence failures in the dev-only lab.
+  }
+}
+
+function clearPersistedDraft() {
+  if (!canUseBrowserStorage()) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(FORTUNE_LAB_DRAFT_STORAGE_KEY);
+  } catch {
+    // Ignore local draft persistence failures in the dev-only lab.
+  }
+}
+
+function applyDraftChanges(freshFortunes, persistedDraft, bucketOrder) {
+  if (!persistedDraft) {
+    return sortFortunes(freshFortunes, bucketOrder);
+  }
+
+  const { creations, deletions, updates } = getDraftChanges(
+    persistedDraft.baselineFortunes || [],
+    persistedDraft.fortunes || []
+  );
+  const updatesById = new Map(updates.map((fortune) => [fortune.id, fortune]));
+  const nextFortunes = freshFortunes
+    .filter((fortune) => !deletions.includes(fortune.id))
+    .map((fortune) => updatesById.get(fortune.id) || fortune);
+
+  return sortFortunes([...nextFortunes, ...creations], bucketOrder);
+}
+
+function applyPendingChanges(freshFortunes, pendingChanges, bucketOrder) {
+  const deletions = pendingChanges?.deletions || [];
+  const updates = pendingChanges?.updates || [];
+  const creations = pendingChanges?.creations || [];
+  const updatesById = new Map(updates.map((fortune) => [fortune.id, fortune]));
+  const nextFortunes = freshFortunes
+    .filter((fortune) => !deletions.includes(fortune.id))
+    .map((fortune) => updatesById.get(fortune.id) || fortune);
+
+  return sortFortunes([...nextFortunes, ...creations], bucketOrder);
+}
+
+function getPendingChangesFromIssues(changes, issues) {
+  if (!Array.isArray(issues) || issues.length === 0) {
+    return {
+      creations: [],
+      deletions: [],
+      updates: [],
+    };
+  }
+
+  const failedCreateIds = new Set(
+    issues.filter((issue) => issue.kind === 'create').map((issue) => issue.id)
+  );
+  const failedUpdateIds = new Set(
+    issues.filter((issue) => issue.kind === 'update').map((issue) => issue.id)
+  );
+  const failedDeletionIds = new Set(
+    issues.filter((issue) => issue.kind === 'delete').map((issue) => issue.id)
+  );
+
+  return {
+    creations: changes.creations.filter((fortune) => failedCreateIds.has(fortune.id)),
+    deletions: changes.deletions.filter((fortuneId) => failedDeletionIds.has(fortuneId)),
+    updates: changes.updates.filter((fortune) => failedUpdateIds.has(fortune.id)),
+  };
+}
+
 function BucketCheckbox({ checked, label, onPress }) {
   return (
     <Pressable
@@ -366,32 +503,11 @@ export default function FortuneLab() {
   }, [flatListItems]);
   const columnBucketOrder = useMemo(() => getColumnBucketOrder(bucketOrder), [bucketOrder]);
   const hasPendingChanges = useMemo(() => {
-    const baselineMap = new Map(baselineFortunes.map((fortune) => [fortune.id, fortune]));
-    const currentMap = new Map(fortunes.map((fortune) => [fortune.id, fortune]));
-
-    if (baselineMap.size !== currentMap.size) {
-      return true;
-    }
-
-    for (const [id, currentFortune] of currentMap.entries()) {
-      const baselineFortune = baselineMap.get(id);
-      if (!baselineFortune) {
-        return true;
-      }
-
-      if (
-        baselineFortune.text !== currentFortune.text
-        || baselineFortune.primaryBucket !== currentFortune.primaryBucket
-        || (baselineFortune.buckets || []).join('|') !== (currentFortune.buckets || []).join('|')
-      ) {
-        return true;
-      }
-    }
-
-    return false;
+    const { creations, deletions, updates } = getDraftChanges(baselineFortunes, fortunes);
+    return creations.length > 0 || deletions.length > 0 || updates.length > 0;
   }, [baselineFortunes, fortunes]);
 
-  async function loadFortunes() {
+  async function loadFortunes(persistedDraftOverride) {
     setIsLoading(true);
     setLoadError('');
 
@@ -407,10 +523,13 @@ export default function FortuneLab() {
       const payload = await response.json();
       const nextBucketOrder = normalizeBucketOrder(payload.bucketOrder || DEFAULT_BUCKET_ORDER);
       const nextFortunes = Array.isArray(payload.fortunes) ? payload.fortunes : [];
+      const persistedDraft = persistedDraftOverride === undefined
+        ? readPersistedDraft()
+        : persistedDraftOverride;
 
       setBucketOrder(nextBucketOrder);
       const sortedFortunes = sortFortunes(nextFortunes, nextBucketOrder);
-      setFortunes(sortedFortunes);
+      setFortunes(applyDraftChanges(sortedFortunes, persistedDraft, nextBucketOrder));
       setBaselineFortunes(sortedFortunes);
     } catch (error) {
       setLoadError(
@@ -425,6 +544,23 @@ export default function FortuneLab() {
   useEffect(() => {
     loadFortunes();
   }, [apiBaseUrl]);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    if (!hasPendingChanges) {
+      clearPersistedDraft();
+      return;
+    }
+
+    writePersistedDraft({
+      baselineFortunes,
+      bucketOrder,
+      fortunes,
+    });
+  }, [baselineFortunes, bucketOrder, fortunes, hasPendingChanges, isLoading]);
 
   const handleTextChange = useCallback((fortuneId, nextText) => {
     setFortunes((current) => {
@@ -491,6 +627,13 @@ export default function FortuneLab() {
     setSaveError('');
   }, [displayBucketOrder]);
 
+  const handleDiscardDraft = useCallback(() => {
+    clearPersistedDraft();
+    setFortunes(baselineFortunes);
+    setFocusedFortuneId(null);
+    setSaveError('');
+  }, [baselineFortunes]);
+
   const renderFlatListItem = useCallback(({ item }) => {
     if (item.kind === 'section') {
       return (
@@ -532,28 +675,8 @@ export default function FortuneLab() {
   }), [flatListMetrics]);
 
   async function handleProcessChanges() {
-    const baselineMap = new Map(baselineFortunes.map((fortune) => [fortune.id, fortune]));
-    const currentMap = new Map(fortunes.map((fortune) => [fortune.id, fortune]));
-    const deletions = baselineFortunes
-      .filter((fortune) => !currentMap.has(fortune.id))
-      .map((fortune) => fortune.id);
-    const creations = fortunes.filter((fortune) => fortune.id.startsWith(TEMP_FORTUNE_ID_PREFIX));
-    const updates = fortunes.filter((fortune) => {
-      if (fortune.id.startsWith(TEMP_FORTUNE_ID_PREFIX)) {
-        return false;
-      }
-
-      const baselineFortune = baselineMap.get(fortune.id);
-      if (!baselineFortune) {
-        return false;
-      }
-
-      return (
-        baselineFortune.text !== fortune.text
-        || baselineFortune.primaryBucket !== fortune.primaryBucket
-        || (baselineFortune.buckets || []).join('|') !== (fortune.buckets || []).join('|')
-      );
-    });
+    const changes = getDraftChanges(baselineFortunes, fortunes);
+    const { creations, deletions, updates } = changes;
 
     if (deletions.length === 0 && creations.length === 0 && updates.length === 0) {
       return;
@@ -563,51 +686,61 @@ export default function FortuneLab() {
     setSaveError('');
 
     try {
-      for (const fortuneId of deletions) {
-        const response = await fetch(`${apiBaseUrl}/api/fortunes/${fortuneId}`, {
-          method: 'DELETE',
-        });
-        const body = await response.json();
-        if (!response.ok) {
-          throw new Error(body.error || 'Unable to delete fortune.');
-        }
-      }
-
-      for (const fortune of creations) {
-        const response = await fetch(`${apiBaseUrl}/api/fortunes`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+      const response = await fetch(`${apiBaseUrl}/api/fortunes/process`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deletions,
+          creations: creations.map((fortune) => ({
+            id: fortune.id,
             text: fortune.text,
             buckets: fortune.buckets,
-          }),
-        });
-        const body = await response.json();
-        if (!response.ok) {
-          throw new Error(body.error || 'Unable to create fortune.');
-        }
-      }
-
-      for (const fortune of updates) {
-        const response = await fetch(`${apiBaseUrl}/api/fortunes/${fortune.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+          })),
+          updates: updates.map((fortune) => ({
+            id: fortune.id,
             text: fortune.text,
             buckets: fortune.buckets,
-          }),
-        });
+          })),
+        }),
+      });
+
+      if (!response.ok) {
         const body = await response.json();
-        if (!response.ok) {
-          throw new Error(body.error || 'Unable to save fortune.');
-        }
+        throw new Error(body.error || 'Unable to process changes.');
       }
 
-      await loadFortunes();
+      const payload = await response.json();
+      const nextBucketOrder = normalizeBucketOrder(payload.bucketOrder || DEFAULT_BUCKET_ORDER);
+      const freshFortunes = sortFortunes(
+        Array.isArray(payload.fortunes) ? payload.fortunes : [],
+        nextBucketOrder
+      );
+      const pendingChanges = getPendingChangesFromIssues(changes, payload.issues || []);
+      const nextFortunes = applyPendingChanges(
+        freshFortunes,
+        pendingChanges,
+        nextBucketOrder
+      );
+      const persistedDraft = (payload.issues || []).length > 0
+        ? {
+            baselineFortunes: freshFortunes,
+            bucketOrder: nextBucketOrder,
+            fortunes: nextFortunes,
+          }
+        : null;
+
+      setBucketOrder(nextBucketOrder);
+      setBaselineFortunes(freshFortunes);
+      setFortunes(nextFortunes);
+
+      if (persistedDraft) {
+        writePersistedDraft(persistedDraft);
+        setSaveError(payload.issues.map((issue) => issue.error).join(' '));
+      } else {
+        clearPersistedDraft();
+      }
     } catch (error) {
       setSaveError(error.message || 'Unable to process changes.');
     } finally {
@@ -642,6 +775,16 @@ export default function FortuneLab() {
             <Text style={styles.processButtonText}>
               {isProcessingChanges ? 'Processing...' : 'Process Changes'}
             </Text>
+          </Pressable>
+          <Pressable
+            disabled={!hasPendingChanges || isProcessingChanges}
+            onPress={handleDiscardDraft}
+            style={[
+              styles.discardButton,
+              (!hasPendingChanges || isProcessingChanges) ? styles.processButtonDisabled : null,
+            ]}
+          >
+            <Text style={styles.discardButtonText}>Discard Draft</Text>
           </Pressable>
           <Pressable onPress={loadFortunes} style={styles.refreshButton}>
             <Text style={styles.refreshButtonText}>Reload</Text>
@@ -791,6 +934,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 8,
   },
+  discardButton: {
+    borderRadius: 999,
+    backgroundColor: '#efe2d1',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
   processButton: {
     borderRadius: 999,
     backgroundColor: '#b97937',
@@ -804,6 +953,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#fff9f1',
+  },
+  discardButtonText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#6f5643',
   },
   refreshButtonText: {
     fontSize: 12,
