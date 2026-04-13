@@ -18,7 +18,7 @@ function sendJson(response, statusCode, payload) {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   });
   response.end(JSON.stringify(payload));
@@ -254,126 +254,6 @@ function processBatchChanges(body) {
   };
 }
 
-async function handlePatchFortune(request, response, fortuneId) {
-  const body = await parseBody(request);
-  const registry = readRegistry();
-  const fortuneIndex = registry.fortunes.findIndex((fortune) => fortune.id === fortuneId);
-
-  if (fortuneIndex === -1) {
-    sendJson(response, 404, { error: 'Fortune not found.' });
-    return;
-  }
-
-  const currentFortune = registry.fortunes[fortuneIndex];
-  if (currentFortune.active === false) {
-    sendJson(response, 404, { error: 'Fortune not found.' });
-    return;
-  }
-
-  const nextText = typeof body.text === 'string' ? body.text.trim() : currentFortune.text;
-  if (!nextText) {
-    sendJson(response, 400, { error: 'Fortune text cannot be empty.' });
-    return;
-  }
-
-  const bucketUpdate = Array.isArray(body.buckets)
-    ? normalizeSelectedBuckets(body.buckets, currentFortune.primaryBucket)
-    : {
-        primaryBucket: currentFortune.primaryBucket,
-        alsoFits: currentFortune.alsoFits || [],
-        scope: currentFortune.scope === 'shared' ? 'shared' : 'specific',
-      };
-
-  if (!bucketUpdate) {
-    sendJson(response, 400, { error: 'Select at least one bucket.' });
-    return;
-  }
-
-  const nextFortunes = [...registry.fortunes];
-  nextFortunes[fortuneIndex] = {
-    ...currentFortune,
-    text: nextText,
-    primaryBucket: bucketUpdate.primaryBucket,
-    alsoFits: bucketUpdate.alsoFits,
-    scope: bucketUpdate.scope,
-    active: true,
-  };
-
-  writeRegistry({
-    fortunes: nextFortunes,
-    bucketKeys: registry.bucketKeys,
-  });
-
-  const savedFortune = toApiFortune(nextFortunes[fortuneIndex]);
-  sendJson(response, 200, {
-    fortune: savedFortune,
-  });
-}
-
-async function handleCreateFortune(request, response) {
-  const body = await parseBody(request);
-  const registry = readRegistry();
-  const nextText = typeof body.text === 'string' ? body.text.trim() : '';
-
-  if (!nextText) {
-    sendJson(response, 400, { error: 'Fortune text cannot be empty.' });
-    return;
-  }
-
-  const bucketUpdate = normalizeSelectedBuckets(
-    Array.isArray(body.buckets) ? body.buckets : [],
-    Array.isArray(body.buckets) ? body.buckets[0] : null
-  );
-
-  if (!bucketUpdate) {
-    sendJson(response, 400, { error: 'Select at least one bucket.' });
-    return;
-  }
-
-  const nextFortune = {
-    id: createNextFortuneId(registry.fortunes),
-    text: nextText,
-    primaryBucket: bucketUpdate.primaryBucket,
-    alsoFits: bucketUpdate.alsoFits,
-    scope: bucketUpdate.scope,
-    active: true,
-  };
-
-  writeRegistry({
-    fortunes: [...registry.fortunes, nextFortune],
-    bucketKeys: registry.bucketKeys,
-  });
-
-  sendJson(response, 201, {
-    fortune: toApiFortune(nextFortune),
-  });
-}
-
-function handleDeleteFortune(response, fortuneId) {
-  const registry = readRegistry();
-  const fortuneIndex = registry.fortunes.findIndex((fortune) => fortune.id === fortuneId);
-
-  if (fortuneIndex === -1) {
-    sendJson(response, 404, { error: 'Fortune not found.' });
-    return;
-  }
-
-  const nextFortunes = [...registry.fortunes];
-  nextFortunes[fortuneIndex] = {
-    ...nextFortunes[fortuneIndex],
-    active: false,
-    alsoFits: [],
-    scope: 'specific',
-  };
-
-  writeRegistry({
-    fortunes: nextFortunes,
-    bucketKeys: registry.bucketKeys,
-  });
-
-  sendJson(response, 200, { ok: true, id: fortuneId });
-}
-
 const server = http.createServer(async (request, response) => {
   if (!request.url || !request.method) {
     sendJson(response, 400, { error: 'Invalid request.' });
@@ -397,41 +277,12 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/fortunes') {
-    try {
-      await handleCreateFortune(request, response);
-    } catch (error) {
-      sendJson(response, 500, { error: error.message || 'Unable to create fortune.' });
-    }
-    return;
-  }
-
   if (request.method === 'POST' && url.pathname === '/api/fortunes/process') {
     try {
       const body = await parseBody(request);
       sendJson(response, 200, processBatchChanges(body));
     } catch (error) {
       sendJson(response, 500, { error: error.message || 'Unable to process fortunes.' });
-    }
-    return;
-  }
-
-  const fortuneMatch = url.pathname.match(/^\/api\/fortunes\/([^/]+)$/);
-
-  if (fortuneMatch && request.method === 'PATCH') {
-    try {
-      await handlePatchFortune(request, response, fortuneMatch[1]);
-    } catch (error) {
-      sendJson(response, 500, { error: error.message || 'Unable to save fortune.' });
-    }
-    return;
-  }
-
-  if (fortuneMatch && request.method === 'DELETE') {
-    try {
-      handleDeleteFortune(response, fortuneMatch[1]);
-    } catch (error) {
-      sendJson(response, 500, { error: error.message || 'Unable to delete fortune.' });
     }
     return;
   }

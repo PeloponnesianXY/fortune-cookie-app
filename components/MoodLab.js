@@ -12,7 +12,6 @@ import {
 
 import { getMoodLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
-const DEFAULT_INPUT = '';
 const MAX_ROWS = 100;
 const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:mood-lab:entries';
 const MOOD_PILLS = [...MOOD_BUCKET_KEYS]

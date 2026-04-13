@@ -4,8 +4,10 @@ Small Expo app that:
 
 - takes a one-word mood input
 - maps it to one detected emotion locally
-- routes that emotion into one of 28 runtime fortune buckets
+- routes that emotion into one of 31 runtime fortune buckets
 - reveals fortunes locally on device, with pacing that changes as the day goes on
+- derives runtime fortune pools from one canonical fortune registry
+- includes a dev-only Fortune Lab route on web for canonical fortune editing
 - includes a dev-only Mood Lab route on web for mood mapping inspection
 - includes a dev-only Screen Lab route on web for layout and state previews
 
@@ -18,6 +20,7 @@ components/
   FortuneCard.js
   FortuneHomeContent.js
   FortuneHomeScreen.js
+  FortuneLab.js
   FortuneLibrarySheet.js
   MoodLab.js
   CreatedFortunesSheet.js
@@ -29,6 +32,7 @@ components/
   ScreenLab.js
   StreakStatus.js
 data/
+  fortunesRegistry.js
   runtime/
     fortunes.js
     moodBucketVocabulary.js
@@ -37,10 +41,14 @@ data/
     semanticFallbackData.js
   build/
     openFallbackOverrides.json
+    semanticSeedVocabulary.js
     semanticFallbackConfig.js
   source/
     embedding-raw/
     open-lexicon-raw/
+scripts/
+  fortuneLabServer.js
+  fortuneRegistryStore.js
 utils/
   appBadge.js
   customFortunes.js
@@ -70,20 +78,25 @@ assets/
 - `components/FortuneCard.js`: main single-screen layout, drawer chrome, prompt, cookie presentation, action tray, and sheet entry points
 - `components/CookieShell.js`: cookie image swap + paper overlay
 - `components/FortuneLibrarySheet.js`: history/favorites sheet with tap-to-share fortune cards
+- `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
 - `components/MoodLab.js`: dev-only browser lab for inspecting parsed input, handcrafted routing, open fallback routing, vector fallback, final bucket selection, source, and fortune output
 - `components/CustomFortuneSheet.js`: create or edit a custom fortune locally on device
 - `components/CreatedFortunesSheet.js`: browse, edit, and delete created fortunes by mood
 - `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
 - `components/StreakStatus.js`: streak progress, tiers, and celebration UI
-- `data/runtime/fortunes.js`: runtime fortune library keyed to the live mood buckets
+- `data/fortunesRegistry.js`: canonical source-of-truth fortune registry, with one record per fortune
+- `data/runtime/fortunes.js`: runtime fortune library keyed to the live mood buckets and derived from `data/fortunesRegistry.js`
 - `data/runtime/scenes.js`: shared scene library plus bucket-to-scene mapping for the live mood set
 - `data/runtime/moodVocabularyRuntimeWrapper.js`: live bucket list plus runtime lookup tables derived from the canonical vocabulary source
 - `data/runtime/moodBucketVocabulary.js`: canonical runtime vocabulary module containing the handcrafted source-of-truth bucket vocab (`BUCKET_VOCAB`) plus the generated lower-trust open fallback vocab (`OPEN_FALLBACK_VOCAB`)
 - `data/build/openFallbackOverrides.json`: human-editable allow/deny controls for the generated open fallback layer
+- `data/build/semanticSeedVocabulary.js`: human-edited semantic seed words used when rebuilding compact vector fallback data
 - `data/build/semanticFallbackConfig.js`: semantic fallback thresholds, anchors, keep-lists, and reject-lists used when rebuilding the compact semantic runtime data
 - `data/runtime/semanticFallbackData.js`: generated compact runtime semantic fallback dataset loaded by the app after lexical matching fails
 - `data/source/embedding-raw/`: optional offline staging area for heavyweight embedding assets used to build semantic runtime data
 - `data/source/open-lexicon-raw/`: vendored local raw lexical sources used to build the open fallback section inside `moodBucketVocabulary.js`
+- `scripts/fortuneLabServer.js`: local-only Node API for reading/writing the canonical fortune registry on disk during Fortune Lab sessions
+- `scripts/fortuneRegistryStore.js`: canonical registry read/write helpers used by the Fortune Lab API
 - `scripts/bootstrapOpenLexicons.js`: one-time downloader that vendors the raw open lexical source files into the repo
 - `scripts/buildOpenFallbackVocab.js`: deterministic offline builder for the generated open fallback layer
 - `scripts/validateOpenFallback.js`: deterministic sanity-check helper for the open fallback path
@@ -94,6 +107,53 @@ assets/
 - `utils/appBadge.js`: native badge sync hooks for saved-state signals
 
 Old visual experiments and export artifacts were removed so the repo reflects the current app instead of abandoned approaches.
+
+## Fortune model
+
+Fortunes now live in one canonical registry:
+
+- `data/fortunesRegistry.js`
+
+Each record exists once, with:
+
+- `id`
+- `text`
+- `primaryBucket`
+- `alsoFits`
+- `scope`
+- `active`
+
+The runtime bucket arrays are derived from that registry in `data/runtime/fortunes.js`.
+
+Special handling:
+
+- storage keeps the legacy mystery bucket as `weird`
+- runtime exposes that bucket as `unknown`
+- `unknown` is intentionally hidden from Create Your Own and Fortune Lab column editing, but still exists in runtime behavior
+
+## Fortune Lab
+
+Fortune Lab is a dev-only browser route for editing the canonical fortune registry.
+
+- Route options:
+  - `/fortune-lab`
+  - `?fortuneLab=1`
+  - `#/fortune-lab`
+- Entry point: `App.js` only enables it in `__DEV__` on web
+- Main file: `components/FortuneLab.js`
+- Local API: `scripts/fortuneLabServer.js`
+- Registry IO: `scripts/fortuneRegistryStore.js`
+
+Current Fortune Lab behavior includes:
+
+- showing all fortunes in one long editor, grouped by bucket
+- ordering bucket sections and columns to match the user-facing Create Your Own mood order
+- inline editing of fortune text
+- one checkbox column per editable mood bucket
+- local browser draft persistence for unprocessed changes
+- `Process Changes`, which sends one batch request to the local Node API and writes `data/fortunesRegistry.js`
+- `Discard Draft`, which clears the local browser draft and reloads from the canonical file
+- dev-only local use on web; it is not part of the shipped native app
 
 ## Mood Lab
 
@@ -111,8 +171,6 @@ Current Mood Lab behavior includes:
 
 - entering single words or short phrases and appending them to a local results table
 - showing the parsed input, handcrafted bucket, open fallback bucket, vector match, vector audit, final bucket, source, and selected fortune for each row
-  - `Vector Match` only shows a bucket when the embeddings layer actually wins the route
-  - `Vector Audit` shows the semantic debug comparison even when handcrafted or open fallback wins
 - keeping up to 100 recent rows in browser `localStorage`
 - using the same bucket mapping and fortune selection logic as the app, without persisting daily fortune state
 
@@ -156,6 +214,12 @@ Start Expo web:
 npm run web
 ```
 
+Start the local Fortune Lab API in a separate terminal when using Fortune Lab:
+
+```bash
+npm run fortune-lab:server
+```
+
 If PowerShell does not see `npm`, use:
 
 ```powershell
@@ -173,6 +237,12 @@ Open Mood Lab locally on web:
 
 ```text
 http://localhost:8081/mood-lab
+```
+
+Open Fortune Lab locally on web:
+
+```text
+http://localhost:8081/fortune-lab
 ```
 
 ## Standalone support page
@@ -233,8 +303,10 @@ eas submit --platform ios
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
 - Mood input processing is deterministic and local: safety checks, handcrafted exact lookup, generated open fallback exact lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, semantic fallback, then `unknown` fallback.
 - Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
-- The runtime fortune system now uses 28 mood buckets:
+- The runtime fortune system now uses 31 mood buckets:
   - `caring`
+  - `engaged`
+  - `emotional`
   - `happy`
   - `hopeful`
   - `proud`
@@ -264,5 +336,9 @@ eas submit --platform ios
   - `unknown`
 - Older emotion-taxonomy writing was merged into the current runtime bucket system so the content model matches the live taxonomy.
 - Unknown or unmapped inputs now fall back to the dedicated `unknown` bucket.
+- Create Your Own uses user-facing labels for several buckets:
+  - `Affectionate` -> `caring`
+  - `Remorseful` -> `guilty`
+  - `Unbalanced` -> `distracted`
 - Buckets now map into a seven-scene shared library through `data/runtime/scenes.js`, rather than broad positive/negative/neutral scene groups.
 - The cookie visuals are intentionally asset-driven now: one closed image, one open image, and an in-app paper overlay.

@@ -899,11 +899,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#332419',
   },
-  subtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: '#7d6450',
-  },
   headerMeta: {
     flexDirection: 'row',
     gap: 10,
