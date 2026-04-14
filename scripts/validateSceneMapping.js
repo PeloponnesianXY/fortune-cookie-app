@@ -24,12 +24,12 @@ async function main() {
     }
   }
 
-  if (MOOD_SCENE_KEYS.neutral !== 'plainLight') {
-    errors.push(`Expected neutral -> plainLight, received "${MOOD_SCENE_KEYS.neutral}".`);
+  if (MOOD_SCENE_KEYS.neutral !== 'fogDrift') {
+    errors.push(`Expected neutral -> fogDrift, received "${MOOD_SCENE_KEYS.neutral}".`);
   }
 
-  if (MOOD_SCENE_KEYS.unknown !== 'unknownSky') {
-    errors.push(`Expected unknown -> unknownSky, received "${MOOD_SCENE_KEYS.unknown}".`);
+  if (MOOD_SCENE_KEYS.unknown !== 'plainLight') {
+    errors.push(`Expected unknown -> plainLight, received "${MOOD_SCENE_KEYS.unknown}".`);
   }
 
   if (MOOD_SCENE_KEYS.confused !== 'fogDrift') {
@@ -49,18 +49,17 @@ async function main() {
   }
 
   const plainLightBuckets = assignedBuckets.filter((bucket) => MOOD_SCENE_KEYS[bucket] === 'plainLight');
-  if (plainLightBuckets.length !== 1 || plainLightBuckets[0] !== 'neutral') {
-    errors.push(`plainLight should be used only by neutral. Found: ${plainLightBuckets.join(', ') || '(none)'}.`);
-  }
-
-  const unknownSkyBuckets = assignedBuckets.filter((bucket) => MOOD_SCENE_KEYS[bucket] === 'unknownSky');
-  if (unknownSkyBuckets.length !== 1 || unknownSkyBuckets[0] !== 'unknown') {
-    errors.push(`unknownSky should be used only by unknown. Found: ${unknownSkyBuckets.join(', ') || '(none)'}.`);
+  if (plainLightBuckets.length !== 1 || plainLightBuckets[0] !== 'unknown') {
+    errors.push(`plainLight should be used only by unknown. Found: ${plainLightBuckets.join(', ') || '(none)'}.`);
   }
 
   const fogDriftBuckets = assignedBuckets.filter((bucket) => MOOD_SCENE_KEYS[bucket] === 'fogDrift');
-  if (fogDriftBuckets.length !== 1 || fogDriftBuckets[0] !== 'confused') {
-    errors.push(`fogDrift should be used only by confused. Found: ${fogDriftBuckets.join(', ') || '(none)'}.`);
+  const expectedFogDriftBuckets = ['confused', 'neutral'];
+  if (
+    fogDriftBuckets.length !== expectedFogDriftBuckets.length
+    || expectedFogDriftBuckets.some((bucket) => !fogDriftBuckets.includes(bucket))
+  ) {
+    errors.push(`fogDrift should be used only by confused and neutral. Found: ${fogDriftBuckets.join(', ') || '(none)'}.`);
   }
 
   const firstLightBuckets = assignedBuckets.filter((bucket) => MOOD_SCENE_KEYS[bucket] === 'firstLight');
@@ -70,6 +69,11 @@ async function main() {
     || expectedFirstLightBuckets.some((bucket) => !firstLightBuckets.includes(bucket))
   ) {
     errors.push(`firstLight should be used only by calm, engaged, wowed. Found: ${firstLightBuckets.join(', ') || '(none)'}.`);
+  }
+
+  const sunlitAirBuckets = assignedBuckets.filter((bucket) => MOOD_SCENE_KEYS[bucket] === 'sunlitAir');
+  if (sunlitAirBuckets.length !== 0) {
+    errors.push(`sunlitAir should be landing-only and unused by moods. Found: ${sunlitAirBuckets.join(', ') || '(none)'}.`);
   }
 
   if (errors.length > 0) {

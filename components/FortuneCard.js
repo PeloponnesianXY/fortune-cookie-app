@@ -63,7 +63,7 @@ const SE_CUSTOM_NOTICE_LIFT = 30;
 const CREATE_FORTUNE_MOOD_SECTIONS = [
   {
     key: 'positive',
-    label: 'Positive',
+    label: 'Good',
     moods: [
       'calm',
       'caring',
@@ -79,7 +79,7 @@ const CREATE_FORTUNE_MOOD_SECTIONS = [
   },
   {
     key: 'negative',
-    label: 'Negative',
+    label: 'Not great',
     moods: [
       'angry',
       'anxious',

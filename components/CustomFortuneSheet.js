@@ -66,6 +66,10 @@ function getSheetWidth(width) {
     return '98%';
   }
 
+  if (width >= 390 && width < 430) {
+    return '98.5%';
+  }
+
   if (width >= 430) {
     return '95%';
   }

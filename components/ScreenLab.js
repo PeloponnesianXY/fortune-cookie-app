@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Animated, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Animated, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import FortuneHomeContent from './FortuneHomeContent';
 import PreviewFrame from './PreviewFrame';
-import { SCENE_LIBRARY } from '../data/runtime/scenes';
+import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes';
 
 const FORTUNE_PRESETS = {
   short: 'A tiny shift in perspective will clear more than today.',
@@ -106,12 +106,41 @@ function getDisplayWidthInches({ displayDiagonalInches, height, width }) {
 
 const DISPLAY_REFERENCE_DEVICE = PREVIEW_DEVICES.find((device) => device.key === DISPLAY_REFERENCE_KEY);
 const DISPLAY_REFERENCE_WIDTH_RATIO = getDisplayWidthInches(DISPLAY_REFERENCE_DEVICE) / DISPLAY_REFERENCE_DEVICE.width;
-const SCENE_OPTIONS = [
-  { key: 'all', label: 'All' },
-  ...Object.keys(SCENE_LIBRARY).map((key) => ({
-    key,
-    label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
-  })),
+const SCENE_OPTIONS = Object.keys(SCENE_LIBRARY).map((key) => ({
+  key,
+  label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
+}));
+
+function formatLabel(value) {
+  return value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase());
+}
+
+const SCENE_OPTION_GROUPS = [
+  {
+    key: 'landing',
+    label: 'Landing',
+    sceneKeys: ['sunlitAir'],
+  },
+  {
+    key: 'good',
+    label: 'Good',
+    sceneKeys: ['goldenQuiet', 'firstLight', 'roseBlush'],
+  },
+  {
+    key: 'notGreat',
+    label: 'Not great',
+    sceneKeys: ['emberField', 'blueHush', 'softStatic'],
+  },
+  {
+    key: 'couldGoEitherWay',
+    label: 'Could go either way',
+    sceneKeys: ['fogDrift'],
+  },
+  {
+    key: 'unknown',
+    label: 'Unknown',
+    sceneKeys: ['plainLight'],
+  },
 ];
 
 function getDisplayPreviewScale(device) {
@@ -155,7 +184,8 @@ function ToggleRow({ label, onValueChange, value }) {
 
 export default function ScreenLab() {
   const [fortuneLength, setFortuneLength] = useState('medium');
-  const [selectedSceneKey, setSelectedSceneKey] = useState('all');
+  const [selectedSceneKey, setSelectedSceneKey] = useState('sunlitAir');
+  const [isSceneLegendOpen, setIsSceneLegendOpen] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const [isActionTrayExpanded, setIsActionTrayExpanded] = useState(false);
   const [isCreateFortuneSheetOpen, setIsCreateFortuneSheetOpen] = useState(false);
@@ -196,7 +226,7 @@ export default function ScreenLab() {
     onToggleSavedFavorite: () => {},
     onToggleFavorite: () => {},
     paperProgress: new Animated.Value(1),
-    scene: SCENE_LIBRARY[selectedSceneKey] || SCENE_LIBRARY.plainLight,
+    scene: SCENE_LIBRARY[selectedSceneKey] || SCENE_LIBRARY.sunlitAir,
     shellProgress: new Animated.Value(1),
     streakCelebrationToken: 0,
     streakCount: 12,
@@ -216,20 +246,62 @@ export default function ScreenLab() {
     selectedSceneKey,
   ]);
 
-  const sceneGroups = selectedSceneKey === 'all'
-    ? SCENE_OPTIONS.filter((option) => option.key !== 'all').map((option) => ({
-      key: option.key,
-      label: option.label,
-      previewProps: {
-        ...previewProps,
-        scene: SCENE_LIBRARY[option.key] || SCENE_LIBRARY.plainLight,
-      },
-    }))
-    : [{
-      key: selectedSceneKey,
-      label: SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene',
-      previewProps,
-    }];
+  const sceneGroups = [{
+    key: selectedSceneKey,
+    label: SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene',
+    previewProps,
+  }];
+
+  const sceneLegendRows = useMemo(
+    () => {
+      const groupedBuckets = [
+        {
+          key: 'good',
+          label: 'Good',
+          buckets: ['caring', 'grateful', 'happy', 'calm', 'engaged', 'wowed', 'emotional', 'hopeful', 'proud', 'confident', 'romantic'],
+        },
+        {
+          key: 'notGreat',
+          label: 'Not great',
+          buckets: ['angry', 'disgusted', 'frustrated', 'jealous', 'anxious', 'guilty', 'lonely', 'numb', 'sad', 'sick', 'tired', 'distracted', 'embarrassed', 'hungry', 'shaken', 'stressed', 'wired'],
+        },
+        {
+          key: 'couldGoEitherWay',
+          label: 'Could go either way',
+          buckets: ['confused', 'neutral'],
+        },
+        {
+          key: 'unknown',
+          label: 'Unknown',
+          buckets: ['unknown'],
+        },
+      ];
+
+      return groupedBuckets.map((group) => ({
+        ...group,
+        scenes: Array.from(new Set(group.buckets.map((bucketKey) => MOOD_SCENE_KEYS[bucketKey]))).map((sceneKey) => {
+          const scene = SCENE_LIBRARY[sceneKey];
+          const rows = group.buckets
+            .filter((bucketKey) => MOOD_SCENE_KEYS[bucketKey] === sceneKey)
+            .sort((left, right) => formatLabel(left).localeCompare(formatLabel(right)))
+            .map((bucketKey) => ({
+              bucketKey,
+              bucketLabel: formatLabel(bucketKey),
+            }));
+
+          return {
+            sceneKey,
+            sceneLabel: formatLabel(sceneKey),
+            palette: scene
+              ? [scene.sky, scene.celestial, scene.accent]
+              : ['#ddd', '#ccc', '#bbb'],
+            rows,
+          };
+        }),
+      }));
+    },
+    []
+  );
 
   return (
     <ScrollView
@@ -258,22 +330,72 @@ export default function ScreenLab() {
             </View>
 
             <View style={styles.sceneBlock}>
-              <Text style={styles.controlLabel}>Color Scheme</Text>
-              <View style={styles.sceneOptions}>
-                {SCENE_OPTIONS.map((option) => {
-                  const isActive = selectedSceneKey === option.key;
+              <Pressable
+                onPress={() => setIsSceneLegendOpen((current) => !current)}
+                style={({ pressed }) => [
+                  styles.sceneLegendButton,
+                  pressed ? styles.sceneLegendButtonPressed : null,
+                ]}
+              >
+                <Text style={styles.sceneLegendButtonText}>
+                  Color Scheme {isSceneLegendOpen ? 'Hide' : 'Show'}
+                </Text>
+              </Pressable>
+              {isSceneLegendOpen ? (
+                <View style={styles.sceneLegendCard}>
+                  {sceneLegendRows.map((group) => (
+                    <View key={group.key} style={styles.sceneLegendGroup}>
+                      <Text style={styles.sceneLegendGroupTitle}>{group.label}</Text>
+                      {group.scenes.map((sceneGroup) => (
+                        <View key={`${group.key}-${sceneGroup.sceneKey}`} style={styles.sceneLegendSceneGroup}>
+                          <View style={styles.sceneLegendSceneHeader}>
+                            <View style={styles.sceneLegendPalette}>
+                              {sceneGroup.palette.map((color, index) => (
+                                <View
+                                  key={`${sceneGroup.sceneKey}-${index}`}
+                                  style={[styles.sceneLegendSwatch, { backgroundColor: color }]}
+                                />
+                              ))}
+                            </View>
+                            <Text style={styles.sceneLegendScene}>{sceneGroup.sceneLabel}</Text>
+                          </View>
+                          {sceneGroup.rows.map((row) => (
+                            <View key={row.bucketKey} style={styles.sceneLegendRow}>
+                              <Text style={styles.sceneLegendBucket}>{row.bucketLabel}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+              {SCENE_OPTION_GROUPS.map((group) => (
+                <View key={group.key} style={styles.sceneOptionGroupRow}>
+                  <Text style={styles.sceneOptionGroupLabel}>{group.label}</Text>
+                  <View style={styles.sceneOptions}>
+                    {group.sceneKeys.map((sceneKey) => {
+                      const option = SCENE_OPTIONS.find((candidate) => candidate.key === sceneKey);
 
-                  return (
-                    <Text
-                      key={option.key}
-                      onPress={() => setSelectedSceneKey(option.key)}
-                      style={[styles.sceneOption, isActive ? styles.sceneOptionActive : null]}
-                    >
-                      {option.label}
-                    </Text>
-                  );
-                })}
-              </View>
+                      if (!option) {
+                        return null;
+                      }
+
+                      const isActive = selectedSceneKey === option.key;
+
+                      return (
+                        <Text
+                          key={option.key}
+                          onPress={() => setSelectedSceneKey(option.key)}
+                          style={[styles.sceneOption, isActive ? styles.sceneOptionActive : null]}
+                        >
+                          {option.label}
+                        </Text>
+                      );
+                    })}
+                  </View>
+                </View>
+              ))}
             </View>
 
             <View style={styles.togglesGrid}>
@@ -294,7 +416,6 @@ export default function ScreenLab() {
       <View style={styles.framesWrap}>
         {sceneGroups.map((group) => (
           <View key={group.key} style={styles.sceneGroup}>
-            {selectedSceneKey === 'all' ? <Text style={styles.sceneGroupTitle}>{group.label}</Text> : null}
             <View style={styles.sceneFramesWrap}>
               {PREVIEW_DEVICES.map((device) => (
                 <PreviewFrame
@@ -373,7 +494,107 @@ const styles = StyleSheet.create({
   },
   sceneBlock: {
     gap: 8,
-    minWidth: 280,
+    minWidth: 440,
+    marginLeft: 'auto',
+    alignItems: 'flex-start',
+  },
+  sceneLegendButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#f3e5d3',
+    borderWidth: 1,
+    borderColor: 'rgba(164, 122, 82, 0.22)',
+  },
+  sceneLegendButtonPressed: {
+    opacity: 0.85,
+  },
+  sceneLegendButtonText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: '#7a6655',
+  },
+  sceneLegendCard: {
+    width: '100%',
+    maxWidth: 520,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 250, 244, 0.98)',
+    borderWidth: 1,
+    borderColor: 'rgba(104, 80, 58, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  sceneLegendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sceneLegendGroup: {
+    gap: 6,
+  },
+  sceneLegendGroupTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: '#8a735f',
+  },
+  sceneLegendSceneGroup: {
+    gap: 4,
+  },
+  sceneLegendSceneHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sceneLegendBucket: {
+    width: 110,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#49392d',
+  },
+  sceneLegendSceneWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sceneLegendPalette: {
+    width: 54,
+    height: 10,
+    borderRadius: 999,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: 'rgba(104, 80, 58, 0.12)',
+  },
+  sceneLegendSwatch: {
+    flex: 1,
+  },
+  sceneLegendScene: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#7a6655',
+  },
+  sceneOptionGroupRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    justifyContent: 'flex-start',
+  },
+  sceneOptionGroupLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: '#8a735f',
+    width: 146,
+    paddingTop: 8,
+    textAlign: 'left',
   },
   controlLabel: {
     fontSize: 11,
@@ -406,17 +627,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    maxWidth: 640,
+    maxWidth: 720,
+    flex: 1,
+    justifyContent: 'flex-start',
   },
   sceneOption: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 999,
     backgroundColor: '#f5ecdf',
     borderWidth: 1,
     borderColor: 'rgba(136, 102, 72, 0.16)',
     color: '#5b4534',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   sceneOptionActive: {
@@ -431,10 +654,13 @@ const styles = StyleSheet.create({
     gap: 4,
     rowGap: 2,
     minWidth: 360,
+    marginLeft: 'auto',
+    justifyContent: 'flex-end',
   },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     gap: 4,
     minWidth: 160,
     flexBasis: '30%',
@@ -444,6 +670,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#3d3025',
     fontWeight: '600',
+    textAlign: 'right',
   },
   framesWrap: {
     width: '100%',
@@ -451,12 +678,6 @@ const styles = StyleSheet.create({
   },
   sceneGroup: {
     gap: 10,
-  },
-  sceneGroupTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#2d241d',
-    letterSpacing: 0.2,
   },
   sceneFramesWrap: {
     flexDirection: 'row',

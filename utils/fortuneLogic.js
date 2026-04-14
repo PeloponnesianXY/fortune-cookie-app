@@ -21,7 +21,7 @@ import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semant
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
-const DEFAULT_SCENE_KEY = 'plainLight';
+const DEFAULT_SCENE_KEY = 'sunlitAir';
 const HIGH_RISK_WORDS = new Set([
   'suicide',
   'suicidal',

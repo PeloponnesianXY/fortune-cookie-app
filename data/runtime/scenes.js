@@ -48,78 +48,87 @@ function createAtmosphericScene({
 
 const SCENE_LIBRARY = {
   goldenQuiet: createAtmosphericScene({
-    sky: '#F7E6CE',
-    wash: '#FFF4DB',
-    glow: '#F8BF67',
-    accent: '#B78D63',
-    textDark: '#5B4634',
+    sky: '#F3DECA',
+    wash: '#FBEEE0',
+    glow: '#F8D8B1',
+    accent: '#C4906D',
+    textDark: '#5B4334',
   }),
   firstLight: createAtmosphericScene({
-    sky: '#F3E7D6',
-    wash: '#FAF1E5',
-    glow: '#F6D79B',
-    accent: '#BFAE9A',
-    textDark: '#625548',
+    sky: '#F6E5C9',
+    wash: '#FCF1DD',
+    glow: '#F6E0A6',
+    accent: '#C7A56E',
+    textDark: '#5D4A36',
+  }),
+  sunlitAir: createAtmosphericScene({
+    sky: '#F6E6D2',
+    wash: '#FCF2E4',
+    glow: '#F6DEB1',
+    accent: '#C9A06F',
+    textDark: '#5B4937',
+  }),
+  roseBlush: createAtmosphericScene({
+    sky: '#F0D8D7',
+    wash: '#F8E9E8',
+    glow: '#F3C9B1',
+    accent: '#C58E8D',
+    textDark: '#5D4342',
   }),
   emberField: createAtmosphericScene({
-    sky: '#D6C6BF',
-    wash: '#E8DCD7',
-    glow: '#F6F1ED',
-    accent: '#B28F87',
-    textDark: '#65534D',
+    sky: '#CCC7E0',
+    wash: '#DED9EC',
+    glow: '#ECE8F5',
+    accent: '#7C6AA7',
+    textDark: '#4F4565',
   }),
   blueHush: createAtmosphericScene({
-    sky: '#C7CFD8',
-    wash: '#DDE3EB',
-    glow: '#F3F6F9',
-    accent: '#A7B1BE',
-    textDark: '#53606E',
+    sky: '#C9D4E7',
+    wash: '#DEE6F2',
+    glow: '#EEF2FA',
+    accent: '#8E9FC0',
+    textDark: '#4D5A70',
   }),
   softStatic: createAtmosphericScene({
-    sky: '#D0CFD7',
-    wash: '#E4E2E8',
-    glow: '#F5F4F7',
-    accent: '#ADA8B5',
-    textDark: '#5C5964',
+    sky: '#DCCFE2',
+    wash: '#ECE3F0',
+    glow: '#F6F0F7',
+    accent: '#B39BC8',
+    textDark: '#625872',
   }),
   plainLight: createAtmosphericScene({
-    sky: '#D8D6D1',
-    wash: '#E9E7E2',
-    glow: '#F5F4F1',
-    accent: '#AAA7A0',
-    textDark: '#59574F',
-  }),
-  unknownSky: createAtmosphericScene({
-    sky: '#AAB0BA',
-    wash: '#C7CCD3',
-    glow: '#E7EAEF',
-    accent: '#8C93A0',
-    textDark: '#535A67',
+    sky: '#DDD8D6',
+    wash: '#ECE7E4',
+    glow: '#F6F2EE',
+    accent: '#AAA1A3',
+    textDark: '#575254',
   }),
   fogDrift: createAtmosphericScene({
-    sky: '#CFD1D8',
-    wash: '#E5E3E8',
-    glow: '#F4F3F6',
-    accent: '#B3AEB8',
-    textDark: '#615F68',
+    sky: '#D7D7DE',
+    wash: '#E8E6EA',
+    glow: '#F4F2F4',
+    accent: '#AFA5B1',
+    textDark: '#605B63',
   }),
 };
 
 const MOOD_SCENE_KEYS = {
   // Warm, tender, and clearly positive.
   caring: 'goldenQuiet',
-  emotional: 'goldenQuiet',
-  grateful: 'goldenQuiet',
-  happy: 'goldenQuiet',
-  hopeful: 'goldenQuiet',
-  proud: 'goldenQuiet',
   confident: 'goldenQuiet',
-  romantic: 'goldenQuiet',
+  grateful: 'goldenQuiet',
+  proud: 'goldenQuiet',
+  happy: 'roseBlush',
 
   // Open, airy positive energy.
   calm: 'firstLight',
   engaged: 'firstLight',
   wowed: 'firstLight',
+
+  // Rosier uplift, affection, and self-belief.
+  emotional: 'roseBlush',
+  hopeful: 'roseBlush',
+  romantic: 'roseBlush',
 
   // Heated defensive states.
   angry: 'emberField',
@@ -128,7 +137,6 @@ const MOOD_SCENE_KEYS = {
   jealous: 'emberField',
 
   // Quiet heavy and restorative.
-  anxious: 'blueHush',
   guilty: 'blueHush',
   lonely: 'blueHush',
   numb: 'blueHush',
@@ -137,6 +145,7 @@ const MOOD_SCENE_KEYS = {
   tired: 'blueHush',
 
   // Activated static and social friction.
+  anxious: 'softStatic',
   distracted: 'softStatic',
   embarrassed: 'softStatic',
   hungry: 'softStatic',
@@ -145,8 +154,8 @@ const MOOD_SCENE_KEYS = {
   wired: 'softStatic',
 
   // Intentionally isolated singletons. Do not merge these with adjacent moods.
-  neutral: 'plainLight',
-  unknown: 'unknownSky',
+  neutral: 'fogDrift',
+  unknown: 'plainLight',
   confused: 'fogDrift',
 };
 
