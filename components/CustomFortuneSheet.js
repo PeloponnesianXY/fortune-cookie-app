@@ -96,6 +96,7 @@ export default function CustomFortuneSheet({
   const [fortuneText, setFortuneText] = useState(initialFortuneText || '');
   const [collapsedHeight, setCollapsedHeight] = useState(collapsedEstimatedHeight || 0);
   const [anchoredTop, setAnchoredTop] = useState(null);
+  const [isComposerFocused, setIsComposerFocused] = useState(false);
   const previewLayout = usePreviewLayout();
 
   const trimmedLength = useMemo(() => fortuneText.trim().length, [fortuneText]);
@@ -119,6 +120,7 @@ export default function CustomFortuneSheet({
       setFortuneText(initialFortuneText || '');
       setCollapsedHeight(collapsedEstimatedHeight || 0);
       setAnchoredTop(null);
+      setIsComposerFocused(false);
     }
   }, [collapsedEstimatedHeight, initialFortuneText, initialMoodKey, visible]);
 
@@ -136,6 +138,7 @@ export default function CustomFortuneSheet({
     Keyboard.dismiss();
     setSelectedMood(null);
     setFortuneText('');
+    setIsComposerFocused(false);
     onCancel();
   }
 
@@ -149,6 +152,7 @@ export default function CustomFortuneSheet({
     if (didSave) {
       setSelectedMood(null);
       setFortuneText('');
+      setIsComposerFocused(false);
     }
   }
 
@@ -212,7 +216,7 @@ export default function CustomFortuneSheet({
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
-                {moodSections.map((section, sectionIndex) => (
+                {!isComposerFocused ? moodSections.map((section, sectionIndex) => (
                   <View
                     key={section.key}
                     style={sectionIndex === 0 ? styles.firstMoodSection : sectionIndex > 0 ? styles.moodSection : null}
@@ -272,19 +276,33 @@ export default function CustomFortuneSheet({
                       })}
                     </View>
                   </View>
-                ))}
+                )) : null}
 
                 {selectedMood ? (
                   <View style={styles.formCard}>
+                    {isComposerFocused ? (
+                      <View style={styles.selectedMoodRow}>
+                        <Text style={styles.selectedMoodLabel}>Mood</Text>
+                        <View style={styles.selectedMoodPill}>
+                          <Text style={styles.selectedMoodPillText}>
+                            {moodSections
+                              .flatMap((section) => section.options)
+                              .find((option) => option.key === selectedMood)?.label || selectedMood}
+                          </Text>
+                        </View>
+                      </View>
+                    ) : null}
                     <TextInput
                       multiline
                       maxLength={MAX_LENGTH}
+                      onBlur={() => setIsComposerFocused(false)}
                       onChangeText={(nextValue) => {
                         if (errorMessage) {
                           onDismissError?.();
                         }
                         setFortuneText(nextValue);
                       }}
+                      onFocus={() => setIsComposerFocused(true)}
                       placeholder="Write a warm, whimsical fortune"
                       placeholderTextColor="#b2957f"
                       style={[styles.input, isVeryCompactSheet ? styles.inputCompact : null]}
@@ -486,6 +504,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 8,
     paddingBottom: 6,
+  },
+  selectedMoodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  selectedMoodLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: '#8f6b4f',
+  },
+  selectedMoodPill: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 114, 85, 0.16)',
+    backgroundColor: '#fffdf9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  selectedMoodPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#5d4330',
   },
   input: {
     minHeight: 54,

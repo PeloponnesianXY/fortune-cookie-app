@@ -946,8 +946,8 @@ export default function FortuneCard({
             ]}
             pointerEvents="none"
           >
-            <View style={[styles.customFortuneNotice, { backgroundColor: scene.panel, borderColor: scene.panelBorder }]}>
-              <Text style={[styles.customFortuneNoticeText, { color: scene.textPrimary }]}>
+            <View style={[styles.customFortuneNotice, styles.customFortuneNoticeNeutral]}>
+              <Text style={[styles.customFortuneNoticeText, styles.customFortuneNoticeTextNeutral]}>
                 {customFortuneNotice}
               </Text>
             </View>
@@ -962,11 +962,10 @@ export default function FortuneCard({
             <Animated.View
               style={[
                 styles.dailyWisdomCard,
+                styles.dailyWisdomCardNeutral,
                 dailyWisdomAnimatedStyle,
                 {
                   bottom: metrics.dailyWisdomBottom,
-                  backgroundColor: scene.panel,
-                  borderColor: scene.panelBorder,
                 },
               ]}
             >
@@ -974,7 +973,7 @@ export default function FortuneCard({
                 adjustsFontSizeToFit
                 minimumFontScale={0.82}
                 numberOfLines={1}
-                style={[styles.dailyWisdomText, { color: scene.accent }]}
+                style={[styles.dailyWisdomText, styles.dailyWisdomTextNeutral]}
               >
                 {dailyWisdomMessage}
               </Text>
@@ -1342,10 +1341,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     elevation: 2,
   },
+  customFortuneNoticeNeutral: {
+    backgroundColor: 'rgba(255, 251, 245, 0.96)',
+    borderColor: 'rgba(24, 20, 16, 0.14)',
+  },
   customFortuneNoticeText: {
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: -0.12,
+  },
+  customFortuneNoticeTextNeutral: {
+    color: '#181410',
   },
   mainFlow: {
     flexGrow: 1,
@@ -1487,6 +1493,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  dailyWisdomCardNeutral: {
+    backgroundColor: 'rgba(255, 251, 245, 0.96)',
+    borderColor: 'rgba(24, 20, 16, 0.14)',
+  },
   promptSection: {
     width: '100%',
     alignSelf: 'center',
@@ -1501,6 +1511,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.15,
     textAlign: 'center',
+  },
+  dailyWisdomTextNeutral: {
+    color: '#181410',
   },
   actionZone: {
     position: 'absolute',
