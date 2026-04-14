@@ -87,43 +87,10 @@ const HATE_PATTERNS = [
 ];
 
 const { weird: LEGACY_WEIRD_FORTUNES, ...CORE_FORTUNE_LIBRARY } = BASE_FORTUNE_LIBRARY;
-const EMOTIONAL_FORTUNES = [
-  ...BASE_FORTUNE_LIBRARY.caring,
-  ...BASE_FORTUNE_LIBRARY.grateful,
-  ...BASE_FORTUNE_LIBRARY.sad,
-  ...BASE_FORTUNE_LIBRARY.romantic,
-];
-const ENGAGED_FORTUNES = [
-  ...BASE_FORTUNE_LIBRARY.confident,
-  ...BASE_FORTUNE_LIBRARY.happy,
-  ...BASE_FORTUNE_LIBRARY.hopeful,
-  ...BASE_FORTUNE_LIBRARY.wowed,
-];
 
 const FORTUNE_LIBRARY = {
   ...CORE_FORTUNE_LIBRARY,
-  proud: [...BASE_FORTUNE_LIBRARY.proud],
-  caring: [...BASE_FORTUNE_LIBRARY.caring],
-  emotional: [...new Set(EMOTIONAL_FORTUNES)],
-  engaged: [...new Set(ENGAGED_FORTUNES)],
-  grateful: [...BASE_FORTUNE_LIBRARY.grateful],
-  wowed: [...BASE_FORTUNE_LIBRARY.wowed],
-  shaken: [...BASE_FORTUNE_LIBRARY.shaken],
-  confident: [...BASE_FORTUNE_LIBRARY.confident],
-  frustrated: [...BASE_FORTUNE_LIBRARY.frustrated],
-  guilty: [...BASE_FORTUNE_LIBRARY.guilty],
-  jealous: [...BASE_FORTUNE_LIBRARY.jealous],
-  embarrassed: [...BASE_FORTUNE_LIBRARY.embarrassed],
-  hungry: [...BASE_FORTUNE_LIBRARY.hungry],
-  sick: [...BASE_FORTUNE_LIBRARY.sick],
-  wired: [...BASE_FORTUNE_LIBRARY.wired],
-  distracted: [...BASE_FORTUNE_LIBRARY.distracted],
-  stressed: [...BASE_FORTUNE_LIBRARY.stressed],
-  neutral: [...BASE_FORTUNE_LIBRARY.neutral],
-  numb: [...BASE_FORTUNE_LIBRARY.numb],
-  romantic: [...BASE_FORTUNE_LIBRARY.romantic],
-  // Unknown intentionally keeps the mystery-style corpus for unmatched inputs.
-  unknown: [...LEGACY_WEIRD_FORTUNES],
+  unknown: [...BASE_FORTUNE_LIBRARY.unknown],
 };
 
 const MOOD_BUCKET_PROFILES = {

@@ -9,6 +9,8 @@ const FORTUNE_BUCKET_KEYS = [
   "confused",
   "distracted",
   "disgusted",
+  "emotional",
+  "engaged",
   "frustrated",
   "grateful",
   "guilty",
@@ -26,6 +28,7 @@ const FORTUNE_BUCKET_KEYS = [
   "stressed",
   "shaken",
   "tired",
+  "unknown",
   "weird",
   "wired"
 ];

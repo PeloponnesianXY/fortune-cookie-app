@@ -36,6 +36,7 @@ const HIGH_RISK_WORDS = new Set([
   'homicidal',
   'kill',
   'killing',
+  'violent',
   'stab',
   'stabbing',
   'shoot',

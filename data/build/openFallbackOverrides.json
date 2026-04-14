@@ -147,7 +147,12 @@
       "uncollectible",
       "unfit",
       "unsound",
-      "upturned"
+      "upturned",
+      "dumb",
+      "fool",
+      "idiot",
+      "stupid",
+      "worthless"
     ],
     "grateful": [
       "damn",
@@ -329,12 +334,7 @@
       "tremendous",
       "abominable",
       "atrocious",
-      "execrable",
-      "dumb",
-      "fool",
-      "idiot",
-      "stupid",
-      "worthless"
+      "execrable"
     ],
     "sick": [
       "aching",
