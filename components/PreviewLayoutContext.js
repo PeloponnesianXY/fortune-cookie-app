@@ -1,5 +1,9 @@
 import React, { createContext, useContext } from 'react';
-import { SafeAreaView, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 const ZERO_INSETS = {
   top: 0,
@@ -21,11 +25,12 @@ export function PreviewLayoutProvider({ children, value }) {
 export function usePreviewLayout() {
   const windowDimensions = useWindowDimensions();
   const previewLayout = useContext(PreviewLayoutContext);
+  const liveInsets = useSafeAreaInsets();
 
   return {
     height: previewLayout?.height ?? windowDimensions.height,
     width: previewLayout?.width ?? windowDimensions.width,
-    insets: previewLayout?.insets ?? ZERO_INSETS,
+    insets: previewLayout?.insets ?? liveInsets ?? ZERO_INSETS,
     keyboardVisible: previewLayout?.keyboardVisible ?? null,
     isPreview: Boolean(previewLayout),
   };

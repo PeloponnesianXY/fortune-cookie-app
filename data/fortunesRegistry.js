@@ -2082,7 +2082,7 @@ const FORTUNES = [
       "confident"
     ],
     scope: "shared",
-    active: true
+    active: false
   },
   {
     id: "f_0239",

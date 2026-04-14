@@ -129,7 +129,7 @@ const SCENE_OPTION_GROUPS = [
   {
     key: 'notGreat',
     label: 'Not great',
-    sceneKeys: ['emberField', 'blueHush', 'softStatic'],
+    sceneKeys: ['emberField', 'heatHaze', 'softStatic'],
   },
   {
     key: 'couldGoEitherWay',
@@ -192,9 +192,10 @@ export default function ScreenLab() {
   const [isHistorySheetOpen, setIsHistorySheetOpen] = useState(false);
   const [isStreakBarExpanded, setIsStreakBarExpanded] = useState(false);
   const [isKeyboardSimulated, setIsKeyboardSimulated] = useState(false);
-  const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(false);
+  const [isSafeAreaSimulated, setIsSafeAreaSimulated] = useState(true);
   const [isCookieOpened, setIsCookieOpened] = useState(false);
   const [isLockWarningVisible, setIsLockWarningVisible] = useState(false);
+  const [isSavedToFavoritesNoticeVisible, setIsSavedToFavoritesNoticeVisible] = useState(false);
 
   const previewProps = useMemo(() => ({
     canReplaceCurrentFortune: true,
@@ -205,6 +206,9 @@ export default function ScreenLab() {
     favoriteFortunes: LAB_FAVORITE_FORTUNES,
     fortuneText: FORTUNE_PRESETS[fortuneLength],
     forcedActionTrayVisible: isActionTrayExpanded,
+    forcedCustomFortuneNotice: isSavedToFavoritesNoticeVisible
+      ? 'Saved to Calm fortunes and added to Favorites'
+      : null,
     forcedCustomFortuneSheetVisible: isCreateFortuneSheetOpen,
     forcedDrawerOpen: isHistorySheetOpen ? false : isDrawerExpanded,
     forcedLibraryOpen: isHistorySheetOpen ? 'history' : null,
@@ -242,6 +246,7 @@ export default function ScreenLab() {
     isDrawerExpanded,
     isHistorySheetOpen,
     isLockWarningVisible,
+    isSavedToFavoritesNoticeVisible,
     isStreakBarExpanded,
     selectedSceneKey,
   ]);
@@ -406,6 +411,11 @@ export default function ScreenLab() {
               <ToggleRow label="Keyboard" onValueChange={setIsKeyboardSimulated} value={isKeyboardSimulated} />
               <ToggleRow label="Lock warning" onValueChange={setIsLockWarningVisible} value={isLockWarningVisible} />
               <ToggleRow label="Open cookie" onValueChange={setIsCookieOpened} value={isCookieOpened} />
+              <ToggleRow
+                label="Saved notice"
+                onValueChange={setIsSavedToFavoritesNoticeVisible}
+                value={isSavedToFavoritesNoticeVisible}
+              />
               <ToggleRow label="Safe area" onValueChange={setIsSafeAreaSimulated} value={isSafeAreaSimulated} />
               <ToggleRow label="Streak bar" onValueChange={setIsStreakBarExpanded} value={isStreakBarExpanded} />
             </View>

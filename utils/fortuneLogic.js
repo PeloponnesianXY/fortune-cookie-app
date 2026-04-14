@@ -45,17 +45,21 @@ const HIGH_RISK_WORDS = new Set([
 ]);
 const CUSTOM_HANDCRAFTED_BUCKET_WORDS = {
   caring: ['affectionate'],
+  anxious: ['judged'],
   distracted: ['unbalanced'],
   emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
   engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
   guilty: ['remorseful'],
+  shaken: ['violated'],
 };
 const CUSTOM_OPEN_FALLBACK_BUCKET_WORDS = {
   caring: ['affectionate'],
+  anxious: ['judged'],
   distracted: ['unbalanced'],
   emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
   engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
   guilty: ['remorseful', 'regretful', 'contrite'],
+  shaken: ['violated'],
 };
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];

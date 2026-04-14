@@ -1,7 +1,8 @@
 {
   "allowByBucket": {
     "anxious": [
-      "edgy"
+      "edgy",
+      "judged"
     ],
     "calm": [
       "alright"
@@ -24,6 +25,9 @@
     ],
     "stressed": [
       "overwrought"
+    ],
+    "shaken": [
+      "violated"
     ],
     "tired": [
       "rundown"

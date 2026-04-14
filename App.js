@@ -1,5 +1,6 @@
 import React from 'react';
 import { Platform } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import FortuneHomeScreen from './components/FortuneHomeScreen';
 import FortuneLab from './components/FortuneLab';
@@ -22,20 +23,20 @@ function matchesDevRoute(routeName) {
 }
 
 export default function App() {
+  let content = null;
+
   // Dev-only browser entry point for layout work: open `/screen-lab` locally on Expo web.
   if (matchesDevRoute('screen-lab')) {
-    return <ScreenLab />;
+    content = <ScreenLab />;
+  } else if (matchesDevRoute('mood-lab')) {
+    // Dev-only browser entry point for mood mapping inspection: open `/mood-lab` locally on Expo web.
+    content = <MoodLab />;
+  } else if (matchesDevRoute('fortune-lab')) {
+    // Dev-only browser entry point for canonical fortune editing: open `/fortune-lab` locally on Expo web.
+    content = <FortuneLab />;
+  } else {
+    content = <FortuneHomeScreen />;
   }
 
-  // Dev-only browser entry point for mood mapping inspection: open `/mood-lab` locally on Expo web.
-  if (matchesDevRoute('mood-lab')) {
-    return <MoodLab />;
-  }
-
-  // Dev-only browser entry point for canonical fortune editing: open `/fortune-lab` locally on Expo web.
-  if (matchesDevRoute('fortune-lab')) {
-    return <FortuneLab />;
-  }
-
-  return <FortuneHomeScreen />;
+  return <SafeAreaProvider>{content}</SafeAreaProvider>;
 }

@@ -43,6 +43,59 @@ function scaleValue(value, scale) {
   return Math.round(value * scale * 10) / 10;
 }
 
+function balanceFortuneText(text) {
+  if (!text || text.includes('\n')) {
+    return text || '';
+  }
+
+  const words = text.trim().split(/\s+/);
+
+  // Short-to-medium fortunes look best when we can avoid a single orphaned word line.
+  if (words.length < 5 || words.length > 15) {
+    return text;
+  }
+
+  const joinedLength = words.join(' ').length;
+  let bestSplit = -1;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (let index = 1; index < words.length; index += 1) {
+    const leftWords = words.slice(0, index);
+    const rightWords = words.slice(index);
+    const left = leftWords.join(' ');
+    const right = rightWords.join(' ');
+
+    if (leftWords.length < 2 || rightWords.length < 2) {
+      continue;
+    }
+
+    let score = Math.abs(left.length - right.length);
+
+    if (right.length <= 6) {
+      score += 30;
+    } else if (right.length <= 10) {
+      score += 12;
+    }
+
+    const leftRatio = left.length / joinedLength;
+    const rightRatio = right.length / joinedLength;
+    if (leftRatio < 0.34 || rightRatio < 0.34) {
+      score += 10;
+    }
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestSplit = index;
+    }
+  }
+
+  if (bestSplit === -1 || bestScore > 18) {
+    return text;
+  }
+
+  return `${words.slice(0, bestSplit).join(' ')}\n${words.slice(bestSplit).join(' ')}`;
+}
+
 function getOpenedCookieImageBottom(scale = 1, imageVerticalOffset = 0) {
   return scaleValue(OPEN_COOKIE_FIT.translateY + imageVerticalOffset + OPEN_COOKIE_FIT.height, scale);
 }
@@ -94,6 +147,7 @@ function CookieShell({
   const paperBorderRadius = Math.max(2, scaleValue(2, scale));
   const paperTextSize = Math.max(11.5, scaleValue(13, scale));
   const paperTextLineHeight = Math.max(14, scaleValue(16, scale));
+  const balancedFortuneText = balanceFortuneText(fortuneText || '');
   const paperGrainTop = scaleValue(7, scale);
   const paperGrainInset = scaleValue(8, scale);
   const paperCornerTopLeftWidth = scaleValue(26, scale);
@@ -301,7 +355,7 @@ function CookieShell({
           ]}
         />
         <Text style={[styles.paperText, { fontSize: paperTextSize, lineHeight: paperTextLineHeight }]}>
-          {fortuneText || ''}
+          {balancedFortuneText}
         </Text>
       </Animated.View>
     </View>

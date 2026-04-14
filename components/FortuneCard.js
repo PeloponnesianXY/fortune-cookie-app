@@ -181,12 +181,12 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     Math.round(extraUsableHeight * PROMPT_LIFT_FACTOR),
     0,
     MAX_PROMPT_BOTTOM_INSET
-  );
+  ) + (isVeryCompact ? 8 : 0) - (isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 22);
   const cookieImageOffset = clamp(
     Math.round(extraUsableHeight * COOKIE_DROP_FACTOR),
     0,
     MAX_COOKIE_DROP
-  );
+  ) - (isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 20);
   const cookieImageBottom = getOpenedCookieImageBottom(cookieScale, cookieImageOffset);
   const actionTrayImageGap = clamp(
     Math.round(usableHeight * ACTION_TRAY_IMAGE_GAP_FACTOR),
@@ -209,7 +209,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
   );
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
-  const dailyWisdomBottom = isVeryCompact ? 34 : isCompact ? 24 : isRoomy ? 26 : 20;
+  const dailyWisdomBottom = isVeryCompact ? 66 : isCompact ? 52 : isRoomy ? 64 : 66;
   const cookieRoominessDrop = clamp(
     Math.round(
       extraUsableHeight * COOKIE_ROOMINESS_DROP_FACTOR
@@ -239,7 +239,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MAX_CUSTOM_NOTICE_GAP
   );
   const customNoticeTop = createFortuneTopAnchor + ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT + customNoticeGap
-    - (isVeryCompact ? SE_CUSTOM_NOTICE_LIFT : 0);
+    - (isVeryCompact ? SE_CUSTOM_NOTICE_LIFT : 0)
+    + (isVeryCompact ? 12 : isCompact ? 10 : isRoomy ? 16 : 14);
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
   const topGlowTop = isVeryCompact ? -56 : isCompact ? -64 : isRoomy ? -92 : -78;
@@ -300,6 +301,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     promptFloatClearance,
     promptBottomInset,
     promptGap,
+    promptSectionOffset: isVeryCompact ? -16 : 0,
     scene,
     streakScale,
     streakRightNudge,
@@ -395,6 +397,7 @@ export default function FortuneCard({
   favoriteFortunes,
   fortuneText,
   forcedActionTrayVisible,
+  forcedCustomFortuneNotice,
   forcedCustomFortuneSheetVisible,
   forcedDrawerOpen,
   forcedLibraryOpen,
@@ -470,6 +473,8 @@ export default function FortuneCard({
   const customFortuneSheetVisible = isCustomFortuneSheetForced
     ? forcedCustomFortuneSheetVisible
     : isCustomFortuneSheetVisible;
+  const resolvedCustomFortuneNotice = forcedCustomFortuneNotice ?? customFortuneNotice;
+  const shouldLiftMasterPrompt = effectiveKeyboardVisible && !customFortuneSheetVisible;
   const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
   const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
   const customFortuneNoticeTop = metrics.customNoticeTop;
@@ -572,6 +577,16 @@ export default function FortuneCard({
     setActiveLibrary(library);
   }
 
+  function dismissMasterPromptKeyboardImmediately() {
+    clearIdleKeyboardTimer();
+    Keyboard.dismiss();
+    inputRef.current?.blur();
+    setIsInputFocused(false);
+    setIsKeyboardVisible(false);
+    promptLiftProgress.stopAnimation();
+    promptLiftProgress.setValue(0);
+  }
+
   function animateDrawer(nextOpen, onComplete) {
     if (nextOpen) {
       setIsDrawerOpen(true);
@@ -596,6 +611,7 @@ export default function FortuneCard({
       return;
     }
 
+    dismissMasterPromptKeyboardImmediately();
     animateDrawer(true);
   }
 
@@ -759,12 +775,12 @@ export default function FortuneCard({
 
   useEffect(() => {
     Animated.timing(promptLiftProgress, {
-      toValue: effectiveKeyboardVisible ? 1 : 0,
+      toValue: shouldLiftMasterPrompt ? 1 : 0,
       duration: Platform.OS === 'ios' ? 240 : 180,
-      easing: effectiveKeyboardVisible ? Easing.out(Easing.cubic) : Easing.inOut(Easing.quad),
+      easing: shouldLiftMasterPrompt ? Easing.out(Easing.cubic) : Easing.inOut(Easing.quad),
       useNativeDriver: true,
     }).start();
-  }, [effectiveKeyboardVisible, promptLiftProgress]);
+  }, [promptLiftProgress, shouldLiftMasterPrompt]);
 
   useEffect(() => {
     clearDailyWisdomShowTimer();
@@ -934,7 +950,7 @@ export default function FortuneCard({
           </View>
         </View>
 
-        {customFortuneNotice ? (
+        {resolvedCustomFortuneNotice ? (
           <View
             style={[
               styles.customFortuneNoticeWrap,
@@ -947,8 +963,13 @@ export default function FortuneCard({
             pointerEvents="none"
           >
             <View style={[styles.customFortuneNotice, styles.customFortuneNoticeNeutral]}>
-              <Text style={[styles.customFortuneNoticeText, styles.customFortuneNoticeTextNeutral]}>
-                {customFortuneNotice}
+              <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
+                numberOfLines={1}
+                style={[styles.customFortuneNoticeText, styles.customFortuneNoticeTextNeutral]}
+              >
+                {resolvedCustomFortuneNotice}
               </Text>
             </View>
           </View>
@@ -1030,8 +1051,8 @@ export default function FortuneCard({
             promptDockAnimatedStyle,
             {
               paddingTop: metrics.promptGap,
-              paddingBottom: effectiveKeyboardVisible ? 0 : metrics.promptBottomInset,
-              justifyContent: effectiveKeyboardVisible ? 'flex-start' : 'flex-end',
+              paddingBottom: shouldLiftMasterPrompt ? 0 : metrics.promptBottomInset,
+              justifyContent: shouldLiftMasterPrompt ? 'flex-start' : 'flex-end',
             },
           ]}
         >
@@ -1046,6 +1067,7 @@ export default function FortuneCard({
                 styles.inputCardNeutral,
                 {
                   maxWidth: metrics.contentMaxWidth,
+                  marginTop: metrics.promptSectionOffset,
                 },
               ]}
             >

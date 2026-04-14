@@ -249,6 +249,7 @@ export default function CustomFortuneSheet({
                                 onDismissError?.();
                               }
                               setSelectedMood(option.key);
+                              setIsComposerFocused(true);
                             }}
                             style={[
                               styles.moodPill,
