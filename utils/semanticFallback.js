@@ -1,6 +1,14 @@
-import {
-  SEMANTIC_FALLBACK_DATA,
-} from '../data/runtime/semanticFallbackData.js';
+let semanticFallbackDataCache = null;
+
+function getSemanticFallbackData() {
+  if (!semanticFallbackDataCache) {
+    // Keep the large semantic fallback table out of the startup path.
+    // Most launches never need it, so we load it only for true semantic fallback.
+    ({ SEMANTIC_FALLBACK_DATA: semanticFallbackDataCache } = require('../data/runtime/semanticFallbackData.js'));
+  }
+
+  return semanticFallbackDataCache;
+}
 
 function cosineSimilarity(left, right) {
   let dot = 0;
@@ -25,8 +33,9 @@ function roundSemanticValue(value) {
 }
 
 function getBucketScore(inputVector, bucket, prototype) {
+  const semanticFallbackData = getSemanticFallbackData();
   const prototypeScore = cosineSimilarity(inputVector, prototype);
-  const anchorEntries = SEMANTIC_FALLBACK_DATA.bucketAnchors?.[bucket] || [];
+  const anchorEntries = semanticFallbackData.bucketAnchors?.[bucket] || [];
   const bestAnchorScore = anchorEntries.reduce((bestScore, entry) => (
     Math.max(bestScore, cosineSimilarity(inputVector, entry.vector))
   ), 0);
@@ -39,6 +48,8 @@ function getBucketScore(inputVector, bucket, prototype) {
 }
 
 function analyzeSemanticFallbackInput(normalizedInput) {
+  const semanticFallbackData = getSemanticFallbackData();
+
   if (!normalizedInput || normalizedInput.includes(' ')) {
     return {
       accepted: false,
@@ -48,7 +59,7 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     };
   }
 
-  if (normalizedInput.length < SEMANTIC_FALLBACK_DATA.settings.minInputLength) {
+  if (normalizedInput.length < semanticFallbackData.settings.minInputLength) {
     return {
       accepted: false,
       bucket: null,
@@ -57,7 +68,7 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     };
   }
 
-  if ((SEMANTIC_FALLBACK_DATA.settings.rejectWords || []).includes(normalizedInput)) {
+  if ((semanticFallbackData.settings.rejectWords || []).includes(normalizedInput)) {
     return {
       accepted: false,
       bucket: null,
@@ -66,7 +77,7 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     };
   }
 
-  const inputVector = SEMANTIC_FALLBACK_DATA.inputVectors[normalizedInput];
+  const inputVector = semanticFallbackData.inputVectors[normalizedInput];
   if (!inputVector) {
     return {
       accepted: false,
@@ -76,7 +87,7 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     };
   }
 
-  const rankedBuckets = Object.entries(SEMANTIC_FALLBACK_DATA.bucketPrototypes)
+  const rankedBuckets = Object.entries(semanticFallbackData.bucketPrototypes)
     .map(([bucket, prototype]) => ({
       bucket,
       score: getBucketScore(inputVector, bucket, prototype),
@@ -97,7 +108,7 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     runnerUpScore,
   };
 
-  if (bestScore < SEMANTIC_FALLBACK_DATA.settings.minSimilarity) {
+  if (bestScore < semanticFallbackData.settings.minSimilarity) {
     return {
       accepted: false,
       bucket: best.bucket,
