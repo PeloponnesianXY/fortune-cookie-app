@@ -209,7 +209,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
   );
   const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
-  const dailyWisdomBottom = isVeryCompact ? 66 : isCompact ? 52 : isRoomy ? 64 : 66;
+  const dailyWisdomBottom = isVeryCompact ? 66 : isCompact ? 52 : isRoomy ? 86 : 92;
   const cookieRoominessDrop = clamp(
     Math.round(
       extraUsableHeight * COOKIE_ROOMINESS_DROP_FACTOR
@@ -301,6 +301,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     promptFloatClearance,
     promptBottomInset,
     promptGap,
+    paperLift: isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 28,
     promptSectionOffset: isVeryCompact ? -16 : 0,
     scene,
     streakScale,
@@ -342,6 +343,7 @@ const CookieStage = memo(function CookieStage({
   isPaperVisible,
   onPress,
   paperCueProgress,
+  paperLift,
   paperProgress,
   shellProgress,
   shellScale,
@@ -377,6 +379,7 @@ const CookieStage = memo(function CookieStage({
             imageVerticalOffset={imageVerticalOffset}
             isOpened={isCookieOpened}
             isPaperVisible={isPaperVisible}
+            paperLift={paperLift}
             scale={shellScale}
             paperCueProgress={paperCueProgress}
             paperProgress={paperProgress}
@@ -1015,6 +1018,7 @@ export default function FortuneCard({
             isPaperVisible={isPaperVisible}
             onPress={showActionTrayTemporarily}
             paperCueProgress={paperCueProgress}
+            paperLift={metrics.paperLift}
             paperProgress={paperProgress}
             shellProgress={shellProgress}
             shellScale={metrics.cookieScale}

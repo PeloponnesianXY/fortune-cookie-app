@@ -76,11 +76,11 @@ const SCENE_LIBRARY = {
     textDark: '#5D4342',
   }),
   emberField: createAtmosphericScene({
-    sky: '#DEC1BA',
-    wash: '#EED7D1',
-    glow: '#F7E7E0',
-    accent: '#B16E63',
-    textDark: '#5C433D',
+    sky: '#E1B8B1',
+    wash: '#F0D1CB',
+    glow: '#F7DDD5',
+    accent: '#BA6054',
+    textDark: '#5E3F3A',
   }),
   heatHaze: createAtmosphericScene({
     sky: '#E3C8C2',

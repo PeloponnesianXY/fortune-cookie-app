@@ -105,6 +105,7 @@ function CookieShell({
   imageVerticalOffset = 0,
   isOpened,
   isPaperVisible,
+  paperLift = 0,
   paperCueProgress,
   paperProgress,
   shellProgress,
@@ -137,8 +138,9 @@ function CookieShell({
   );
   const paperMinHeight = scaleValue(PAPER_SIZE.minHeight, scale);
   const sePaperLift = scale < 0.86 ? scaleValue(14, scale) : 0;
-  const paperTop = scaleValue(-28, scale) - sePaperLift;
-  const paperShadowTop = scaleValue(-6, scale) - sePaperLift;
+  const resolvedPaperLift = sePaperLift + scaleValue(paperLift, scale);
+  const paperTop = scaleValue(-28, scale) - resolvedPaperLift;
+  const paperShadowTop = scaleValue(-6, scale) - resolvedPaperLift;
   const paperShadowWidth = scaleValue(214, scale);
   const paperShadowHeight = scaleValue(24, scale);
   const paperShadowRadius = scaleValue(18, scale);
