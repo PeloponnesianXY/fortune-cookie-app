@@ -1028,7 +1028,7 @@ const FORTUNES = [
   },
   {
     id: "f_0247",
-    text: "This feeling does not define your whole story.",
+    text: "A heavy hour is not the whole tale.",
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific",
@@ -1036,7 +1036,7 @@ const FORTUNES = [
   },
   {
     id: "f_0251",
-    text: "This heaviness may visit, but it does not own you.",
+    text: "This cloud may pass soon without a single raindrop.",
     primaryBucket: "sad",
     alsoFits: [
       "lonely",
@@ -1479,7 +1479,7 @@ const FORTUNES = [
   },
   {
     id: "f_0333",
-    text: "You do not need to solve this to be safe right now.",
+    text: "Safety does not always require a solution at once.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1490,16 +1490,6 @@ const FORTUNES = [
   {
     id: "f_0335",
     text: "Reality is rarely as grim as your mind portrays it.",
-    primaryBucket: "anxious",
-    alsoFits: [
-      "stressed"
-    ],
-    scope: "shared",
-    active: true
-  },
-  {
-    id: "f_0336",
-    text: "You are doing better than your mind is letting you believe.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1520,7 +1510,7 @@ const FORTUNES = [
   },
   {
     id: "f_0338",
-    text: "Your body can feel scared even when you're actually okay.",
+    text: "Anxious body is not always a threatened one.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1541,7 +1531,7 @@ const FORTUNES = [
   },
   {
     id: "f_0340",
-    text: "Your mind deserves a peaceful reality check.",
+    text: "A calm look at things may improve the picture.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1551,7 +1541,7 @@ const FORTUNES = [
   },
   {
     id: "f_0341",
-    text: "You are safer than this feeling is making it seem.",
+    text: "Your situation may be safer than your nerves report.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1561,7 +1551,7 @@ const FORTUNES = [
   },
   {
     id: "f_0342",
-    text: "Not every alarm in your body is an instruction.",
+    text: "Not every alarm is an instruction.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed",
@@ -1592,7 +1582,7 @@ const FORTUNES = [
   },
   {
     id: "f_0346",
-    text: "This feeling is persuasive, not necessarily accurate.",
+    text: "A loud fear is not always a true one.",
     primaryBucket: "anxious",
     alsoFits: [
       "embarrassed",
@@ -1657,7 +1647,7 @@ const FORTUNES = [
   },
   {
     id: "f_0352",
-    text: "A frightening thought is still only a thought.",
+    text: "A dark thought is still only a passing guest.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1667,7 +1657,7 @@ const FORTUNES = [
   },
   {
     id: "f_0353",
-    text: "Your mind loves prediction; reality loves evidence.",
+    text: "The mind predicts storms the sky may never send.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"

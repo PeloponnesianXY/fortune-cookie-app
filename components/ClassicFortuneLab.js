@@ -333,9 +333,36 @@ function formatBucketLabel(bucket) {
   return bucket.charAt(0).toUpperCase() + bucket.slice(1);
 }
 
+function getEditorTextSizing(text) {
+  const length = String(text || '').trim().length;
+
+  if (length >= 56) {
+    return {
+      fontSize: 10,
+      lineHeight: 14,
+      paddingHorizontal: 6,
+    };
+  }
+
+  if (length >= 48) {
+    return {
+      fontSize: 11,
+      lineHeight: 15,
+      paddingHorizontal: 7,
+    };
+  }
+
+  return {
+    fontSize: 12,
+    lineHeight: 16,
+    paddingHorizontal: 8,
+  };
+}
+
 export default function ClassicFortuneLab() {
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
   const [fortunes, setFortunes] = useState([]);
+  const [currentDrafts, setCurrentDrafts] = useState({});
   const [drafts, setDrafts] = useState({});
   const [dismissedIds, setDismissedIds] = useState(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') {
@@ -375,6 +402,20 @@ export default function ClassicFortuneLab() {
 
         const incomingFortunes = Array.isArray(payload.fortunes) ? payload.fortunes : [];
         setFortunes(incomingFortunes);
+        setCurrentDrafts(() => {
+          const nextCurrentDrafts = {};
+
+          for (const [bucket, suggestions] of Object.entries(SUSPECT_FORTUNE_SUGGESTIONS)) {
+            for (const fortuneId of Object.keys(suggestions)) {
+              const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
+              if (liveFortune) {
+                nextCurrentDrafts[fortuneId] = liveFortune.text;
+              }
+            }
+          }
+
+          return nextCurrentDrafts;
+        });
         setDrafts(() => {
           const nextDrafts = {};
 
@@ -449,6 +490,13 @@ export default function ClassicFortuneLab() {
 
   function updateDraft(fortuneId, value) {
     setDrafts((current) => ({
+      ...current,
+      [fortuneId]: value,
+    }));
+  }
+
+  function updateCurrentDraft(fortuneId, value) {
+    setCurrentDrafts((current) => ({
       ...current,
       [fortuneId]: value,
     }));
@@ -531,8 +579,31 @@ export default function ClassicFortuneLab() {
     }
   }
 
-  function handleAcceptCurrent(fortune) {
+  async function handleAcceptCurrent(fortune) {
+    const nextText = String(currentDrafts[fortune.id] || '').trim();
+    if (!nextText) {
+      return;
+    }
+
     dismissFortuneId(fortune.id);
+    setBusyId(fortune.id);
+
+    try {
+      await processChange({
+        deletions: [],
+        creations: [],
+        updates: [{
+          id: fortune.id,
+          text: nextText,
+          buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
+        }],
+      });
+    } catch (error) {
+      restoreFortuneId(fortune.id);
+      throw error;
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function handleDelete(fortune) {
@@ -558,12 +629,13 @@ export default function ClassicFortuneLab() {
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Classic Fortune Lab</Text>
         <Text style={styles.subtitle}>
-          Current Accept keeps the live fortune and hides it here. Current X deletes it. Suggested Accept overwrites the live fortune.
+          Current Accept saves the left-side edit. Current X deletes it. Suggested Accept saves the rewrite on the right.
         </Text>
       </View>
 
       <View style={styles.globalLegendWrap}>
         <View style={styles.bucketLegendRow}>
+          <Text style={[styles.bucketLegendText, styles.idColumn]}>ID</Text>
           <Text style={[styles.bucketLegendText, styles.pairColumn]}>Current</Text>
           <Text style={[styles.bucketLegendText, styles.pairColumn]}>Suggested rewrite</Text>
         </View>
@@ -595,10 +667,20 @@ export default function ClassicFortuneLab() {
 
                 return (
                   <View key={fortune.id} style={styles.fortuneCard}>
+                    <Text style={styles.fortuneIdText}>{fortune.id}</Text>
+
                     <View style={styles.pairColumn}>
-                      <Text style={[styles.currentText, styles.currentColumn]} numberOfLines={2}>
-                        {fortune.text}
-                      </Text>
+                      <TextInput
+                        multiline={false}
+                        onChangeText={(value) => updateCurrentDraft(fortune.id, value)}
+                        style={[
+                          styles.suggestionInput,
+                          styles.currentColumn,
+                          getEditorTextSizing(currentDrafts[fortune.id] || fortune.text),
+                        ]}
+                        numberOfLines={1}
+                        value={currentDrafts[fortune.id] || fortune.text}
+                      />
 
                       <View style={[styles.actionsColumn, styles.currentActionsColumn]}>
                         <Pressable
@@ -628,7 +710,12 @@ export default function ClassicFortuneLab() {
                       <TextInput
                         multiline={false}
                         onChangeText={(value) => updateDraft(fortune.id, value)}
-                        style={[styles.suggestionInput, styles.suggestedColumn]}
+                        style={[
+                          styles.suggestionInput,
+                          styles.suggestedColumn,
+                          getEditorTextSizing(drafts[fortune.id] || ''),
+                        ]}
+                        numberOfLines={1}
                         value={drafts[fortune.id] || ''}
                       />
 
@@ -780,6 +867,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: '#8a735f',
   },
+  idColumn: {
+    width: 50,
+  },
   pairColumn: {
     flex: 1,
     flexDirection: 'row',
@@ -833,14 +923,20 @@ const styles = StyleSheet.create({
     color: '#6a2f26',
     fontWeight: '900',
   },
+  fortuneIdText: {
+    width: 50,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#8a735f',
+  },
   currentColumn: {
-    width: '39%',
+    width: '46%',
     flexGrow: 0,
     flexShrink: 1,
     minWidth: 0,
   },
   suggestedColumn: {
-    width: '39%',
+    width: '40%',
     flexGrow: 0,
     flexShrink: 1,
     minWidth: 0,
@@ -863,26 +959,26 @@ const styles = StyleSheet.create({
     color: '#2f241c',
   },
   charCountText: {
-    minWidth: 28,
+    minWidth: 20,
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     color: '#8a735f',
   },
   actionsColumn: {
-    width: 148,
+    width: 132,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: 6,
+    gap: 4,
   },
   currentActionsColumn: {
-    width: 98,
-    gap: 6,
+    width: 90,
+    gap: 4,
   },
   acceptButton: {
     borderRadius: 999,
-    paddingHorizontal: 9,
+    paddingHorizontal: 8,
     paddingVertical: 5,
     backgroundColor: '#d8a66b',
   },
@@ -891,7 +987,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderRadius: 999,
-    paddingHorizontal: 9,
+    paddingHorizontal: 8,
     paddingVertical: 5,
     backgroundColor: '#efe2d0',
     borderWidth: 1,
