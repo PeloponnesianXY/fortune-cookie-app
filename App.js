@@ -11,11 +11,8 @@ function isSemanticLabRoute() {
 
   const { hash, pathname, search } = window.location;
   return (
-    pathname === '/mood-lab'
-    || pathname === '/semantic-lab'
-    || search.includes('moodLab=1')
+    pathname === '/semantic-lab'
     || search.includes('semanticLab=1')
-    || hash === '#/mood-lab'
     || hash === '#/semantic-lab'
   );
 }

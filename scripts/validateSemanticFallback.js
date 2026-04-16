@@ -13,7 +13,7 @@ async function main() {
   const { getSemanticFallbackMatch } = semanticModule;
   const { BUCKET_VOCAB } = snapshotModule;
 
-  const handcraftedLookup = Object.fromEntries(
+  const deterministicLookup = Object.fromEntries(
     Object.entries(BUCKET_VOCAB).flatMap(([bucket, words]) => (
       words.map((word) => [word, bucket])
     ))
@@ -38,12 +38,12 @@ async function main() {
   ];
 
   const rows = samples.map((input) => {
-    const lexicalBucket = handcraftedLookup[input] || null;
+    const lexicalBucket = deterministicLookup[input] || null;
     const semanticResult = lexicalBucket ? null : getSemanticFallbackMatch(input);
 
     return {
       input,
-      source: lexicalBucket ? 'handcrafted' : (semanticResult?.accepted ? 'embedding_fallback' : 'unknown'),
+      source: lexicalBucket ? 'deterministic' : (semanticResult?.accepted ? 'embedding_fallback' : 'unknown'),
       bucket: lexicalBucket || semanticResult?.bucket || 'unknown',
       semanticResult: semanticResult || null,
     };

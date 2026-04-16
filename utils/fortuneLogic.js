@@ -11,7 +11,6 @@ import {
 } from '../data/runtime/fortunes.js';
 import {
   DETERMINISTIC_BUCKET_WORDS,
-  HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
 } from '../data/runtime/moodVocabularyRuntimeWrapper.js';
@@ -43,15 +42,6 @@ const HIGH_RISK_WORDS = new Set([
   'shooting',
   'massacre',
 ]);
-const CUSTOM_HANDCRAFTED_BUCKET_WORDS = {
-  caring: ['affectionate'],
-  anxious: ['judged'],
-  distracted: ['unbalanced'],
-  emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
-  engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
-  guilty: ['remorseful'],
-  shaken: ['violated'],
-};
 const CUSTOM_DETERMINISTIC_BUCKET_WORDS = {
   caring: ['affectionate'],
   anxious: ['judged'],
@@ -856,8 +846,8 @@ export async function getMoodLabSelection(input, { randomSeed = '' } = {}) {
   const normalizedInput = input.trim().toLowerCase();
 
   return buildFortuneSelection(normalizedInput, {
-    dayKey: 'mood-lab',
-    seedKey: `mood-lab|${normalizedInput || 'empty'}|${randomSeed}`,
+    dayKey: 'semantic-lab',
+    seedKey: `semantic-lab|${normalizedInput || 'empty'}|${randomSeed}`,
     includeCustomFortunes: false,
     persistSelection: false,
   });

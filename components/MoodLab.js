@@ -110,7 +110,7 @@ function loadStoredEntries() {
     return parsed
       .filter((entry) => entry && typeof entry.input === 'string')
       .map((entry, index) => ({
-        id: entry.id || `mood-lab-entry-restored-${index}`,
+        id: entry.id || `semantic-lab-entry-restored-${index}`,
         input: entry.input,
         nonce: entry.nonce || Math.random().toString(36).slice(2, 10),
       }))
@@ -218,7 +218,7 @@ export default function MoodLab() {
     setEntries((currentEntries) => [
       ...currentEntries,
       {
-        id: `mood-lab-entry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        id: `semantic-lab-entry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         input: nextWord,
         nonce: Math.random().toString(36).slice(2, 10),
       },

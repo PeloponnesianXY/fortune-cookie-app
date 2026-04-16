@@ -1,7 +1,7 @@
 const SEMANTIC_BUILD_SETTINGS = {
   allowedWordPattern: '^[a-z]+$',
   minWordLength: 3,
-  pruneMinSimilarity: 0.38,
+  maxAnchorsPerBucket: 8,
   forceIncludeWords: [
     'defeated',
     'assaulted',
@@ -18,6 +18,17 @@ const SEMANTIC_BUILD_SETTINGS = {
     'dizzy',
     'hungover',
   ],
+  runtimeKeepWordsByBucket: {
+    anxious: ['fraught', 'panicky', 'apprehensive'],
+    embarrassed: ['mortified', 'sheepish'],
+    emotional: ['wistful', 'stirred', 'teary'],
+    lonely: ['adrift', 'unmoored'],
+    sad: ['deflated', 'wrecked', 'desolate'],
+    shaken: ['unnerved', 'blindsided'],
+    stressed: ['frazzled', 'overloaded'],
+    tired: ['haggard', 'rundown'],
+    wired: ['jittery', 'overstimulated'],
+  },
 };
 
 const SEMANTIC_FALLBACK_SETTINGS = {
