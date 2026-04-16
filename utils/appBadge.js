@@ -6,14 +6,18 @@ const BADGE_NOTIFICATION_ID_STORAGE_KEY = '@fortune-cookie-daily/badge-notificat
 
 let attemptedPermissionRequest = false;
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: false,
-    shouldShowList: false,
-    shouldPlaySound: false,
-    shouldSetBadge: true,
-  }),
-});
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: false,
+      shouldShowList: false,
+      shouldPlaySound: false,
+      shouldSetBadge: true,
+    }),
+  });
+} catch {
+  // Keep the app bootable even if notifications are unavailable in a release build.
+}
 
 function supportsBadge() {
   return Platform.OS === 'ios' || Platform.OS === 'android';
@@ -77,10 +81,14 @@ async function ensureDailyBadgeScheduleAsync() {
 }
 
 export async function syncAppBadgeAsync(hasFortuneStateToday) {
-  const ready = await ensureDailyBadgeScheduleAsync();
-  if (!ready) {
+  try {
+    const ready = await ensureDailyBadgeScheduleAsync();
+    if (!ready) {
+      return false;
+    }
+
+    return Notifications.setBadgeCountAsync(hasFortuneStateToday ? 0 : 1);
+  } catch {
     return false;
   }
-
-  return Notifications.setBadgeCountAsync(hasFortuneStateToday ? 0 : 1);
 }

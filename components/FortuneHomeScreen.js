@@ -356,7 +356,11 @@ export default function FortuneHomeScreen() {
     let isMounted = true;
 
     async function syncBadge() {
-      await syncAppBadgeAsync(Boolean(storedDayState));
+      try {
+        await syncAppBadgeAsync(Boolean(storedDayState));
+      } catch {
+        // Badge sync should never block or crash the core fortune flow.
+      }
     }
 
     if (isMounted) {
