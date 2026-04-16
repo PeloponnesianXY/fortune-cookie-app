@@ -40,6 +40,14 @@ function getDevWebLabRoute() {
     return 'fortune';
   }
 
+  if (
+    normalizedPathname === '/classic-fortune-lab'
+    || search.includes('classicFortuneLab=1')
+    || normalizedHash === '#/classic-fortune-lab'
+  ) {
+    return 'classic-fortune';
+  }
+
   return null;
 }
 
