@@ -47,8 +47,7 @@ const FORTUNES = [
     text: "You do not have to delay peace to prove anything.",
     primaryBucket: "calm",
     alsoFits: [
-      "stressed",
-      "wired"
+      "stressed"
     ],
     scope: "shared",
     active: true
@@ -165,7 +164,6 @@ const FORTUNES = [
     text: "Trust the calmer part of you to set the pace.",
     primaryBucket: "calm",
     alsoFits: [
-      "confused",
       "shaken"
     ],
     scope: "shared",
@@ -1859,8 +1857,7 @@ const FORTUNES = [
     text: "Today may reward your willingness to enjoy it.",
     primaryBucket: "happy",
     alsoFits: [
-      "calm",
-      "hopeful"
+      "calm"
     ],
     scope: "shared",
     active: true
@@ -2163,7 +2160,6 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "lonely",
-      "numb",
       "stressed"
     ],
     scope: "shared",
@@ -2202,8 +2198,6 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
-      "distracted",
-      "numb",
       "shaken"
     ],
     scope: "shared",
@@ -2255,7 +2249,6 @@ const FORTUNES = [
       "angry",
       "anxious",
       "confused",
-      "embarrassed",
       "distracted",
       "frustrated",
       "numb",
@@ -2327,8 +2320,6 @@ const FORTUNES = [
       "angry",
       "distracted",
       "frustrated",
-      "numb",
-      "sick",
       "stressed",
       "shaken",
       "tired"
@@ -2350,8 +2341,6 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
-      "embarrassed",
-      "distracted",
       "lonely",
       "shaken",
       "stressed"
@@ -2391,7 +2380,6 @@ const FORTUNES = [
       "embarrassed",
       "distracted",
       "frustrated",
-      "lonely",
       "stressed",
       "shaken",
       "tired",
@@ -2460,7 +2448,7 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [],
     scope: "shared",
-    active: true
+    active: false
   },
   {
     id: "f_0276",
@@ -2486,7 +2474,6 @@ const FORTUNES = [
     text: "Laughter can trick your body and mind into easing up.",
     primaryBucket: "sad",
     alsoFits: [
-      "angry",
       "anxious",
       "embarrassed",
       "numb",
@@ -3748,7 +3735,6 @@ const FORTUNES = [
       "anxious",
       "distracted",
       "frustrated",
-      "sad",
       "stressed"
     ],
     scope: "shared",
@@ -4768,7 +4754,6 @@ const FORTUNES = [
     primaryBucket: "confused",
     alsoFits: [
       "distracted",
-      "frustrated",
       "stressed"
     ],
     scope: "shared",

@@ -23,7 +23,7 @@ function isSemanticLabRoute() {
 
 export default function App() {
   const rootContent = isSemanticLabRoute()
-    ? React.createElement(require('./components/MoodLab').default)
+    ? React.createElement(require('./components/SemanticLab').default)
     : <FortuneHomeScreen />;
 
   return (

@@ -13,7 +13,7 @@ import {
 import { getSemanticLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const MAX_ROWS = 100;
-const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:semantic-lab:entries';
+const SEMANTIC_LAB_STORAGE_KEY = 'fortune-cookie:semantic-lab:entries';
 const MOOD_PILLS = [...MOOD_BUCKET_KEYS]
   .filter((mood) => mood !== 'unknown')
   .sort((left, right) => left.localeCompare(right));
@@ -101,7 +101,7 @@ function loadStoredEntries() {
   }
 
   try {
-    const raw = window.localStorage.getItem(MOOD_LAB_STORAGE_KEY);
+      const raw = window.localStorage.getItem(SEMANTIC_LAB_STORAGE_KEY);
     if (!raw) {
       return [];
     }
@@ -147,7 +147,7 @@ export default function SemanticLab() {
     }
 
     try {
-      window.localStorage.setItem(MOOD_LAB_STORAGE_KEY, JSON.stringify(entries.slice(-MAX_ROWS)));
+      window.localStorage.setItem(SEMANTIC_LAB_STORAGE_KEY, JSON.stringify(entries.slice(-MAX_ROWS)));
     } catch {
       // Ignore local persistence failures in the dev-only lab.
     }

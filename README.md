@@ -22,7 +22,7 @@ components/
   FortuneHomeScreen.js
   FortuneLab.js
   FortuneLibrarySheet.js
-  MoodLab.js
+  SemanticLab.js
   CreatedFortunesSheet.js
   CustomFortuneSheet.js
   PreviewFrame.js
@@ -79,7 +79,7 @@ assets/
 - `components/CookieShell.js`: cookie image swap + paper overlay
 - `components/FortuneLibrarySheet.js`: history/favorites sheet with tap-to-share fortune cards
 - `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
-- `components/MoodLab.js`: dev-only browser Semantic Lab for inspecting parsed input, deterministic routing, advisory vector suggestions, final bucket selection, source, and fortune output
+- `components/SemanticLab.js`: dev-only browser Semantic Lab for inspecting parsed input, deterministic routing, advisory vector suggestions, final bucket selection, source, and fortune output
 - `components/CustomFortuneSheet.js`: create or edit a custom fortune locally on device
 - `components/CreatedFortunesSheet.js`: browse, edit, and delete created fortunes by mood
 - `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
@@ -94,7 +94,7 @@ assets/
 - `data/build/semanticFallbackConfig.js`: vector embeddings suggestion thresholds, anchors, keep-lists, and reject-lists used when rebuilding the runtime data
 - `data/runtime/semanticFallbackData.js`: generated vector embeddings dataset used only by Semantic Lab diagnostics and offline validation
 - `data/source/embedding-raw/`: optional offline staging area for heavyweight embedding assets used to build vector embeddings fallback data
-- `data/source/open-lexicon-raw/`: vendored local raw lexical sources used to build the generated lexical source material before runtime merging
+- `data/source/open-lexicon-raw/`: vendored local raw lexical sources used only for offline lexical build and review workflows
 - `scripts/fortuneLabServer.js`: local-only Node API for reading/writing the canonical fortune registry on disk during Fortune Lab sessions
 - `scripts/fortuneRegistryStore.js`: canonical registry read/write helpers used by the Fortune Lab API
 - `scripts/bootstrapOpenLexicons.js`: one-time downloader that vendors the raw open lexical source files into the repo
@@ -166,7 +166,7 @@ Semantic Lab is a dev-only browser route for checking how the live classifier ro
   - `#/lab`
   - `#/semantic-lab`
 - Entry point: `App.js` only enables it in `__DEV__` on web
-- Main file: `components/MoodLab.js`
+- Main file: `components/SemanticLab.js`
 - Runtime source: `utils/fortuneLogic.js` via `getSemanticLabSelection`
 
 Current Semantic Lab behavior includes:
