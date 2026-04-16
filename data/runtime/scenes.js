@@ -83,11 +83,11 @@ const SCENE_LIBRARY = {
     textDark: '#5E3F3A',
   }),
   heatHaze: createAtmosphericScene({
-    sky: '#E3C8C2',
-    wash: '#F0DDD8',
-    glow: '#F7E8E3',
-    accent: '#C18479',
-    textDark: '#624540',
+    sky: '#D6BBB4',
+    wash: '#E8D3CD',
+    glow: '#EEDCD6',
+    accent: '#B26E63',
+    textDark: '#583C37',
   }),
   softStatic: createAtmosphericScene({
     sky: '#D8D3DB',
