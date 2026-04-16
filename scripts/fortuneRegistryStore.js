@@ -14,6 +14,8 @@ const CANONICAL_BUCKET_KEYS = [
   'confused',
   'distracted',
   'disgusted',
+  'emotional',
+  'engaged',
   'frustrated',
   'grateful',
   'guilty',
@@ -37,11 +39,11 @@ const CANONICAL_BUCKET_KEYS = [
 const STORAGE_BUCKET_KEYS = [...CANONICAL_BUCKET_KEYS];
 
 function normalizeStorageBucketKey(bucket) {
-  return bucket === 'weird' ? 'unknown' : bucket;
+  return bucket;
 }
 
 function normalizeUiBucketKey(bucket) {
-  return bucket === 'weird' ? 'unknown' : bucket;
+  return bucket;
 }
 
 function sortBucketKeys(bucketKeys) {

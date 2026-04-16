@@ -21,6 +21,8 @@ components/
   CookieShell.js
   CreatedFortunesSheet.js
   CustomFortuneSheet.js
+  DevWebLabs.js
+  DevWebLabs.web.js
   FortuneActionTray.js
   FortuneCard.js
   FortuneHomeContent.js
@@ -72,7 +74,7 @@ netlify.toml
 - `components/FortuneCard.js`: prompt, cookie, sheets, drawer, and action tray layout
 - `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
 - `components/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
-- `components/ScreenLab.js`: dev-only browser preview surface for layout and state review
+- `components/ScreenLab.js`: dev-only browser preview surface for layout, state review, and paper-fit sampling
 - `data/fortunesRegistry.js`: canonical source of truth for all live fortunes
 - `data/runtime/fortunes.js`: derived runtime fortune pools
 - `data/runtime/moodBucketVocabulary.js`: canonical deterministic accepted-input vocabulary
@@ -170,6 +172,7 @@ Screen Lab is a dev-only browser route for layout and state review.
   - `/screen-lab`
   - `?screenLab=1`
   - `#/screen-lab`
+- Includes a paper-fit sampler that renders 10 random live fortunes against the real cookie paper on SE, iPhone 14, and Pro Max class layouts.
 - It is not part of the shipped native app path.
 
 ## Run locally

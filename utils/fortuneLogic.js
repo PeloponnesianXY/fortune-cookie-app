@@ -6,7 +6,6 @@ import {
   FORTUNE_LIBRARY,
   HATE_PATTERNS,
   MOOD_BUCKET_PROFILES,
-  UNKNOWN_INPUT_FORTUNES,
   PROTECTED_GROUP_TERMS,
 } from '../data/runtime/fortunes.js';
 import {
@@ -688,10 +687,6 @@ function pickFortuneTextFromPools({
   return builtInPool[seed % builtInPool.length];
 }
 
-function pickUnknownInputFortune(seed) {
-  return UNKNOWN_INPUT_FORTUNES[seed % UNKNOWN_INPUT_FORTUNES.length];
-}
-
 function pickSceneForSelection(analysis) {
   return MOOD_SCENE_KEYS[analysis.primaryEmotion] || MOOD_SCENE_KEYS.unknown;
 }
@@ -736,14 +731,12 @@ async function buildFortuneSelection(input, {
     includeCustomFortunes,
   });
   const seed = hashString(`${userId}|${seedKey}`);
-  const fortuneText = isUnknownInput
-    ? pickUnknownInputFortune(seed)
-    : pickFortuneTextFromPools({
-      builtInPool,
-      customPool,
-      excludeFortuneText,
-      seed,
-    });
+  const fortuneText = pickFortuneTextFromPools({
+    builtInPool,
+    customPool,
+    excludeFortuneText: isUnknownInput ? null : excludeFortuneText,
+    seed,
+  });
 
   const sceneKey = pickSceneForSelection(analysis);
   const selection = {

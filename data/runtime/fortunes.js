@@ -127,13 +127,6 @@ const MOOD_BUCKET_PROFILES = {
 
 const BLOCKED_INPUT_FORTUNE =
   'A kinder fortune waits when the mood is named without turning anyone into a target.';
-const UNKNOWN_INPUT_FORTUNES = [
-  'Until I learn what your word means, live long and prosper. And stretch.',
-  'Mysterious input detected. Proceed with grace.',
-  'Your word is new to me. Your future remains bright.',
-  'The cookie oracle is puzzled, not displeased. Carry on.',
-  'Unknown word. Excellent aura. Continue accordingly.',
-];
 
 export {
   FORTUNES,
@@ -143,5 +136,4 @@ export {
   HATE_PATTERNS,
   MOOD_BUCKET_PROFILES,
   BLOCKED_INPUT_FORTUNE,
-  UNKNOWN_INPUT_FORTUNES,
 };

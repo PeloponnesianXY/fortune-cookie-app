@@ -43,6 +43,30 @@ function scaleValue(value, scale) {
   return Math.round(value * scale * 10) / 10;
 }
 
+function getPaperTextMetrics(text, scale) {
+  const normalizedText = String(text || '').trim();
+  const characterCount = normalizedText.length;
+
+  let baseFontSize = 13;
+  let baseLineHeight = 16;
+
+  if (characterCount <= 42) {
+    baseFontSize = 17;
+    baseLineHeight = 21;
+  } else if (characterCount <= 56) {
+    baseFontSize = 15.5;
+    baseLineHeight = 19;
+  } else if (characterCount <= 72) {
+    baseFontSize = 14;
+    baseLineHeight = 17;
+  }
+
+  return {
+    fontSize: Math.max(11.5, scaleValue(baseFontSize, scale)),
+    lineHeight: Math.max(14, scaleValue(baseLineHeight, scale)),
+  };
+}
+
 function balanceFortuneText(text) {
   if (!text || text.includes('\n')) {
     return text || '';
@@ -105,6 +129,8 @@ function CookieShell({
   imageVerticalOffset = 0,
   isOpened,
   isPaperVisible,
+  onPaperTextMeasure,
+  onPaperTextLayout,
   paperLift = 0,
   paperCueProgress,
   paperProgress,
@@ -147,9 +173,10 @@ function CookieShell({
   const paperPaddingHorizontal = scaleValue(18, scale);
   const paperPaddingVertical = scaleValue(12, scale);
   const paperBorderRadius = Math.max(2, scaleValue(2, scale));
-  const paperTextSize = Math.max(11.5, scaleValue(13, scale));
-  const paperTextLineHeight = Math.max(14, scaleValue(16, scale));
   const balancedFortuneText = balanceFortuneText(fortuneText || '');
+  const paperTextMetrics = getPaperTextMetrics(balancedFortuneText, scale);
+  const paperTextSize = paperTextMetrics.fontSize;
+  const paperTextLineHeight = paperTextMetrics.lineHeight;
   const paperGrainTop = scaleValue(7, scale);
   const paperGrainInset = scaleValue(8, scale);
   const paperCornerTopLeftWidth = scaleValue(26, scale);
@@ -157,6 +184,20 @@ function CookieShell({
   const paperCornerBottomLeftWidth = scaleValue(32, scale);
   const paperCornerBottomLeftHeight = scaleValue(8, scale);
   const paperCornerBottomRightSize = scaleValue(9, scale);
+  const handlePaperTextLayout = (event) => {
+    onPaperTextLayout?.(event);
+  };
+  const handlePaperTextMeasure = (event) => {
+    if (!onPaperTextMeasure) {
+      return;
+    }
+
+    const textHeight = event?.nativeEvent?.layout?.height || 0;
+    onPaperTextMeasure({
+      height: textHeight,
+      lineHeight: paperTextLineHeight,
+    });
+  };
 
   const openCookieStyle = shellProgress
     ? {
@@ -356,7 +397,11 @@ function CookieShell({
             },
           ]}
         />
-        <Text style={[styles.paperText, { fontSize: paperTextSize, lineHeight: paperTextLineHeight }]}>
+        <Text
+          onLayout={handlePaperTextMeasure}
+          onTextLayout={handlePaperTextLayout}
+          style={[styles.paperText, { fontSize: paperTextSize, lineHeight: paperTextLineHeight }]}
+        >
           {balancedFortuneText}
         </Text>
       </Animated.View>

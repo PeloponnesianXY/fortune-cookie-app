@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import DevWebLabs from './components/DevWebLabs';
 import FortuneHomeScreen from './components/FortuneHomeScreen';
 
 function getDevWebLabRoute() {
@@ -46,12 +47,8 @@ export default function App() {
   const devLabRoute = getDevWebLabRoute();
   let rootContent = <FortuneHomeScreen />;
 
-  if (devLabRoute === 'semantic') {
-    rootContent = React.createElement(require('./components/SemanticLab').default);
-  } else if (devLabRoute === 'screen') {
-    rootContent = React.createElement(require('./components/ScreenLab').default);
-  } else if (devLabRoute === 'fortune') {
-    rootContent = React.createElement(require('./components/FortuneLab').default);
+  if (devLabRoute) {
+    rootContent = <DevWebLabs route={devLabRoute} />;
   }
 
   return (

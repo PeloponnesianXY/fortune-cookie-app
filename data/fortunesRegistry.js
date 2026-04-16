@@ -29,7 +29,6 @@ const FORTUNE_BUCKET_KEYS = [
   "shaken",
   "tired",
   "unknown",
-  "unknown",
   "wired"
 ];
 
