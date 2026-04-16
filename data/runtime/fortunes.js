@@ -6,7 +6,7 @@ function buildBaseFortuneLibrary() {
   const library = Object.fromEntries(FORTUNE_BUCKET_KEYS.map((bucket) => [bucket, []]));
 
   for (const fortune of FORTUNES) {
-    if (!fortune.active || !library[fortune.primaryBucket]) {
+    if (!library[fortune.primaryBucket]) {
       continue;
     }
 
@@ -86,10 +86,8 @@ const HATE_PATTERNS = [
   /\b(jews|jewish|muslims|muslim|christians|christian|gays|lesbians|women|immigrants|mexicans|asians|latinos|latinas|roma|romani|gypsy|gypsies)\s+(suck|stink|are awful|are horrible|are trash)\b/,
 ];
 
-const { weird: LEGACY_WEIRD_FORTUNES, ...CORE_FORTUNE_LIBRARY } = BASE_FORTUNE_LIBRARY;
-
 const FORTUNE_LIBRARY = {
-  ...CORE_FORTUNE_LIBRARY,
+  ...BASE_FORTUNE_LIBRARY,
   unknown: [...BASE_FORTUNE_LIBRARY.unknown],
 };
 
