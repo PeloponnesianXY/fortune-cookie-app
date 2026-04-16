@@ -630,7 +630,7 @@ const FORTUNES = [
   },
   {
     id: "f_0187",
-    text: "This feeling is real, but not the whole truth.",
+    text: "This ache is real, though it may not tell the whole story.",
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific"
@@ -1980,7 +1980,7 @@ const FORTUNES = [
   },
   {
     id: "f_0462",
-    text: "Some feelings are self-respect refusing to sit down.",
+    text: "Some refusals are dignity declining a bad seat.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -2302,7 +2302,7 @@ const FORTUNES = [
   },
   {
     id: "f_0558",
-    text: "Right answers arrive only after the wrong ones get tired.",
+    text: "Answers often arrive after the noise grows tired.",
     primaryBucket: "confused",
     alsoFits: [],
     scope: "specific"
@@ -2358,7 +2358,7 @@ const FORTUNES = [
   },
   {
     id: "f_0576",
-    text: "Every room contains at least one invisible blooper reel.",
+    text: "Every room keeps a private archive of missteps.",
     primaryBucket: "embarrassed",
     alsoFits: [],
     scope: "specific"
@@ -2372,7 +2372,7 @@ const FORTUNES = [
   },
   {
     id: "f_0591",
-    text: "The day may improve if only one thing has the microphone.",
+    text: "The day may improve when one thing holds the floor.",
     primaryBucket: "distracted",
     alsoFits: [],
     scope: "specific"
@@ -2569,7 +2569,7 @@ const FORTUNES = [
   },
   {
     id: "f_0654",
-    text: "Not every jolt is a warning. Some are invitations.",
+    text: "Not every jolt is a verdict; some are a summons to wake.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific"
@@ -2599,7 +2599,7 @@ const FORTUNES = [
   },
   {
     id: "f_0659",
-    text: "If you are always on autopilot, you'll forget how to drive.",
+    text: "Too much autopilot and you forget how to drive.",
     primaryBucket: "shaken",
     alsoFits: [
       "distracted"
@@ -3643,7 +3643,7 @@ const FORTUNES = [
   },
   {
     id: "f_0842",
-    text: "A bruised self-image is still only bruised, not broken.",
+    text: "A small bruise on an apple doesn't make any less sweet.",
     primaryBucket: "embarrassed",
     alsoFits: [],
     scope: "specific"

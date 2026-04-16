@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -651,77 +651,80 @@ export default function ClassicFortuneLab() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [pendingUpdates, setPendingUpdates] = useState({});
+  const [pendingDeletions, setPendingDeletions] = useState([]);
+  const [saveError, setSaveError] = useState('');
+  const [isSavingBatch, setIsSavingBatch] = useState(false);
+
+  const hydrateReviewState = useCallback((incomingFortunes) => {
+    setFortunes(incomingFortunes);
+    setCurrentDrafts(() => {
+      const nextCurrentDrafts = {};
+
+      for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
+        for (const fortuneId of Object.keys(suggestions)) {
+          const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
+          if (liveFortune) {
+            nextCurrentDrafts[fortuneId] = liveFortune.text;
+          }
+        }
+      }
+
+      return nextCurrentDrafts;
+    });
+    setDrafts(() => {
+      const nextDrafts = {};
+
+      for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
+        for (const [fortuneId, suggestion] of Object.entries(suggestions)) {
+          const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
+          if (liveFortune) {
+            nextDrafts[fortuneId] = suggestion;
+          }
+        }
+      }
+
+      return nextDrafts;
+    });
+  }, []);
+
+  const loadFortunes = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError('');
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/fortunes`, { method: 'GET' });
+      if (!response.ok) {
+        throw new Error('Classic Fortune Lab API is unavailable.');
+      }
+
+      const payload = await response.json();
+      const incomingFortunes = Array.isArray(payload.fortunes) ? payload.fortunes : [];
+      hydrateReviewState(incomingFortunes);
+      setDismissedIds([]);
+      setPendingUpdates({});
+      setPendingDeletions([]);
+      setSaveError('');
+    } catch (error) {
+      setLoadError(
+        error.message
+          || 'Classic Fortune Lab could not reach the local API.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiBaseUrl, hydrateReviewState]);
 
   useEffect(() => {
     let isActive = true;
-
-    async function loadFortunes() {
-      setIsLoading(true);
-      setLoadError('');
-
-      try {
-        const response = await fetch(`${apiBaseUrl}/api/fortunes`, { method: 'GET' });
-        if (!response.ok) {
-          throw new Error('Classic Fortune Lab API is unavailable.');
-        }
-
-        const payload = await response.json();
-        if (!isActive) {
-          return;
-        }
-
-        const incomingFortunes = Array.isArray(payload.fortunes) ? payload.fortunes : [];
-        setFortunes(incomingFortunes);
-        setCurrentDrafts(() => {
-          const nextCurrentDrafts = {};
-
-          for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
-            for (const fortuneId of Object.keys(suggestions)) {
-              const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
-              if (liveFortune) {
-                nextCurrentDrafts[fortuneId] = liveFortune.text;
-              }
-            }
-          }
-
-          return nextCurrentDrafts;
-        });
-        setDrafts(() => {
-          const nextDrafts = {};
-
-          for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
-            for (const [fortuneId, suggestion] of Object.entries(suggestions)) {
-              const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
-              if (liveFortune) {
-                nextDrafts[fortuneId] = suggestion;
-              }
-            }
-          }
-
-          return nextDrafts;
-        });
-      } catch (error) {
-        if (!isActive) {
-          return;
-        }
-
-        setLoadError(
-          error.message
-            || 'Classic Fortune Lab could not reach the local API.'
-        );
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadFortunes();
+    loadFortunes().catch(() => {
+      // loadFortunes already updates local error state.
+    });
 
     return () => {
       isActive = false;
     };
-  }, [apiBaseUrl]);
+  }, [loadFortunes]);
 
   useEffect(() => {
     persistAcceptedCurrentIds(acceptedCurrentIds);
@@ -756,6 +759,7 @@ export default function ClassicFortuneLab() {
       ...current,
       [fortuneId]: value,
     }));
+    setSaveError('');
   }
 
   function updateCurrentDraft(fortuneId, value) {
@@ -763,6 +767,7 @@ export default function ClassicFortuneLab() {
       ...current,
       [fortuneId]: value,
     }));
+    setSaveError('');
   }
 
   function dismissFortuneId(fortuneId) {
@@ -790,6 +795,7 @@ export default function ClassicFortuneLab() {
   }
 
   function handleTryAgain(fortune) {
+    setSaveError('');
     setRetryCounts((current) => {
       const nextCount = (current[fortune.id] || 0) + 1;
       const nextSuggestion = buildRetrySuggestion(
@@ -834,32 +840,24 @@ export default function ClassicFortuneLab() {
     }
 
     dismissFortuneId(fortune.id);
-    setBusyId(fortune.id);
-
-    try {
-      await processChange({
-        deletions: [],
-        creations: [],
-        updates: [{
-          id: fortune.id,
-          text: nextText,
-          buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
-        }],
-      });
-      setFortunes((current) => current.map((entry) => (
-        entry.id === fortune.id
-          ? {
-              ...entry,
-              text: nextText,
-            }
-          : entry
-      )));
-    } catch (error) {
-      restoreFortuneId(fortune.id);
-      throw error;
-    } finally {
-      setBusyId(null);
-    }
+    setSaveError('');
+    setPendingDeletions((current) => current.filter((id) => id !== fortune.id));
+    setPendingUpdates((current) => ({
+      ...current,
+      [fortune.id]: {
+        id: fortune.id,
+        text: nextText,
+        buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
+      },
+    }));
+    setFortunes((current) => current.map((entry) => (
+      entry.id === fortune.id
+        ? {
+            ...entry,
+            text: nextText,
+          }
+        : entry
+    )));
   }
 
   async function handleAcceptCurrent(fortune) {
@@ -869,58 +867,80 @@ export default function ClassicFortuneLab() {
     }
 
     dismissFortuneId(fortune.id);
+    setSaveError('');
 
     if (nextText === fortune.text) {
       markAcceptedCurrentId(fortune.id);
       return;
     }
 
-    setBusyId(fortune.id);
+    setPendingDeletions((current) => current.filter((id) => id !== fortune.id));
+    setPendingUpdates((current) => ({
+      ...current,
+      [fortune.id]: {
+        id: fortune.id,
+        text: nextText,
+        buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
+      },
+    }));
+    setFortunes((current) => current.map((entry) => (
+      entry.id === fortune.id
+        ? {
+            ...entry,
+            text: nextText,
+          }
+        : entry
+    )));
+  }
+
+  function handleDelete(fortune) {
+    dismissFortuneId(fortune.id);
+    setSaveError('');
+    setPendingUpdates((current) => {
+      const next = { ...current };
+      delete next[fortune.id];
+      return next;
+    });
+    setPendingDeletions((current) => (
+      current.includes(fortune.id) ? current : [...current, fortune.id]
+    ));
+    setFortunes((current) => current.filter((entry) => entry.id !== fortune.id));
+  }
+
+  const pendingUpdateList = useMemo(
+    () => Object.values(pendingUpdates),
+    [pendingUpdates]
+  );
+  const pendingChangeCount = pendingUpdateList.length + pendingDeletions.length;
+
+  async function handleSaveBatch() {
+    if (pendingChangeCount === 0) {
+      return;
+    }
+
+    setIsSavingBatch(true);
+    setSaveError('');
 
     try {
       await processChange({
-        deletions: [],
+        deletions: pendingDeletions,
         creations: [],
-        updates: [{
-          id: fortune.id,
-          text: nextText,
-          buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
-        }],
+        updates: pendingUpdateList,
       });
-      setFortunes((current) => current.map((entry) => (
-        entry.id === fortune.id
-          ? {
-              ...entry,
-              text: nextText,
-            }
-          : entry
-      )));
+      setPendingUpdates({});
+      setPendingDeletions([]);
+      setDismissedIds([]);
     } catch (error) {
-      restoreFortuneId(fortune.id);
-      unmarkAcceptedCurrentId(fortune.id);
-      throw error;
+      setSaveError(error.message || 'Unable to save review batch.');
     } finally {
-      setBusyId(null);
+      setIsSavingBatch(false);
     }
   }
 
-  async function handleDelete(fortune) {
-    dismissFortuneId(fortune.id);
-    setBusyId(fortune.id);
-
-    try {
-      await processChange({
-        deletions: [fortune.id],
-        creations: [],
-        updates: [],
-      });
-      setFortunes((current) => current.filter((entry) => entry.id !== fortune.id));
-    } catch (error) {
-      restoreFortuneId(fortune.id);
-      throw error;
-    } finally {
-      setBusyId(null);
-    }
+  function handleDiscardBatch() {
+    loadFortunes().catch(() => {
+      // loadFortunes already updates local error state.
+    });
   }
 
   return (
@@ -928,8 +948,36 @@ export default function ClassicFortuneLab() {
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Classic Fortune Lab</Text>
         <Text style={styles.subtitle}>
-          Current Accept saves the left-side edit. Current X deletes it. Suggested Accept saves the rewrite on the right.
+          Review actions are staged locally. Save the batch when you are ready to write changes to the registry.
         </Text>
+        <View style={styles.batchToolbar}>
+          <View style={styles.batchPill}>
+            <Text style={styles.batchPillLabel}>Pending</Text>
+            <Text style={styles.batchPillValue}>{pendingChangeCount}</Text>
+          </View>
+          <Pressable
+            disabled={pendingChangeCount === 0 || isSavingBatch}
+            onPress={handleSaveBatch}
+            style={[
+              styles.batchPrimaryButton,
+              (pendingChangeCount === 0 || isSavingBatch) ? styles.batchButtonDisabled : null,
+            ]}
+          >
+            <Text style={styles.batchPrimaryButtonText}>
+              {isSavingBatch ? 'Saving...' : 'Save batch'}
+            </Text>
+          </Pressable>
+          <Pressable
+            disabled={pendingChangeCount === 0 || isSavingBatch}
+            onPress={handleDiscardBatch}
+            style={[
+              styles.batchSecondaryButton,
+              (pendingChangeCount === 0 || isSavingBatch) ? styles.batchButtonDisabled : null,
+            ]}
+          >
+            <Text style={styles.batchSecondaryButtonText}>Discard batch</Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.globalLegendWrap}>
@@ -953,6 +1001,12 @@ export default function ClassicFortuneLab() {
         </View>
       ) : null}
 
+      {saveError ? (
+        <View style={styles.errorCard}>
+          <Text style={styles.errorText}>{saveError}</Text>
+        </View>
+      ) : null}
+
       {!isLoading && !loadError && bucketSections.length === 0 ? (
         <View style={styles.loadingCard}>
           <Text style={styles.loadingText}>No review rows remain in the current live file.</Text>
@@ -973,7 +1027,7 @@ export default function ClassicFortuneLab() {
             </View>
 
             {section.suspectFortunes.map((fortune) => {
-              const isBusy = busyId === fortune.id;
+              const isBusy = isSavingBatch || busyId === fortune.id;
 
                 return (
                   <View key={fortune.id} style={styles.fortuneCard}>
@@ -1104,6 +1158,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     color: '#6a5747',
+  },
+  batchToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  batchPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#f3e2cf',
+  },
+  batchPillLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#7b5733',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  batchPillValue: {
+    minWidth: 18,
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#33271d',
+    textAlign: 'center',
+  },
+  batchPrimaryButton: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: '#d8a66b',
+  },
+  batchPrimaryButtonText: {
+    color: '#2f2015',
+    fontWeight: '900',
+    fontSize: 11,
+  },
+  batchSecondaryButton: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: '#efe2d0',
+    borderWidth: 1,
+    borderColor: '#d4bea4',
+  },
+  batchSecondaryButtonText: {
+    color: '#6a4d2d',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  batchButtonDisabled: {
+    opacity: 0.5,
   },
   loadingCard: {
     flexDirection: 'row',
