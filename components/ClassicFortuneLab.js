@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 const API_PORT = 4312;
+const DISMISSED_STORAGE_KEY = 'classic-fortune-lab-dismissed-ids';
 
 const SUSPECT_FORTUNE_SUGGESTIONS = {
   anxious: {
@@ -108,6 +109,105 @@ const SUSPECT_FORTUNE_SUGGESTIONS = {
     f_0830: 'When all is quiet, begin with what is true.',
     f_0831: 'Low light is not darkness.',
     f_0863: 'Numbness may be a passage, not a home.',
+  },
+};
+
+const ORIGINAL_SUSPECT_FORTUNES = {
+  anxious: {
+    f_0329: 'Not every feeling in your body is warning you of danger.',
+    f_0331: 'Trust yourself with what is real, not just what feels scary.',
+    f_0333: 'You do not need to solve this to be safe right now.',
+    f_0336: 'You are doing better than your mind is letting you believe.',
+    f_0338: "Your body can feel scared even when you're actually okay.",
+    f_0340: 'Your mind deserves a peaceful reality check.',
+    f_0341: 'You are safer than this feeling is making it seem.',
+    f_0342: 'Not every alarm in your body is an instruction.',
+    f_0346: 'This feeling is persuasive, not necessarily accurate.',
+    f_0352: 'A frightening thought is still only a thought.',
+    f_0353: 'Your mind loves prediction; reality loves evidence.',
+    f_0357: 'A pained mind is a gifted storyteller, not a reliable witness.',
+  },
+  sad: {
+    f_0247: 'This feeling does not define your whole story.',
+    f_0251: 'This heaviness may visit, but it does not own you.',
+    f_0252: "You're allowed to need comfort first today.",
+    f_0255: 'This feeling is real; it is also a terrible narrator.',
+    f_0256: 'You do not need a comeback arc by tonight.',
+    f_0258: 'Tiny comforts can do serious work right now.',
+    f_0259: 'Getting through today still counts as progress.',
+    f_0265: 'Heavy feelings can be sincere and still exaggerate.',
+    f_0267: 'This feeling is eloquent, not necessarily correct.',
+    f_0278: 'Laughter can trick your body and mind into easing up.',
+  },
+  sick: {
+    f_0820: 'Recovery begins when you stop negotiating with symptoms.',
+    f_0821: 'Your body is telling the truth with poor bedside manners.',
+    f_0822: 'Rest is still progress when the body is under strain.',
+    f_0823: 'A quieter day may be the kindest answer available.',
+    f_0824: 'This day yearns for tea and a pillow, not heroics.',
+    f_0825: 'Today may be better answered with broth than bravery.',
+    f_0826: 'Negotiating with your body can only have one outcome.',
+    f_0857: 'The wisest plan today may be the gentlest one.',
+    f_0858: 'Your symptoms are not asking for your opinion.',
+    f_0859: 'This body has earned a slower conversation with the day.',
+    f_0860: 'Recovery begins the moment you stop pushing back.',
+    f_0861: 'Today may be for comfort, fluids, and lowered standards.',
+  },
+  emotional: {
+    f_0710: 'What moves you is part of what matters to you.',
+    f_0711: 'This feeling is carrying more truth than words can hold.',
+    f_0712: 'The heart has its own way of recognizing meaning.',
+    f_0714: 'What touches you leaves behind its own kind of wisdom.',
+    f_0715: 'Some truths are felt before they are understood.',
+    f_0718: 'This moment is brushing against something deep in you.',
+    f_0719: 'A stirred heart is a compass pointing to what matters.',
+    f_0720: 'Some emotions arrive like a tide carrying meaning.',
+    f_0804: 'What hits the heart rarely does so by accident.',
+    f_0805: 'What lands deeply usually has deep meaning.',
+  },
+  engaged: {
+    f_0693: 'You are alive to this moment in all the right ways.',
+    f_0694: 'This mood is pulling you toward something worth finding.',
+    f_0695: 'Your mind is open, awake, and ready to move.',
+    f_0696: 'This is a good mood for following what pulls you forward.',
+    f_0697: 'This is the kind of energy that opens doors.',
+    f_0698: 'Something in you is ready for motion, discovery, or both.',
+    f_0699: 'You are in a good place to notice what sparks.',
+    f_0700: 'This is a strong moment for interest, motion, and lightness.',
+    f_0701: 'You are closer than usual to something that clicks.',
+    f_0749: 'The moment is giving you more to work with.',
+  },
+  unknown: {
+    f_0702: 'The Cookie Oracle does not know this one. Your future is still bright.',
+    f_0703: 'This mood is new to the cookie, but not to fortune.',
+    f_0704: 'The fortune cannot name this feeling. It still likes your chances.',
+    f_0705: 'The cookie is puzzled. Your prospects remain excellent.',
+    f_0706: 'The fortune has no label for this one. Good things still apply.',
+    f_0811: 'The cookie cannot place this mood. The future remains generous.',
+    f_0812: 'The fortune shrugs politely. Your future still looks favorable.',
+    f_0813: 'The oracle cannot decode this one. It still approves your odds.',
+    f_0814: 'The cookie does not know this word. It still predicts good things.',
+    f_0815: 'The fortune is puzzled, but not pessimistic.',
+  },
+  guilty: {
+    f_0280: 'A conscience can guide without putting you on trial.',
+    f_0282: 'Repair does more good than self-attack ever will.',
+    f_0283: 'Guilt is a message, not a permanent address.',
+    f_0294: 'Repair what you can. Release what you cannot relive usefully.',
+    f_0296: 'A decent amend beats an immaculate guilt spiral.',
+    f_0864: 'This feeling needs amends and a real path forward, not a cell.',
+    f_0865: 'Responsibility is useful; replays of the moment are not.',
+    f_0866: 'Allow conscience to be your guide, not your jailer.',
+  },
+  numb: {
+    f_0305: 'Flat is still a feeling, just with the volume lowered.',
+    f_0314: 'You do not have to force feeling to welcome its return.',
+    f_0321: 'Numbness often lifts by teaspoons, not thunderclaps.',
+    f_0827: 'Sometimes your system struggles to even whisper.',
+    f_0828: 'Numbness often means something is too tired to shout.',
+    f_0830: 'When nothing feels loud, a good start is what feels true.',
+    f_0831: 'Flat is not absence of light. It is lowered wattage.',
+    f_0863: 'Numbness can be a bridge, not a destination.',
   },
 };
 
@@ -237,7 +337,19 @@ export default function ClassicFortuneLab() {
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
   const [fortunes, setFortunes] = useState([]);
   const [drafts, setDrafts] = useState({});
-  const [dismissedIds, setDismissedIds] = useState([]);
+  const [dismissedIds, setDismissedIds] = useState(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+      return [];
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(DISMISSED_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_error) {
+      return [];
+    }
+  });
   const [retryCounts, setRetryCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -300,12 +412,28 @@ export default function ClassicFortuneLab() {
     };
   }, [apiBaseUrl]);
 
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify(dismissedIds));
+    } catch (_error) {
+      // Ignore storage write issues in dev lab mode.
+    }
+  }, [dismissedIds]);
+
   const bucketSections = useMemo(() => {
     const fortunesByBucket = BUCKET_ORDER.map((bucket) => {
       const liveBucketFortunes = fortunes.filter((fortune) => fortune.primaryBucket === bucket);
       const suspectIds = new Set(Object.keys(SUSPECT_FORTUNE_SUGGESTIONS[bucket] || {}));
       const suspectFortunes = liveBucketFortunes
         .filter((fortune) => suspectIds.has(fortune.id))
+        .filter((fortune) => {
+          const originalText = ORIGINAL_SUSPECT_FORTUNES[bucket]?.[fortune.id];
+          return !originalText || fortune.text === originalText;
+        })
         .filter((fortune) => !dismissedIds.includes(fortune.id))
         .sort((left, right) => left.id.localeCompare(right.id));
 
@@ -324,6 +452,16 @@ export default function ClassicFortuneLab() {
       ...current,
       [fortuneId]: value,
     }));
+  }
+
+  function dismissFortuneId(fortuneId) {
+    setDismissedIds((current) => (
+      current.includes(fortuneId) ? current : [...current, fortuneId]
+    ));
+  }
+
+  function restoreFortuneId(fortuneId) {
+    setDismissedIds((current) => current.filter((id) => id !== fortuneId));
   }
 
   function handleTryAgain(fortune) {
@@ -372,6 +510,7 @@ export default function ClassicFortuneLab() {
       return;
     }
 
+    dismissFortuneId(fortune.id);
     setBusyId(fortune.id);
 
     try {
@@ -384,18 +523,20 @@ export default function ClassicFortuneLab() {
           buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
         }],
       });
+    } catch (error) {
+      restoreFortuneId(fortune.id);
+      throw error;
     } finally {
       setBusyId(null);
     }
   }
 
   function handleAcceptCurrent(fortune) {
-    setDismissedIds((current) => (
-      current.includes(fortune.id) ? current : [...current, fortune.id]
-    ));
+    dismissFortuneId(fortune.id);
   }
 
   async function handleDelete(fortune) {
+    dismissFortuneId(fortune.id);
     setBusyId(fortune.id);
 
     try {
@@ -404,9 +545,9 @@ export default function ClassicFortuneLab() {
         creations: [],
         updates: [],
       });
-      setDismissedIds((current) => (
-        current.includes(fortune.id) ? current : [...current, fortune.id]
-      ));
+    } catch (error) {
+      restoreFortuneId(fortune.id);
+      throw error;
     } finally {
       setBusyId(null);
     }
