@@ -63,6 +63,7 @@ const BUCKET_VOCAB = {
     "astonished",
     "amazed",
     "awestruck",
+    "fascinated",
     "thrilled",
     "astounded",
     "awe",
@@ -78,7 +79,8 @@ const BUCKET_VOCAB = {
     "mind blown",
     "in awe",
     "mesmerized",
-    "spellbound"
+    "spellbound",
+    "transfixed"
   ],
   "angry": [
     "angry",
@@ -158,7 +160,8 @@ const BUCKET_VOCAB = {
     "fraught",
     "panicky",
     "anxiety",
-    "nervousness"
+    "nervousness",
+    "edgy"
   ],
   "embarrassed": [
     "awkward",
@@ -214,6 +217,7 @@ const BUCKET_VOCAB = {
     "okay",
     "ok",
     "fine",
+    "alright",
     "peaceful",
     "serene",
     "tranquil",
@@ -673,6 +677,7 @@ const BUCKET_VOCAB = {
     "mournful",
     "woeful",
     "heavyhearted",
+    "downhearted",
     "wistful",
     "feeling low",
     "not okay",
@@ -722,6 +727,7 @@ const BUCKET_VOCAB = {
     "rushed",
     "scrambling",
     "pressured",
+    "overwrought",
     "flustered",
     "drowning",
     "chaotic",
@@ -776,11 +782,13 @@ const BUCKET_VOCAB = {
     "dozy",
     "fried",
     "dragging",
-    "fatigue"
+    "fatigue",
+    "rundown"
   ],
   "sick": [
     "sick",
     "unwell",
+    "ill",
     "fluish",
     "congested",
     "shivery",
@@ -791,6 +799,7 @@ const BUCKET_VOCAB = {
     "queasy",
     "sickened",
     "feverish",
+    "fevered",
     "clammy",
     "sweaty",
     "chilled",

@@ -196,7 +196,6 @@ const FORTUNES = [
     text: "Gentle and grounded is enough for today.",
     primaryBucket: "calm",
     alsoFits: [
-      "anxious",
       "distracted",
       "sad",
       "stressed",
@@ -2203,9 +2202,7 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
-      "embarrassed",
       "distracted",
-      "lonely",
       "numb",
       "shaken"
     ],
@@ -2312,7 +2309,6 @@ const FORTUNES = [
     alsoFits: [
       "angry",
       "anxious",
-      "embarrassed",
       "distracted",
       "lonely",
       "numb",
@@ -2329,10 +2325,8 @@ const FORTUNES = [
     primaryBucket: "sad",
     alsoFits: [
       "angry",
-      "anxious",
       "distracted",
       "frustrated",
-      "lonely",
       "numb",
       "sick",
       "stressed",
@@ -2464,9 +2458,7 @@ const FORTUNES = [
     id: "f_0274",
     text: "Cheer up your dog and borrow the results.",
     primaryBucket: "sad",
-    alsoFits: [
-      "anxious"
-    ],
+    alsoFits: [],
     scope: "shared",
     active: true
   },
