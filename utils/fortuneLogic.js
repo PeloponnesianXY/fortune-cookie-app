@@ -762,36 +762,15 @@ async function buildFortuneSelection(input, {
   };
 }
 
-export async function getSemanticLabSelection(input, { randomSeed = '' } = {}) {
+export async function getSemanticLabBaseSelection(input, { randomSeed = '' } = {}) {
   const normalizedInput = input.trim().toLowerCase();
 
-  const selection = await buildFortuneSelection(normalizedInput, {
+  return buildFortuneSelection(normalizedInput, {
     dayKey: 'semantic-lab',
     seedKey: `semantic-lab|${normalizedInput || 'empty'}|${randomSeed}`,
     includeCustomFortunes: false,
     persistSelection: false,
   });
-
-  const { analyzeSemanticFallbackInput } = await import('./semanticFallback.js');
-  const semanticPreview = analyzeSemanticFallbackInput(normalizedInput);
-  const semanticLab = {
-    bucket: semanticPreview.bucket || 'unknown',
-    accepted: Boolean(semanticPreview.accepted),
-    reason: semanticPreview.reason || null,
-    confidence: roundConfidence(semanticPreview.accepted ? (semanticPreview.confidence || 0) : 0),
-    debug: semanticPreview.debug || null,
-  };
-
-  return {
-    ...selection,
-    analysis: {
-      ...selection.analysis,
-      lab: {
-        ...selection.analysis?.lab,
-        semantic: semanticLab,
-      },
-    },
-  };
 }
 
 export async function getDailyFortuneSelection(input) {
@@ -880,4 +859,4 @@ export function getDefaultSceneKey() {
   return DEFAULT_SCENE_KEY;
 }
 
-export { MOOD_BUCKET_KEYS };
+export { MOOD_BUCKET_KEYS, roundConfidence };
