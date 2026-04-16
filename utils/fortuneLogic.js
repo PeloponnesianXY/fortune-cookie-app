@@ -16,7 +16,6 @@ import {
 } from '../data/runtime/moodVocabularyRuntimeWrapper.js';
 import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
-import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
@@ -44,12 +43,15 @@ const HIGH_RISK_WORDS = new Set([
 ]);
 const CUSTOM_DETERMINISTIC_BUCKET_WORDS = {
   caring: ['affectionate'],
-  anxious: ['judged'],
+  anxious: ['judged', 'fraught'],
   distracted: ['unbalanced'],
-  emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
-  engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
+  emotional: ['emotional', 'moved', 'touched', 'teary', 'stirred', 'sentimental', 'nostalgic'],
+  engaged: ['engaged', 'curious', 'interested', 'focused', 'energized', 'excited', 'eager'],
   guilty: ['remorseful', 'regretful', 'contrite'],
-  shaken: ['violated'],
+  hopeful: ['anticipatory'],
+  lonely: ['unmoored'],
+  sad: ['deflated', 'down', 'wrecked'],
+  shaken: ['violated', 'assaulted'],
 };
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
@@ -80,8 +82,9 @@ const DETERMINISTIC_RUNTIME_BUCKET_WORDS = mergeBucketWordMaps(
 );
 
 const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_RUNTIME_BUCKET_WORDS);
-// Routing priority is intentionally lexical-first:
-// deterministic exact -> morphology -> fuzzy -> semantic fallback -> unknown
+// Runtime routing is intentionally lexical-first:
+// deterministic exact -> morphology -> fuzzy -> unknown
+// Vector embeddings stay available only as a lab/debug suggestion layer.
 const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(DETERMINISTIC_WORD_TO_BUCKET)
   .filter(([word]) => !word.includes(' '))
   .map(([word, bucket]) => ({ word, bucket }));
@@ -516,18 +519,6 @@ function buildDeterministicMoodAnalysis(normalized) {
   });
 }
 
-function buildSemanticLabData(normalized) {
-  const semanticPreview = analyzeSemanticFallbackInput(normalized);
-
-  return {
-    bucket: semanticPreview.bucket || 'unknown',
-    accepted: Boolean(semanticPreview.accepted),
-    reason: semanticPreview.reason || null,
-    confidence: roundConfidence(semanticPreview.accepted ? (semanticPreview.confidence || 0) : 0),
-    debug: semanticPreview.debug || null,
-  };
-}
-
 function buildParsedInputLabData(normalized) {
   if (!normalized) {
     return {
@@ -619,19 +610,11 @@ export function analyzeMoodInput(input) {
           source: 'unknown',
           confidence: 0,
         },
-        semantic: {
-          bucket: 'unknown',
-          accepted: false,
-          reason: 'invalid-input',
-          confidence: 0,
-          debug: null,
-        },
       },
     });
   }
 
   const deterministicAnalysis = buildDeterministicMoodAnalysis(normalized);
-  const semanticLab = buildSemanticLabData(normalized);
   const parsedLab = buildParsedInputLabData(normalized);
   const lab = {
     parsed: parsedLab,
@@ -640,7 +623,6 @@ export function analyzeMoodInput(input) {
       source: deterministicAnalysis.source || 'unknown',
       confidence: deterministicAnalysis.confidence ?? 0,
     },
-    semantic: semanticLab,
   };
 
   if (deterministicAnalysis.primaryEmotion !== 'unknown') {
@@ -650,27 +632,10 @@ export function analyzeMoodInput(input) {
     };
   }
 
-  let semanticDebug = null;
-  if (tokenizeMoodInput(normalized).length === 1) {
-    const semanticMatch = getSemanticFallbackMatch(normalized);
-    if (semanticMatch?.accepted) {
-      return buildAnalysis(semanticMatch.bucket, {
-        confidence: roundConfidence(semanticMatch.confidence),
-      source: 'embedding_fallback',
-      score: 5,
-      semanticDebug: semanticMatch.debug,
-        lab,
-      });
-    }
-
-    semanticDebug = semanticMatch?.debug || null;
-  }
-
   return buildAnalysis('unknown', {
     confidence: 0,
     score: 0,
     source: 'unknown',
-    semanticDebug,
     lab,
   });
 }
@@ -845,12 +810,33 @@ async function buildFortuneSelection(input, {
 export async function getMoodLabSelection(input, { randomSeed = '' } = {}) {
   const normalizedInput = input.trim().toLowerCase();
 
-  return buildFortuneSelection(normalizedInput, {
+  const selection = await buildFortuneSelection(normalizedInput, {
     dayKey: 'semantic-lab',
     seedKey: `semantic-lab|${normalizedInput || 'empty'}|${randomSeed}`,
     includeCustomFortunes: false,
     persistSelection: false,
   });
+
+  const { analyzeSemanticFallbackInput } = await import('./semanticFallback.js');
+  const semanticPreview = analyzeSemanticFallbackInput(normalizedInput);
+  const semanticLab = {
+    bucket: semanticPreview.bucket || 'unknown',
+    accepted: Boolean(semanticPreview.accepted),
+    reason: semanticPreview.reason || null,
+    confidence: roundConfidence(semanticPreview.accepted ? (semanticPreview.confidence || 0) : 0),
+    debug: semanticPreview.debug || null,
+  };
+
+  return {
+    ...selection,
+    analysis: {
+      ...selection.analysis,
+      lab: {
+        ...selection.analysis?.lab,
+        semantic: semanticLab,
+      },
+    },
+  };
 }
 
 export async function getDailyFortuneSelection(input) {

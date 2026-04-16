@@ -10,10 +10,14 @@ function isSemanticLabRoute() {
   }
 
   const { hash, pathname, search } = window.location;
+  const normalizedPathname = pathname.replace(/\/+$/, '');
+  const normalizedHash = hash.replace(/\/+$/, '');
   return (
-    pathname === '/semantic-lab'
+    normalizedPathname === '/semantic-lab'
+    || normalizedPathname === '/lab'
     || search.includes('semanticLab=1')
-    || hash === '#/semantic-lab'
+    || normalizedHash === '#/semantic-lab'
+    || normalizedHash === '#/lab'
   );
 }
 
