@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 
 const API_PORT = 4312;
-const ACCEPTED_CURRENT_STORAGE_KEY = 'classic-fortune-lab:accepted-current:v1';
+const AUTO_SAVE_THRESHOLD = 20;
+const ACCEPTED_CURRENT_STORAGE_KEY = 'classic-fortune-lab:accepted-current:v2';
 const SUSPECT_FORTUNE_SUGGESTIONS = {
   anxious: {
     f_0329: 'A fearful heart mistakes many shadows for danger.',
@@ -350,7 +351,6 @@ const ORIGINAL_NEXT_BATCH_FORTUNES = {
   },
   jealous: {
     f_0794: 'A jealous feeling sometimes reveals a wish asking for room.',
-    f_0796: 'Sometimes envy is desire before it has found its language.',
     f_0873: 'Envy asks a rude question that may still be worth hearing.',
   },
   lonely: {
@@ -415,7 +415,6 @@ const NEXT_BATCH_FORTUNE_SUGGESTIONS = {
   },
   jealous: {
     f_0794: 'A jealous hour may be naming a wish that needs air.',
-    f_0796: 'Sometimes envy is desire before it finds better manners.',
     f_0873: 'Envy asks a rude question that may still be useful.',
   },
   lonely: {
@@ -647,10 +646,10 @@ export default function ClassicFortuneLab() {
   const [drafts, setDrafts] = useState({});
   const [dismissedIds, setDismissedIds] = useState([]);
   const [acceptedCurrentIds, setAcceptedCurrentIds] = useState(() => loadAcceptedCurrentIds());
+  const [pendingAcceptedCurrentIds, setPendingAcceptedCurrentIds] = useState([]);
   const [retryCounts, setRetryCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [busyId, setBusyId] = useState(null);
   const [pendingUpdates, setPendingUpdates] = useState({});
   const [pendingDeletions, setPendingDeletions] = useState([]);
   const [saveError, setSaveError] = useState('');
@@ -704,6 +703,7 @@ export default function ClassicFortuneLab() {
       setDismissedIds([]);
       setPendingUpdates({});
       setPendingDeletions([]);
+      setPendingAcceptedCurrentIds([]);
       setSaveError('');
     } catch (error) {
       setLoadError(
@@ -726,10 +726,6 @@ export default function ClassicFortuneLab() {
     };
   }, [loadFortunes]);
 
-  useEffect(() => {
-    persistAcceptedCurrentIds(acceptedCurrentIds);
-  }, [acceptedCurrentIds]);
-
   const bucketSections = useMemo(() => {
     const fortunesByBucket = BUCKET_ORDER.map((bucket) => {
       const liveBucketFortunes = fortunes.filter((fortune) => fortune.primaryBucket === bucket);
@@ -741,6 +737,7 @@ export default function ClassicFortuneLab() {
           return !originalText || fortune.text === originalText;
         })
         .filter((fortune) => !acceptedCurrentIds.includes(fortune.id))
+        .filter((fortune) => !pendingAcceptedCurrentIds.includes(fortune.id))
         .filter((fortune) => !dismissedIds.includes(fortune.id))
         .sort((left, right) => left.id.localeCompare(right.id));
 
@@ -752,7 +749,7 @@ export default function ClassicFortuneLab() {
     }).filter((section) => section.suspectFortunes.length > 0);
 
     return fortunesByBucket;
-  }, [acceptedCurrentIds, dismissedIds, fortunes]);
+  }, [acceptedCurrentIds, dismissedIds, fortunes, pendingAcceptedCurrentIds]);
 
   function updateDraft(fortuneId, value) {
     setDrafts((current) => ({
@@ -792,6 +789,8 @@ export default function ClassicFortuneLab() {
 
   function handleResetAcceptedCurrentRows() {
     setAcceptedCurrentIds([]);
+    setPendingAcceptedCurrentIds([]);
+    persistAcceptedCurrentIds([]);
   }
 
   function handleTryAgain(fortune) {
@@ -833,7 +832,7 @@ export default function ClassicFortuneLab() {
     return response.json();
   }
 
-  async function handleAccept(fortune) {
+  function handleAccept(fortune) {
     const nextText = String(drafts[fortune.id] || '').trim();
     if (!nextText) {
       return;
@@ -841,6 +840,7 @@ export default function ClassicFortuneLab() {
 
     dismissFortuneId(fortune.id);
     setSaveError('');
+    setPendingAcceptedCurrentIds((current) => current.filter((id) => id !== fortune.id));
     setPendingDeletions((current) => current.filter((id) => id !== fortune.id));
     setPendingUpdates((current) => ({
       ...current,
@@ -860,7 +860,7 @@ export default function ClassicFortuneLab() {
     )));
   }
 
-  async function handleAcceptCurrent(fortune) {
+  function handleAcceptCurrent(fortune) {
     const nextText = String(currentDrafts[fortune.id] || '').trim();
     if (!nextText) {
       return;
@@ -870,10 +870,19 @@ export default function ClassicFortuneLab() {
     setSaveError('');
 
     if (nextText === fortune.text) {
-      markAcceptedCurrentId(fortune.id);
+      setPendingUpdates((current) => {
+        const next = { ...current };
+        delete next[fortune.id];
+        return next;
+      });
+      setPendingDeletions((current) => current.filter((id) => id !== fortune.id));
+      setPendingAcceptedCurrentIds((current) => (
+        current.includes(fortune.id) ? current : [...current, fortune.id]
+      ));
       return;
     }
 
+    setPendingAcceptedCurrentIds((current) => current.filter((id) => id !== fortune.id));
     setPendingDeletions((current) => current.filter((id) => id !== fortune.id));
     setPendingUpdates((current) => ({
       ...current,
@@ -896,6 +905,7 @@ export default function ClassicFortuneLab() {
   function handleDelete(fortune) {
     dismissFortuneId(fortune.id);
     setSaveError('');
+    setPendingAcceptedCurrentIds((current) => current.filter((id) => id !== fortune.id));
     setPendingUpdates((current) => {
       const next = { ...current };
       delete next[fortune.id];
@@ -911,10 +921,13 @@ export default function ClassicFortuneLab() {
     () => Object.values(pendingUpdates),
     [pendingUpdates]
   );
-  const pendingChangeCount = pendingUpdateList.length + pendingDeletions.length;
+  const pendingActionCount = pendingUpdateList.length + pendingDeletions.length + pendingAcceptedCurrentIds.length;
+  const changesUntilAutoSave = pendingActionCount === 0
+    ? AUTO_SAVE_THRESHOLD
+    : Math.max(AUTO_SAVE_THRESHOLD - pendingActionCount, 0);
 
-  async function handleSaveBatch() {
-    if (pendingChangeCount === 0) {
+  const handleSaveBatch = useCallback(async () => {
+    if (pendingActionCount === 0) {
       return;
     }
 
@@ -922,20 +935,26 @@ export default function ClassicFortuneLab() {
     setSaveError('');
 
     try {
-      await processChange({
-        deletions: pendingDeletions,
-        creations: [],
-        updates: pendingUpdateList,
-      });
+      if (pendingDeletions.length > 0 || pendingUpdateList.length > 0) {
+        await processChange({
+          deletions: pendingDeletions,
+          creations: [],
+          updates: pendingUpdateList,
+        });
+      }
+      const nextAcceptedCurrentIds = [...new Set([...acceptedCurrentIds, ...pendingAcceptedCurrentIds])];
+      setAcceptedCurrentIds(nextAcceptedCurrentIds);
+      persistAcceptedCurrentIds(nextAcceptedCurrentIds);
       setPendingUpdates({});
       setPendingDeletions([]);
+      setPendingAcceptedCurrentIds([]);
       setDismissedIds([]);
     } catch (error) {
       setSaveError(error.message || 'Unable to save review batch.');
     } finally {
       setIsSavingBatch(false);
     }
-  }
+  }, [acceptedCurrentIds, pendingAcceptedCurrentIds, pendingActionCount, pendingDeletions, pendingUpdateList]);
 
   function handleDiscardBatch() {
     loadFortunes().catch(() => {
@@ -943,39 +962,53 @@ export default function ClassicFortuneLab() {
     });
   }
 
+  useEffect(() => {
+    if (isLoading || isSavingBatch || pendingActionCount < AUTO_SAVE_THRESHOLD) {
+      return;
+    }
+
+    handleSaveBatch().catch(() => {
+      // handleSaveBatch already updates local error state.
+    });
+  }, [handleSaveBatch, isLoading, isSavingBatch, pendingActionCount]);
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent} stickyHeaderIndices={[1]}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Classic Fortune Lab</Text>
         <Text style={styles.subtitle}>
-          Review actions are staged locally. Save the batch when you are ready to write changes to the registry.
+          All unresolved flagged fortunes load here. Actions stay local until you save, and file writes auto-trigger every 20 staged changes.
         </Text>
         <View style={styles.batchToolbar}>
           <View style={styles.batchPill}>
             <Text style={styles.batchPillLabel}>Pending</Text>
-            <Text style={styles.batchPillValue}>{pendingChangeCount}</Text>
+            <Text style={styles.batchPillValue}>{pendingActionCount}</Text>
+          </View>
+          <View style={styles.batchPill}>
+            <Text style={styles.batchPillLabel}>Auto-save in</Text>
+            <Text style={styles.batchPillValue}>{changesUntilAutoSave}</Text>
           </View>
           <Pressable
-            disabled={pendingChangeCount === 0 || isSavingBatch}
+            disabled={pendingActionCount === 0 || isSavingBatch}
             onPress={handleSaveBatch}
             style={[
               styles.batchPrimaryButton,
-              (pendingChangeCount === 0 || isSavingBatch) ? styles.batchButtonDisabled : null,
+              (pendingActionCount === 0 || isSavingBatch) ? styles.batchButtonDisabled : null,
             ]}
           >
             <Text style={styles.batchPrimaryButtonText}>
-              {isSavingBatch ? 'Saving...' : 'Save batch'}
+              {isSavingBatch ? 'Saving...' : 'Save now'}
             </Text>
           </Pressable>
           <Pressable
-            disabled={pendingChangeCount === 0 || isSavingBatch}
+            disabled={pendingActionCount === 0 || isSavingBatch}
             onPress={handleDiscardBatch}
             style={[
               styles.batchSecondaryButton,
-              (pendingChangeCount === 0 || isSavingBatch) ? styles.batchButtonDisabled : null,
+              (pendingActionCount === 0 || isSavingBatch) ? styles.batchButtonDisabled : null,
             ]}
           >
-            <Text style={styles.batchSecondaryButtonText}>Discard batch</Text>
+            <Text style={styles.batchSecondaryButtonText}>Discard local</Text>
           </Pressable>
         </View>
       </View>
@@ -1010,7 +1043,7 @@ export default function ClassicFortuneLab() {
       {!isLoading && !loadError && bucketSections.length === 0 ? (
         <View style={styles.loadingCard}>
           <Text style={styles.loadingText}>No review rows remain in the current live file.</Text>
-          {acceptedCurrentIds.length > 0 ? (
+          {(acceptedCurrentIds.length > 0 || pendingAcceptedCurrentIds.length > 0) ? (
             <Pressable onPress={handleResetAcceptedCurrentRows} style={styles.resetAcceptedButton}>
               <Text style={styles.resetAcceptedButtonText}>Show accepted current rows</Text>
             </Pressable>
@@ -1027,7 +1060,7 @@ export default function ClassicFortuneLab() {
             </View>
 
             {section.suspectFortunes.map((fortune) => {
-              const isBusy = isSavingBatch || busyId === fortune.id;
+              const isBusy = isSavingBatch;
 
                 return (
                   <View key={fortune.id} style={styles.fortuneCard}>

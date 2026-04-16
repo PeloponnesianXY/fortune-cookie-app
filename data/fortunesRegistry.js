@@ -250,7 +250,7 @@ const FORTUNES = [
   },
   {
     id: "f_0042",
-    text: "You are allowed to move without crisis or euphoria.",
+    text: "A day without crisis or euphoria leaves space to look around you.",
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific"
@@ -1815,7 +1815,7 @@ const FORTUNES = [
   },
   {
     id: "f_0437",
-    text: "Strong feelings are human. Harm is still a choice.",
+    text: "Strong feelings cannot be controlled, but reactions can.",
     primaryBucket: "angry",
     alsoFits: [],
     scope: "specific"
@@ -2076,7 +2076,7 @@ const FORTUNES = [
   },
   {
     id: "f_0494",
-    text: "Wanting can be useful once it stops staring sideways.",
+    text: "Wanting can offer good insights once it stops staring sideways.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
@@ -2181,7 +2181,7 @@ const FORTUNES = [
   },
   {
     id: "f_0536",
-    text: "Your mind may be tangled; your next move can be simple.",
+    text: "A tangled hour may still afford one simple step.",
     primaryBucket: "confused",
     alsoFits: [],
     scope: "specific"
@@ -3188,7 +3188,7 @@ const FORTUNES = [
   },
   {
     id: "f_0775",
-    text: "Some feelings glow longer than the moment that made them.",
+    text: "Some moments glow longer than the hour that made them.",
     primaryBucket: "emotional",
     alsoFits: [],
     scope: "specific"
@@ -3860,7 +3860,7 @@ const FORTUNES = [
   },
   {
     id: "f_0873",
-    text: "Envy asks a rude question that may still be worth hearing.",
+    text: "Envy asks a rude question that may still be worth answering.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
