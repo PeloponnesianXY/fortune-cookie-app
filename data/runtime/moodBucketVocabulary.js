@@ -119,7 +119,8 @@ const BUCKET_VOCAB = {
     "hot under the collar",
     "pissed",
     "raging",
-    "steamed"
+    "steamed",
+    "resentment"
   ],
   "anxious": [
     "anxious",
@@ -161,7 +162,9 @@ const BUCKET_VOCAB = {
     "rattled",
     "unsettled",
     "unnerved",
-    "panicky"
+    "panicky",
+    "anxiety",
+    "nervousness"
   ],
   "embarrassed": [
     "awkward",
@@ -231,14 +234,33 @@ const BUCKET_VOCAB = {
     "anchored",
     "unhurried",
     "rested",
-    "zen"
+    "zen",
+    "peace",
+    "peacefulness"
   ],
   "confident": [
     "confident",
+    "assured",
+    "self assured",
+    "self-assured",
+    "secure",
+    "certain",
+    "ready",
     "capable",
     "competent",
-    "assured",
-    "bold"
+    "able",
+    "self trusting",
+    "self-trusting",
+    "grounded",
+    "solid",
+    "strong",
+    "poised",
+    "bold",
+    "unafraid",
+    "fearless",
+    "sure",
+    "collected",
+    "composed"
   ],
   "confused": [
     "confused",
@@ -317,7 +339,8 @@ const BUCKET_VOCAB = {
     "gross",
     "nasty",
     "vile",
-    "revolting"
+    "revolting",
+    "disgust"
   ],
   "frustrated": [
     "frustrated",
@@ -364,7 +387,8 @@ const BUCKET_VOCAB = {
     "behind",
     "hassled",
     "peeved",
-    "miffed"
+    "miffed",
+    "frustration"
   ],
   "grateful": [
     "grateful",
@@ -378,6 +402,7 @@ const BUCKET_VOCAB = {
     "fortunate",
     "supported",
     "held",
+    "seen",
     "accepted"
   ],
   "guilty": [
@@ -449,7 +474,8 @@ const BUCKET_VOCAB = {
     "goofy",
     "breezy",
     "vivid",
-    "lighthearted"
+    "lighthearted",
+    "happiness"
   ],
   "hopeful": [
     "hopeful",
@@ -475,7 +501,9 @@ const BUCKET_VOCAB = {
     "resolved",
     "determined",
     "searching",
-    "seeking"
+    "seeking",
+    "hope",
+    "optimism"
   ],
   "proud": [
     "proud",
@@ -518,7 +546,8 @@ const BUCKET_VOCAB = {
     "starved",
     "unsated",
     "voracious",
-    "parched"
+    "parched",
+    "hunger"
   ],
   "jealous": [
     "jealous",
@@ -563,7 +592,8 @@ const BUCKET_VOCAB = {
     "feeling left out",
     "lonesome",
     "friendless",
-    "alienated"
+    "alienated",
+    "loneliness"
   ],
   "romantic": [
     "romantic",
@@ -580,7 +610,10 @@ const BUCKET_VOCAB = {
     "sweet on",
     "full of love",
     "soft for someone",
-    "intimate"
+    "intimate",
+    "enchanted",
+    "yearning",
+    "romance"
   ],
   "numb": [
     "numb",
@@ -607,7 +640,8 @@ const BUCKET_VOCAB = {
     "kind of blank",
     "apathetic",
     "desensitized",
-    "listless"
+    "listless",
+    "numbness"
   ],
   "neutral": [
     "neutral",
@@ -674,7 +708,9 @@ const BUCKET_VOCAB = {
     "useless",
     "desolate",
     "dejected",
-    "disheartened"
+    "disheartened",
+    "sadness",
+    "sorrow"
   ],
   "stressed": [
     "stressed",
@@ -711,7 +747,8 @@ const BUCKET_VOCAB = {
     "flustered",
     "drowning",
     "chaotic",
-    "spiraling"
+    "spiraling",
+    "stress"
   ],
   "shaken": [
     "surprised",
@@ -762,7 +799,8 @@ const BUCKET_VOCAB = {
     "bushed",
     "dozy",
     "fried",
-    "dragging"
+    "dragging",
+    "fatigue"
   ],
   "sick": [
     "sick",
@@ -790,7 +828,8 @@ const BUCKET_VOCAB = {
     "stuffed",
     "hungover",
     "throbbing",
-    "aching"
+    "aching",
+    "illness"
   ],
   "unknown": [],
   "wired": [
@@ -817,7 +856,8 @@ const BUCKET_VOCAB = {
     "full of static",
     "too revved up",
     "all buzzed up",
-    "hyper"
+    "hyper",
+    "restlessness"
   ]
 };
 
