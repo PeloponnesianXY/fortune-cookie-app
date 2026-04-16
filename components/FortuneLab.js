@@ -98,7 +98,10 @@ function getApiBaseUrl() {
     return `http://127.0.0.1:${API_PORT}`;
   }
 
-  return `http://${window.location.hostname || '127.0.0.1'}:${API_PORT}`;
+  const hostname = window.location.hostname || '127.0.0.1';
+  const apiHostname = hostname === 'localhost' ? '127.0.0.1' : hostname;
+
+  return `http://${apiHostname}:${API_PORT}`;
 }
 
 function canUseBrowserStorage() {

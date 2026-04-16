@@ -441,7 +441,10 @@ function getApiBaseUrl() {
     return `http://127.0.0.1:${API_PORT}`;
   }
 
-  return `http://${window.location.hostname || '127.0.0.1'}:${API_PORT}`;
+  const hostname = window.location.hostname || '127.0.0.1';
+  const apiHostname = hostname === 'localhost' ? '127.0.0.1' : hostname;
+
+  return `http://${apiHostname}:${API_PORT}`;
 }
 
 function formatBucketLabel(bucket) {
@@ -677,6 +680,11 @@ export default function ClassicFortuneLab() {
     }
 
     dismissFortuneId(fortune.id);
+
+    if (nextText === fortune.text) {
+      return;
+    }
+
     setBusyId(fortune.id);
 
     try {
@@ -895,6 +903,7 @@ const styles = StyleSheet.create({
   loadingCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 10,
     padding: 14,
     borderRadius: 14,
