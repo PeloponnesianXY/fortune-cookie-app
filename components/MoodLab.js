@@ -13,7 +13,7 @@ import {
 import { getMoodLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const MAX_ROWS = 100;
-const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:mood-lab:entries';
+const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:semantic-lab:entries';
 const MOOD_PILLS = [...MOOD_BUCKET_KEYS]
   .filter((mood) => mood !== 'unknown')
   .sort((left, right) => left.localeCompare(right));
@@ -172,8 +172,7 @@ export default function MoodLab() {
               input: entry.input,
               parsedInput: selection.analysis?.lab?.parsed?.standardizedInput || selection.inputMood || entry.input,
               mood: selection.analysis?.primaryEmotion || 'unknown',
-              handcraftedMood: selection.analysis?.lab?.handcrafted?.bucket || 'unknown',
-              openFallbackMood: selection.analysis?.lab?.openFallback?.bucket || 'unknown',
+              deterministicMood: selection.analysis?.lab?.deterministic?.bucket || 'unknown',
               source: selection.analysis?.source || 'unknown',
               embeddingMood: getSemanticWinnerBucket(
                 selection.analysis?.source || 'unknown',
@@ -236,7 +235,7 @@ export default function MoodLab() {
       <View style={styles.headerCard}>
         <View style={styles.headerCopy}>
           <View style={styles.headerTopRow}>
-            <Text style={styles.eyebrow}>Mood Lab</Text>
+            <Text style={styles.eyebrow}>Semantic Lab</Text>
             <View style={styles.moodPillRow}>
               {MOOD_PILLS.map((mood) => (
                 <View key={mood} style={styles.moodPill}>
@@ -297,8 +296,7 @@ export default function MoodLab() {
           <View style={styles.tableHeader}>
             <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
             <Text style={[styles.headerCell, styles.inputColumn]}>Parsed</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Handcrafted</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Open Fallback</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Deterministic</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Vector Match</Text>
             <Text style={[styles.headerCell, styles.semanticColumn]}>Vector Audit</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
@@ -323,10 +321,7 @@ export default function MoodLab() {
                   <Text style={[styles.bodyCell, styles.inputColumn, styles.inputValue]}>{row.input}</Text>
                   <Text style={[styles.bodyCell, styles.inputColumn]}>{row.parsedInput}</Text>
                   <Text style={[styles.bodyCell, styles.moodColumn]}>
-                    {formatMoodLabel(row.handcraftedMood)}
-                  </Text>
-                  <Text style={[styles.bodyCell, styles.moodColumn]}>
-                    {formatMoodLabel(row.openFallbackMood)}
+                    {formatMoodLabel(row.deterministicMood)}
                   </Text>
                   <Text style={[styles.bodyCell, styles.moodColumn]}>
                     {formatMoodLabel(row.embeddingMood)}

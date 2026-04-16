@@ -27,8 +27,7 @@ async function main() {
       input,
       source: analysis.source,
       bucket: analysis.primaryEmotion,
-      handcrafted: analysis.lab?.handcrafted?.bucket || 'unknown',
-      openFallback: analysis.lab?.openFallback?.bucket || 'unknown',
+      deterministic: analysis.lab?.deterministic?.bucket || 'unknown',
       semantic: analysis.lab?.semantic?.bucket || 'unknown',
     };
   });

@@ -10,10 +10,10 @@ import {
   PROTECTED_GROUP_TERMS,
 } from '../data/runtime/fortunes.js';
 import {
+  DETERMINISTIC_BUCKET_WORDS,
   HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
-  OPEN_FALLBACK_BUCKET_WORDS,
 } from '../data/runtime/moodVocabularyRuntimeWrapper.js';
 import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
@@ -52,7 +52,7 @@ const CUSTOM_HANDCRAFTED_BUCKET_WORDS = {
   guilty: ['remorseful'],
   shaken: ['violated'],
 };
-const CUSTOM_OPEN_FALLBACK_BUCKET_WORDS = {
+const CUSTOM_DETERMINISTIC_BUCKET_WORDS = {
   caring: ['affectionate'],
   anxious: ['judged'],
   distracted: ['unbalanced'],
@@ -64,17 +64,35 @@ const CUSTOM_OPEN_FALLBACK_BUCKET_WORDS = {
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
 
-const HANDCRAFTED_WORD_TO_BUCKET = createLookupTable({
-  ...HANDCRAFTED_BUCKET_WORDS,
-  ...CUSTOM_HANDCRAFTED_BUCKET_WORDS,
-});
-const OPEN_FALLBACK_WORD_TO_BUCKET = createLookupTable({
-  ...OPEN_FALLBACK_BUCKET_WORDS,
-  ...CUSTOM_OPEN_FALLBACK_BUCKET_WORDS,
-});
+function mergeBucketWordMaps(...bucketWordMaps) {
+  const merged = new Map();
+
+  for (const bucketWordMap of bucketWordMaps) {
+    for (const [bucket, words] of Object.entries(bucketWordMap)) {
+      if (!merged.has(bucket)) {
+        merged.set(bucket, new Set());
+      }
+
+      for (const word of words || []) {
+        merged.get(bucket).add(word);
+      }
+    }
+  }
+
+  return Object.fromEntries(
+    [...merged.entries()].map(([bucket, words]) => [bucket, [...words]])
+  );
+}
+
+const DETERMINISTIC_RUNTIME_BUCKET_WORDS = mergeBucketWordMaps(
+  DETERMINISTIC_BUCKET_WORDS,
+  CUSTOM_DETERMINISTIC_BUCKET_WORDS
+);
+
+const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_RUNTIME_BUCKET_WORDS);
 // Routing priority is intentionally lexical-first:
-// handcrafted exact -> open fallback exact -> morphology -> fuzzy -> semantic fallback -> unknown
-const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(HANDCRAFTED_WORD_TO_BUCKET)
+// deterministic exact -> morphology -> fuzzy -> semantic fallback -> unknown
+const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(DETERMINISTIC_WORD_TO_BUCKET)
   .filter(([word]) => !word.includes(' '))
   .map(([word, bucket]) => ({ word, bucket }));
 const MORPHOLOGY_IRREGULAR_MAP = {
@@ -122,7 +140,7 @@ function tokenizeMoodInput(normalizedInput) {
 }
 
 function isKnownMoodWord(candidate) {
-  return Boolean(HANDCRAFTED_WORD_TO_BUCKET[candidate]);
+  return Boolean(DETERMINISTIC_WORD_TO_BUCKET[candidate]);
 }
 
 function createMoodScoreCard(primaryEmotion = null, score = 0) {
@@ -455,7 +473,7 @@ function roundConfidence(value) {
   return Math.max(0, Math.min(1, Math.round(value * 1000) / 1000));
 }
 
-function buildHandcraftedMoodAnalysis(normalized) {
+function buildDeterministicMoodAnalysis(normalized) {
   if (!normalized) {
     return buildAnalysis('unknown', {
       confidence: 0,
@@ -465,11 +483,11 @@ function buildHandcraftedMoodAnalysis(normalized) {
   }
 
   const tokens = tokenizeMoodInput(normalized);
-  const handcraftedMatch = findBucketInLookup(normalized, tokens, HANDCRAFTED_WORD_TO_BUCKET);
-  if (handcraftedMatch) {
-    return buildAnalysis(handcraftedMatch.bucket, {
-      confidence: roundConfidence(handcraftedMatch.source === 'phrase' ? 1 : 0.96),
-      source: 'handcrafted',
+  const deterministicMatch = findBucketInLookup(normalized, tokens, DETERMINISTIC_WORD_TO_BUCKET);
+  if (deterministicMatch) {
+    return buildAnalysis(deterministicMatch.bucket, {
+      confidence: roundConfidence(deterministicMatch.source === 'phrase' ? 1 : 0.96),
+      source: 'deterministic',
     });
   }
 
@@ -477,13 +495,13 @@ function buildHandcraftedMoodAnalysis(normalized) {
     const morphologyCandidate = tryMorphology(normalized);
     if (morphologyCandidate) {
       const morphologyTokens = tokenizeMoodInput(morphologyCandidate);
-      const handcraftedMorphologyMatch = findBucketInLookup(
+      const deterministicMorphologyMatch = findBucketInLookup(
         morphologyCandidate,
         morphologyTokens,
-        HANDCRAFTED_WORD_TO_BUCKET
+        DETERMINISTIC_WORD_TO_BUCKET
       );
-      if (handcraftedMorphologyMatch) {
-        return buildAnalysis(handcraftedMorphologyMatch.bucket, {
+      if (deterministicMorphologyMatch) {
+        return buildAnalysis(deterministicMorphologyMatch.bucket, {
           confidence: 0.9,
           source: 'morphology',
           score: 9,
@@ -499,32 +517,6 @@ function buildHandcraftedMoodAnalysis(normalized) {
         score: 7,
       });
     }
-  }
-
-  return buildAnalysis('unknown', {
-    confidence: 0,
-    score: 0,
-    source: 'unknown',
-  });
-}
-
-function buildOpenFallbackMoodAnalysis(normalized) {
-  if (!normalized) {
-    return buildAnalysis('unknown', {
-      confidence: 0,
-      score: 0,
-      source: 'unknown',
-    });
-  }
-
-  const tokens = tokenizeMoodInput(normalized);
-  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
-  if (openFallbackMatch) {
-    return buildAnalysis(openFallbackMatch.bucket, {
-      confidence: roundConfidence(openFallbackMatch.source === 'phrase' ? 0.86 : 0.82),
-      source: 'open_fallback',
-      score: 8,
-    });
   }
 
   return buildAnalysis('unknown', {
@@ -556,21 +548,12 @@ function buildParsedInputLabData(normalized) {
   }
 
   const tokens = tokenizeMoodInput(normalized);
-  const handcraftedMatch = findBucketInLookup(normalized, tokens, HANDCRAFTED_WORD_TO_BUCKET);
-  if (handcraftedMatch) {
+  const deterministicMatch = findBucketInLookup(normalized, tokens, DETERMINISTIC_WORD_TO_BUCKET);
+  if (deterministicMatch) {
     return {
       normalizedInput: normalized,
-      standardizedInput: handcraftedMatch.matchedTerm || normalized,
-      stage: 'handcrafted',
-    };
-  }
-
-  const openFallbackMatch = findBucketInLookup(normalized, tokens, OPEN_FALLBACK_WORD_TO_BUCKET);
-  if (openFallbackMatch) {
-    return {
-      normalizedInput: normalized,
-      standardizedInput: openFallbackMatch.matchedTerm || normalized,
-      stage: 'open_fallback',
+      standardizedInput: deterministicMatch.matchedTerm || normalized,
+      stage: 'deterministic',
     };
   }
 
@@ -580,7 +563,7 @@ function buildParsedInputLabData(normalized) {
       const morphologyMatch = findBucketInLookup(
         morphologyCandidate,
         tokenizeMoodInput(morphologyCandidate),
-        HANDCRAFTED_WORD_TO_BUCKET
+        DETERMINISTIC_WORD_TO_BUCKET
       );
 
       if (morphologyMatch) {
@@ -641,12 +624,7 @@ export function analyzeMoodInput(input) {
       score: 0,
       source: 'unknown',
       lab: {
-        handcrafted: {
-          bucket: 'unknown',
-          source: 'unknown',
-          confidence: 0,
-        },
-        openFallback: {
+        deterministic: {
           bucket: 'unknown',
           source: 'unknown',
           confidence: 0,
@@ -662,35 +640,22 @@ export function analyzeMoodInput(input) {
     });
   }
 
-  const handcraftedAnalysis = buildHandcraftedMoodAnalysis(normalized);
-  const openFallbackAnalysis = buildOpenFallbackMoodAnalysis(normalized);
+  const deterministicAnalysis = buildDeterministicMoodAnalysis(normalized);
   const semanticLab = buildSemanticLabData(normalized);
   const parsedLab = buildParsedInputLabData(normalized);
   const lab = {
     parsed: parsedLab,
-    handcrafted: {
-      bucket: handcraftedAnalysis.primaryEmotion || 'unknown',
-      source: handcraftedAnalysis.source || 'unknown',
-      confidence: handcraftedAnalysis.confidence ?? 0,
-    },
-    openFallback: {
-      bucket: openFallbackAnalysis.primaryEmotion || 'unknown',
-      source: openFallbackAnalysis.source || 'unknown',
-      confidence: openFallbackAnalysis.confidence ?? 0,
+    deterministic: {
+      bucket: deterministicAnalysis.primaryEmotion || 'unknown',
+      source: deterministicAnalysis.source || 'unknown',
+      confidence: deterministicAnalysis.confidence ?? 0,
     },
     semantic: semanticLab,
   };
 
-  if (handcraftedAnalysis.primaryEmotion !== 'unknown') {
+  if (deterministicAnalysis.primaryEmotion !== 'unknown') {
     return {
-      ...handcraftedAnalysis,
-      lab,
-    };
-  }
-
-  if (openFallbackAnalysis.primaryEmotion !== 'unknown') {
-    return {
-      ...openFallbackAnalysis,
+      ...deterministicAnalysis,
       lab,
     };
   }

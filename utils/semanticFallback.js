@@ -1,10 +1,14 @@
+import { createRequire } from 'module';
+
+const requireFromHere = createRequire(import.meta.url);
+
 let semanticFallbackDataCache = null;
 
 function getSemanticFallbackData() {
   if (!semanticFallbackDataCache) {
     // Keep the large semantic fallback table out of the startup path.
     // Most launches never need it, so we load it only for true semantic fallback.
-    ({ SEMANTIC_FALLBACK_DATA: semanticFallbackDataCache } = require('../data/runtime/semanticFallbackData.js'));
+    ({ SEMANTIC_FALLBACK_DATA: semanticFallbackDataCache } = requireFromHere('../data/runtime/semanticFallbackData.js'));
   }
 
   return semanticFallbackDataCache;
