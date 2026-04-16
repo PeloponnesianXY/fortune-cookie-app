@@ -11,8 +11,6 @@ import {
 } from 'react-native';
 
 const API_PORT = 4312;
-const DISMISSED_STORAGE_KEY = 'classic-fortune-lab-dismissed-ids';
-
 const SUSPECT_FORTUNE_SUGGESTIONS = {
   anxious: {
     f_0329: 'A fearful heart mistakes many shadows for danger.',
@@ -211,7 +209,124 @@ const ORIGINAL_SUSPECT_FORTUNES = {
   },
 };
 
-const BUCKET_ORDER = Object.keys(SUSPECT_FORTUNE_SUGGESTIONS);
+const ORIGINAL_BORDERLINE_FORTUNES = {
+  neutral: {
+    f_0034: 'Not every moment needs a dramatic opinion.',
+    f_0036: 'You do not owe every day a grand emotional arc.',
+    f_0037: 'Ordinary is sometimes just reality without stage lights.',
+    f_0042: 'You are allowed to move without crisis or euphoria.',
+  },
+  grateful: {
+    f_0059: 'Noticing what is here changes what here feels like.',
+    f_0060: 'Abundance sometimes arrives dressed as enough.',
+  },
+  caring: {
+    f_0685: 'Affection is its own kind of wisdom.',
+    f_0709: 'Some feelings arrive softly and stay a long time.',
+  },
+  happy: {
+    f_0208: 'Life is made of moments like this. Step back to appreciate.',
+    f_0221: 'This may be your nature getting interrupted less.',
+  },
+  proud: {
+    f_0236: 'Some wins arrive without confetti and still matter more.',
+    f_0245: 'Some outcomes fit better because you grew into them.',
+  },
+  hopeful: {
+    f_0708: 'There is meaning in what is stirring inside you.',
+  },
+  numb: {
+    f_0325: 'A flat day can still register one kind thing.',
+  },
+  jealous: {
+    f_0490: 'Someone else’s shine is not proof of your dimness.',
+    f_0494: 'Wanting can be useful once it stops staring sideways.',
+  },
+  disgusted: {
+    f_0515: 'Your body often spots trouble before your mind explains it.',
+    f_0520: 'Your taste is part of your wisdom. It is allowed to vote.',
+  },
+  romantic: {
+    f_0726: 'Small gestures are the currency of relationships that last.',
+    f_0727: 'Romance flourishes when curiosity about the other is a habit.',
+  },
+  emotional: {
+    f_0712: 'The heart has its own way of recognizing meaning.',
+    f_0874: 'Some feelings arrive carrying more than one meaning.',
+  },
+};
+
+const BORDERLINE_FORTUNE_SUGGESTIONS = {
+  neutral: {
+    f_0034: 'A plain hour needs no ceremony.',
+    f_0036: 'Not every day requires a grand design.',
+    f_0037: 'Ordinary often arrives without trumpets.',
+    f_0042: 'A quiet day may still be a sound one.',
+  },
+  grateful: {
+    f_0059: 'Notice what is here, and it becomes more so.',
+    f_0060: 'Enough often arrives in humble clothes.',
+  },
+  caring: {
+    f_0685: 'Affection has wisdom of its own.',
+    f_0709: 'Some feelings arrive softly and remain.',
+  },
+  happy: {
+    f_0208: 'A bright moment deserves a second look.',
+    f_0221: 'This may be your truest nature, lightly revealed.',
+  },
+  proud: {
+    f_0236: 'A quiet victory still counts in full.',
+    f_0245: 'Some outcomes fit because you grew to meet them.',
+  },
+  hopeful: {
+    f_0708: 'What stirs within may yet prove useful.',
+  },
+  numb: {
+    f_0325: 'Even a flat day may notice one kind thing.',
+  },
+  jealous: {
+    f_0490: "Another's shine need not dim your own lamp.",
+    f_0494: 'Wanting is useful once it looks ahead.',
+  },
+  disgusted: {
+    f_0515: 'The body often sees the trouble first.',
+    f_0520: "Taste is one of wisdom's quieter votes.",
+  },
+  romantic: {
+    f_0726: 'Small gestures often keep love well-fed.',
+    f_0727: 'Romance thrives where curiosity is practiced.',
+  },
+  emotional: {
+    f_0712: 'The heart often recognizes meaning first.',
+    f_0874: 'Some feelings arrive bearing more than one meaning.',
+  },
+};
+
+function mergeReviewMaps(primaryMap, secondaryMap) {
+  const merged = { ...primaryMap };
+
+  for (const [bucket, entries] of Object.entries(secondaryMap)) {
+    merged[bucket] = {
+      ...(merged[bucket] || {}),
+      ...entries,
+    };
+  }
+
+  return merged;
+}
+
+const REVIEW_FORTUNE_SUGGESTIONS = mergeReviewMaps(
+  SUSPECT_FORTUNE_SUGGESTIONS,
+  BORDERLINE_FORTUNE_SUGGESTIONS,
+);
+
+const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
+  ORIGINAL_SUSPECT_FORTUNES,
+  ORIGINAL_BORDERLINE_FORTUNES,
+);
+
+const BUCKET_ORDER = Object.keys(REVIEW_FORTUNE_SUGGESTIONS);
 
 const STOP_WORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'because', 'before', 'but', 'by',
@@ -364,19 +479,7 @@ export default function ClassicFortuneLab() {
   const [fortunes, setFortunes] = useState([]);
   const [currentDrafts, setCurrentDrafts] = useState({});
   const [drafts, setDrafts] = useState({});
-  const [dismissedIds, setDismissedIds] = useState(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') {
-      return [];
-    }
-
-    try {
-      const raw = window.sessionStorage.getItem(DISMISSED_STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (_error) {
-      return [];
-    }
-  });
+  const [dismissedIds, setDismissedIds] = useState([]);
   const [retryCounts, setRetryCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -405,7 +508,7 @@ export default function ClassicFortuneLab() {
         setCurrentDrafts(() => {
           const nextCurrentDrafts = {};
 
-          for (const [bucket, suggestions] of Object.entries(SUSPECT_FORTUNE_SUGGESTIONS)) {
+          for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
             for (const fortuneId of Object.keys(suggestions)) {
               const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
               if (liveFortune) {
@@ -419,7 +522,7 @@ export default function ClassicFortuneLab() {
         setDrafts(() => {
           const nextDrafts = {};
 
-          for (const [bucket, suggestions] of Object.entries(SUSPECT_FORTUNE_SUGGESTIONS)) {
+          for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
             for (const [fortuneId, suggestion] of Object.entries(suggestions)) {
               const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
               if (liveFortune) {
@@ -453,26 +556,14 @@ export default function ClassicFortuneLab() {
     };
   }, [apiBaseUrl]);
 
-  useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') {
-      return;
-    }
-
-    try {
-      window.sessionStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify(dismissedIds));
-    } catch (_error) {
-      // Ignore storage write issues in dev lab mode.
-    }
-  }, [dismissedIds]);
-
   const bucketSections = useMemo(() => {
     const fortunesByBucket = BUCKET_ORDER.map((bucket) => {
       const liveBucketFortunes = fortunes.filter((fortune) => fortune.primaryBucket === bucket);
-      const suspectIds = new Set(Object.keys(SUSPECT_FORTUNE_SUGGESTIONS[bucket] || {}));
+      const suspectIds = new Set(Object.keys(REVIEW_FORTUNE_SUGGESTIONS[bucket] || {}));
       const suspectFortunes = liveBucketFortunes
         .filter((fortune) => suspectIds.has(fortune.id))
         .filter((fortune) => {
-          const originalText = ORIGINAL_SUSPECT_FORTUNES[bucket]?.[fortune.id];
+          const originalText = ORIGINAL_REVIEW_FORTUNES[bucket]?.[fortune.id];
           return !originalText || fortune.text === originalText;
         })
         .filter((fortune) => !dismissedIds.includes(fortune.id))
@@ -651,6 +742,12 @@ export default function ClassicFortuneLab() {
       {loadError ? (
         <View style={styles.errorCard}>
           <Text style={styles.errorText}>{loadError}</Text>
+        </View>
+      ) : null}
+
+      {!isLoading && !loadError && bucketSections.length === 0 ? (
+        <View style={styles.loadingCard}>
+          <Text style={styles.loadingText}>No review rows remain in the current live file.</Text>
         </View>
       ) : null}
 

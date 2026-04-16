@@ -6,7 +6,7 @@ import DevWebLabs from './components/DevWebLabs';
 import FortuneHomeScreen from './components/FortuneHomeScreen';
 
 function getDevWebLabRoute() {
-  if (!__DEV__ || Platform.OS !== 'web' || typeof window === 'undefined') {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
     return null;
   }
 
