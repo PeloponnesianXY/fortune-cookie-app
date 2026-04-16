@@ -304,6 +304,136 @@ const BORDERLINE_FORTUNE_SUGGESTIONS = {
   },
 };
 
+const ORIGINAL_NEXT_BATCH_FORTUNES = {
+  angry: {
+    f_0437: 'Strong feelings are human. Harm is still a choice.',
+    f_0438: 'Ask what this feeling is protecting before reacting.',
+    f_0446: "Don't spend all your power in one hot moment.",
+    f_0457: 'Refusing to give others power over our feelings is a win.',
+    f_0462: 'Some feelings are self-respect refusing to sit down.',
+  },
+  anxious: {
+    f_0347: 'A feeling in your body is not a forecast.',
+    f_0351: 'Your mind can sound very certain without good evidence.',
+    f_0360: 'Your mind sometimes writes fiction and calls it planning.',
+  },
+  caring: {
+    f_0744: "The way to change others' minds is with affection, not anger.",
+  },
+  confident: {
+    f_0691: 'The next move does not need a louder voice, only yours.',
+  },
+  confused: {
+    f_0536: 'Your mind may be tangled; your next move can be simple.',
+    f_0558: 'Right answers arrive only after the wrong ones get tired.',
+  },
+  disgusted: {
+    f_0516: 'What feels wrong does not always need to be rationalized.',
+    f_0525: 'This feeling can be discernment that has run out of patience.',
+  },
+  distracted: {
+    f_0591: 'The day may improve if only one thing has the microphone.',
+  },
+  embarrassed: {
+    f_0576: 'Every room contains at least one invisible blooper reel.',
+    f_0842: 'A bruised self-image is still only bruised, not broken.',
+  },
+  emotional: {
+    f_0775: 'Some feelings glow longer than the moment that made them.',
+  },
+  grateful: {
+    f_0836: 'You can travel the world and find home held it all along.',
+  },
+  happy: {
+    f_0207: 'This feeling may know exactly what it needs. Listen to it.',
+    f_0755: 'Little is needed to be happy; it is all within yourself.',
+  },
+  jealous: {
+    f_0794: 'A jealous feeling sometimes reveals a wish asking for room.',
+    f_0796: 'Sometimes envy is desire before it has found its language.',
+    f_0873: 'Envy asks a rude question that may still be worth hearing.',
+  },
+  lonely: {
+    f_0187: 'This feeling is real, but not the whole truth.',
+  },
+  romantic: {
+    f_0743: 'Passion gives a kiss its sweetness; affection sanctifies it.',
+    f_0770: 'The human heart opens to the heart that opens in return.',
+  },
+  sad: {
+    f_0257: 'Not every dark day is a deep truth.',
+  },
+  shaken: {
+    f_0654: 'Not every jolt is a warning. Some are invitations.',
+    f_0659: "If you are always on autopilot, you'll forget how to drive.",
+  },
+};
+
+const NEXT_BATCH_FORTUNE_SUGGESTIONS = {
+  angry: {
+    f_0437: 'Strong weather in you need not choose the ending.',
+    f_0438: 'Ask what this protects before answering with heat.',
+    f_0446: 'Save some strength for the hour after this one.',
+    f_0457: 'Keeping your center is a quiet kind of win.',
+    f_0462: 'Some refusals are dignity declining a bad seat.',
+  },
+  anxious: {
+    f_0347: 'A passing signal need not predict the whole sky.',
+    f_0351: 'Certainty can arrive before the facts do.',
+    f_0360: 'Imagination can borrow the coat of planning.',
+  },
+  caring: {
+    f_0744: 'Affection often changes more than argument can.',
+  },
+  confident: {
+    f_0691: 'The next move may ask for steadiness, not volume.',
+  },
+  confused: {
+    f_0536: 'A tangled hour may still allow one simple step.',
+    f_0558: 'Answers often arrive after the noise grows tired.',
+  },
+  disgusted: {
+    f_0516: 'What repels you need not earn a long defense.',
+    f_0525: 'Discernment can grow sharp when patience runs thin.',
+  },
+  distracted: {
+    f_0591: 'The day may improve when one thing holds the floor.',
+  },
+  embarrassed: {
+    f_0576: 'Every room keeps a private archive of missteps.',
+    f_0842: 'A bruised self-image is hurt, not ruined.',
+  },
+  emotional: {
+    f_0775: 'Some moments glow longer than the hour that made them.',
+  },
+  grateful: {
+    f_0836: 'You may travel far and still find home kept pace with you.',
+  },
+  happy: {
+    f_0207: 'This bright hour may already know its next step.',
+    f_0755: 'A little may be enough to brighten the day.',
+  },
+  jealous: {
+    f_0794: 'A jealous hour may be naming a wish that needs air.',
+    f_0796: 'Sometimes envy is desire before it finds better manners.',
+    f_0873: 'Envy asks a rude question that may still be useful.',
+  },
+  lonely: {
+    f_0187: 'This ache is real, though it may not tell the whole story.',
+  },
+  romantic: {
+    f_0743: 'Passion sweetens the moment; kindness lets it last.',
+    f_0770: 'A human heart opens more easily to what opens back.',
+  },
+  sad: {
+    f_0257: 'A dark day need not become a lasting verdict.',
+  },
+  shaken: {
+    f_0654: 'Not every jolt is a verdict; some are a summons to wake.',
+    f_0659: 'Too much autopilot can make the road feel borrowed.',
+  },
+};
+
 function mergeReviewMaps(primaryMap, secondaryMap) {
   const merged = { ...primaryMap };
 
@@ -318,13 +448,19 @@ function mergeReviewMaps(primaryMap, secondaryMap) {
 }
 
 const REVIEW_FORTUNE_SUGGESTIONS = mergeReviewMaps(
-  SUSPECT_FORTUNE_SUGGESTIONS,
-  BORDERLINE_FORTUNE_SUGGESTIONS,
+  mergeReviewMaps(
+    SUSPECT_FORTUNE_SUGGESTIONS,
+    BORDERLINE_FORTUNE_SUGGESTIONS,
+  ),
+  NEXT_BATCH_FORTUNE_SUGGESTIONS,
 );
 
 const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
-  ORIGINAL_SUSPECT_FORTUNES,
-  ORIGINAL_BORDERLINE_FORTUNES,
+  mergeReviewMaps(
+    ORIGINAL_SUSPECT_FORTUNES,
+    ORIGINAL_BORDERLINE_FORTUNES,
+  ),
+  ORIGINAL_NEXT_BATCH_FORTUNES,
 );
 
 const BUCKET_ORDER = Object.keys(REVIEW_FORTUNE_SUGGESTIONS);
@@ -688,9 +824,7 @@ export default function ClassicFortuneLab() {
       throw new Error(payload.error || 'Unable to process change.');
     }
 
-    const payload = await response.json();
-    const nextFortunes = Array.isArray(payload.fortunes) ? payload.fortunes : [];
-    setFortunes(nextFortunes);
+    return response.json();
   }
 
   async function handleAccept(fortune) {
@@ -712,6 +846,14 @@ export default function ClassicFortuneLab() {
           buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
         }],
       });
+      setFortunes((current) => current.map((entry) => (
+        entry.id === fortune.id
+          ? {
+              ...entry,
+              text: nextText,
+            }
+          : entry
+      )));
     } catch (error) {
       restoreFortuneId(fortune.id);
       throw error;
@@ -745,6 +887,14 @@ export default function ClassicFortuneLab() {
           buckets: [fortune.primaryBucket, ...(fortune.alsoFits || [])],
         }],
       });
+      setFortunes((current) => current.map((entry) => (
+        entry.id === fortune.id
+          ? {
+              ...entry,
+              text: nextText,
+            }
+          : entry
+      )));
     } catch (error) {
       restoreFortuneId(fortune.id);
       unmarkAcceptedCurrentId(fortune.id);
@@ -764,6 +914,7 @@ export default function ClassicFortuneLab() {
         creations: [],
         updates: [],
       });
+      setFortunes((current) => current.filter((entry) => entry.id !== fortune.id));
     } catch (error) {
       restoreFortuneId(fortune.id);
       throw error;
@@ -1101,14 +1252,12 @@ const styles = StyleSheet.create({
     color: '#8a735f',
   },
   currentColumn: {
-    width: '46%',
-    flexGrow: 0,
+    flex: 1,
     flexShrink: 1,
     minWidth: 0,
   },
   suggestedColumn: {
-    width: '40%',
-    flexGrow: 0,
+    flex: 1,
     flexShrink: 1,
     minWidth: 0,
   },
@@ -1130,26 +1279,26 @@ const styles = StyleSheet.create({
     color: '#2f241c',
   },
   charCountText: {
-    minWidth: 20,
+    width: 28,
     textAlign: 'center',
     fontSize: 10,
     fontWeight: '800',
     color: '#8a735f',
   },
   actionsColumn: {
-    width: 132,
+    width: 120,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
     gap: 4,
   },
   currentActionsColumn: {
-    width: 90,
+    width: 84,
     gap: 4,
   },
   acceptButton: {
     borderRadius: 999,
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 5,
     backgroundColor: '#d8a66b',
   },
@@ -1158,7 +1307,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderRadius: 999,
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 5,
     backgroundColor: '#efe2d0',
     borderWidth: 1,
@@ -1170,11 +1319,11 @@ const styles = StyleSheet.create({
   acceptButtonText: {
     color: '#2f2015',
     fontWeight: '900',
-    fontSize: 11,
+    fontSize: 10,
   },
   secondaryButtonText: {
     color: '#6a4d2d',
     fontWeight: '800',
-    fontSize: 11,
+    fontSize: 10,
   },
 });

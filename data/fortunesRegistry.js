@@ -715,7 +715,7 @@ const FORTUNES = [
   },
   {
     id: "f_0207",
-    text: "This feeling may know exactly what it needs. Listen to it.",
+    text: "This bright hour may already know its next step.",
     primaryBucket: "happy",
     alsoFits: [
       "calm",
@@ -982,7 +982,7 @@ const FORTUNES = [
   },
   {
     id: "f_0257",
-    text: "Not every dark day is a deep truth.",
+    text: "A dark day need not become a lasting legacy.",
     primaryBucket: "sad",
     alsoFits: [
       "guilty",
@@ -1822,7 +1822,7 @@ const FORTUNES = [
   },
   {
     id: "f_0438",
-    text: "Ask what this feeling is protecting before reacting.",
+    text: "Asking what this feeling protects may point to a measured reaction.",
     primaryBucket: "angry",
     alsoFits: [
       "anxious",
@@ -1953,7 +1953,7 @@ const FORTUNES = [
   },
   {
     id: "f_0457",
-    text: "Refusing to give others power over our feelings is a win.",
+    text: "Refusing to give others power over our feelings is a quiet win.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -2097,7 +2097,7 @@ const FORTUNES = [
   },
   {
     id: "f_0516",
-    text: "What feels wrong does not always need to be rationalized.",
+    text: "What repels you need not earn a long defense.",
     primaryBucket: "disgusted",
     alsoFits: [],
     scope: "specific"
@@ -2125,7 +2125,7 @@ const FORTUNES = [
   },
   {
     id: "f_0525",
-    text: "This feeling can be discernment that has run out of patience.",
+    text: "Discernment can grow sharp when patience runs thin.",
     primaryBucket: "disgusted",
     alsoFits: [
       "frustrated"
@@ -3004,17 +3004,17 @@ const FORTUNES = [
   },
   {
     id: "f_0743",
-    text: "Passion gives a kiss its sweetness; affection sanctifies it.",
+    text: "Passion sweetens the moment; affection lets it last.",
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific"
   },
   {
     id: "f_0744",
-    text: "The way to change others' minds is with affection, not anger.",
+    text: "Affection often changes more than argument can.",
     primaryBucket: "caring",
     alsoFits: [],
-    scope: "shared"
+    scope: "specific"
   },
   {
     id: "f_0745",
@@ -3088,7 +3088,7 @@ const FORTUNES = [
   },
   {
     id: "f_0755",
-    text: "Little is needed to be happy; it is all within yourself.",
+    text: "What is needed to be happy is already all within youself.",
     primaryBucket: "happy",
     alsoFits: [],
     scope: "specific"
@@ -3321,7 +3321,7 @@ const FORTUNES = [
   },
   {
     id: "f_0794",
-    text: "A jealous feeling sometimes reveals a wish asking for room.",
+    text: "A jealous moment may be naming a wish that needs sunlight.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
@@ -3329,13 +3329,6 @@ const FORTUNES = [
   {
     id: "f_0795",
     text: "What catches in you may also be telling you where you ache.",
-    primaryBucket: "jealous",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
-    id: "f_0796",
-    text: "Sometimes envy is desire before it has found its language.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
@@ -3608,7 +3601,7 @@ const FORTUNES = [
   },
   {
     id: "f_0836",
-    text: "You can travel the world and find home held it all along.",
+    text: "Weary world travelers sometimes realize what they seek is back at home.",
     primaryBucket: "grateful",
     alsoFits: [],
     scope: "specific"
