@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { getMoodLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
+import { getSemanticLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const MAX_ROWS = 100;
 const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:semantic-lab:entries';
@@ -124,7 +124,7 @@ function loadStoredEntries() {
   }
 }
 
-export default function MoodLab() {
+export default function SemanticLab() {
   const [entries, setEntries] = useState(() => loadStoredEntries());
   const [draftInput, setDraftInput] = useState('');
   const [rows, setRows] = useState([]);
@@ -167,7 +167,7 @@ export default function MoodLab() {
       try {
         const nextRows = await Promise.all(
           normalizedEntries.map(async (entry, index) => {
-            const selection = await getMoodLabSelection(entry.input, {
+            const selection = await getSemanticLabSelection(entry.input, {
               randomSeed: entry.nonce,
             });
 

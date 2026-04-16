@@ -140,11 +140,6 @@ function analyzeSemanticFallbackInput(normalizedInput) {
   };
 }
 
-function getSemanticFallbackMatch(normalizedInput) {
-  return analyzeSemanticFallbackInput(normalizedInput);
-}
-
 export {
   analyzeSemanticFallbackInput,
-  getSemanticFallbackMatch,
 };

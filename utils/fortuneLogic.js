@@ -41,47 +41,9 @@ const HIGH_RISK_WORDS = new Set([
   'shooting',
   'massacre',
 ]);
-const CUSTOM_DETERMINISTIC_BUCKET_WORDS = {
-  caring: ['affectionate'],
-  anxious: ['judged', 'fraught'],
-  distracted: ['unbalanced'],
-  emotional: ['emotional', 'moved', 'touched', 'teary', 'stirred', 'sentimental', 'nostalgic'],
-  engaged: ['engaged', 'curious', 'interested', 'focused', 'energized', 'excited', 'eager'],
-  guilty: ['remorseful', 'regretful', 'contrite'],
-  hopeful: ['anticipatory'],
-  lonely: ['unmoored'],
-  sad: ['deflated', 'down', 'wrecked'],
-  shaken: ['violated', 'assaulted'],
-};
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
-
-function mergeBucketWordMaps(...bucketWordMaps) {
-  const merged = new Map();
-
-  for (const bucketWordMap of bucketWordMaps) {
-    for (const [bucket, words] of Object.entries(bucketWordMap)) {
-      if (!merged.has(bucket)) {
-        merged.set(bucket, new Set());
-      }
-
-      for (const word of words || []) {
-        merged.get(bucket).add(word);
-      }
-    }
-  }
-
-  return Object.fromEntries(
-    [...merged.entries()].map(([bucket, words]) => [bucket, [...words]])
-  );
-}
-
-const DETERMINISTIC_RUNTIME_BUCKET_WORDS = mergeBucketWordMaps(
-  DETERMINISTIC_BUCKET_WORDS,
-  CUSTOM_DETERMINISTIC_BUCKET_WORDS
-);
-
-const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_RUNTIME_BUCKET_WORDS);
+const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_BUCKET_WORDS);
 // Runtime routing is intentionally lexical-first:
 // deterministic exact -> morphology -> fuzzy -> unknown
 // Vector embeddings stay available only as a lab/debug suggestion layer.
@@ -807,7 +769,7 @@ async function buildFortuneSelection(input, {
   };
 }
 
-export async function getMoodLabSelection(input, { randomSeed = '' } = {}) {
+export async function getSemanticLabSelection(input, { randomSeed = '' } = {}) {
   const normalizedInput = input.trim().toLowerCase();
 
   const selection = await buildFortuneSelection(normalizedInput, {
