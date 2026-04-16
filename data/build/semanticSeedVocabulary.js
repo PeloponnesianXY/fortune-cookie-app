@@ -42,7 +42,7 @@ const EMBEDDING_SEEDS = {
     'angry', 'furious', 'livid', 'outraged', 'enraged', 'seething', 'resentful',
   ],
   anxious: [
-    'anxious', 'nervous', 'worried', 'uneasy', 'fearful', 'panicked', 'scared', 'on edge',
+    'anxious', 'nervous', 'worried', 'uneasy', 'fearful', 'panicked', 'scared', 'fraught',
   ],
   embarrassed: [
     'awkward', 'embarrassed', 'self conscious', 'sheepish', 'bashful', 'mortified', 'shy',
@@ -54,7 +54,7 @@ const EMBEDDING_SEEDS = {
     'jealous', 'envious', 'green eyed',
   ],
   lonely: [
-    'lonely', 'alone', 'isolated', 'disconnected', 'lonesome', 'abandoned', 'left out',
+    'lonely', 'alone', 'isolated', 'disconnected', 'lonesome', 'unmoored', 'left out',
   ],
   numb: [
     'numb', 'flat', 'detached', 'apathetic', 'emotionless', 'disengaged', 'empty', 'shut down', 'don’t care', 'indifferent',
@@ -63,7 +63,7 @@ const EMBEDDING_SEEDS = {
     'remorseful', 'regretful', 'contrite', 'apologetic', 'sorry', 'guilty',
   ],
   sad: [
-    'sad', 'unhappy', 'gloomy', 'miserable', 'heartbroken', 'grieving', 'sorrowful', 'down',
+    'sad', 'unhappy', 'gloomy', 'miserable', 'heartbroken', 'deflated', 'sorrowful', 'down',
   ],
   shaken: [
     'stunned', 'shocked', 'startled', 'shaken', 'taken aback', 'rattled', 'thrown off',
@@ -75,7 +75,7 @@ const EMBEDDING_SEEDS = {
     'stressed', 'overwhelmed', 'pressured', 'strained', 'burned out', 'frazzled', 'swamped',
   ],
   tired: [
-    'tired', 'exhausted', 'drained', 'weary', 'fatigued', 'sleepy', 'spent', 'wiped out',
+    'tired', 'exhausted', 'drained', 'weary', 'haggard', 'worn out', 'spent', 'wiped out',
   ],
   distracted: [
     'distracted', 'scattered', 'unfocused', 'preoccupied', 'sidetracked', 'all over the place',

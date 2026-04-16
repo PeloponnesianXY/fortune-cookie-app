@@ -7,14 +7,14 @@ async function main() {
     path.join(rootDir, 'utils', 'semanticFallback.js')
   ).href);
   const snapshotModule = await import(pathToFileURL(
-    path.join(rootDir, 'data', 'runtime', 'moodBucketVocabulary.js')
+    path.join(rootDir, 'data', 'runtime', 'moodVocabularyRuntimeWrapper.js')
   ).href);
 
-  const { getSemanticFallbackMatch } = semanticModule;
-  const { BUCKET_VOCAB } = snapshotModule;
+  const { analyzeSemanticFallbackInput } = semanticModule;
+  const { DETERMINISTIC_BUCKET_WORDS } = snapshotModule;
 
-  const handcraftedLookup = Object.fromEntries(
-    Object.entries(BUCKET_VOCAB).flatMap(([bucket, words]) => (
+  const deterministicLookup = Object.fromEntries(
+    Object.entries(DETERMINISTIC_BUCKET_WORDS).flatMap(([bucket, words]) => (
       words.map((word) => [word, bucket])
     ))
   );
@@ -38,12 +38,12 @@ async function main() {
   ];
 
   const rows = samples.map((input) => {
-    const lexicalBucket = handcraftedLookup[input] || null;
-    const semanticResult = lexicalBucket ? null : getSemanticFallbackMatch(input);
+    const lexicalBucket = deterministicLookup[input] || null;
+    const semanticResult = lexicalBucket ? null : analyzeSemanticFallbackInput(input);
 
     return {
       input,
-      source: lexicalBucket ? 'handcrafted' : (semanticResult?.accepted ? 'embedding_fallback' : 'unknown'),
+      source: lexicalBucket ? 'deterministic' : (semanticResult?.accepted ? 'vector_suggestion' : 'unknown'),
       bucket: lexicalBucket || semanticResult?.bucket || 'unknown',
       semanticResult: semanticResult || null,
     };

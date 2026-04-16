@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { getMoodLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
+import { getSemanticLabSelection, MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
 
 const MAX_ROWS = 100;
 const MOOD_LAB_STORAGE_KEY = 'fortune-cookie:semantic-lab:entries';
@@ -41,19 +41,19 @@ function formatSemanticDebug(semantic) {
 
   if (!semantic.debug) {
     if (semantic.reason === 'no-vector') {
-      return 'No compact vector available for this input.';
+      return 'No vector embedding available for this input.';
     }
 
     if (semantic.reason === 'too-short') {
-      return 'Semantic fallback skipped because the input is too short.';
+      return 'Vector suggestion skipped because the input is too short.';
     }
 
     if (semantic.reason === 'invalid-input') {
-      return 'Semantic fallback only runs on single-word inputs.';
+      return 'Vector suggestion only runs on single-word inputs.';
     }
 
     if (semantic.reason === 'filtered-nonmood') {
-      return 'Semantic fallback skipped because this reads more like a descriptor than a mood.';
+      return 'Vector suggestion skipped because this reads more like a descriptor than a mood.';
     }
 
     return semantic.reason || '';
@@ -65,14 +65,18 @@ function formatSemanticDebug(semantic) {
   const runnerUpBucket = formatMoodLabel(semantic.debug.runnerUpBucket || 'unknown');
 
   if (semantic.accepted) {
-    return `Accepted semantic pick: ${bestBucket} (${bestScore}) over ${runnerUpBucket} (${runnerUpScore}).`;
+    return `Suggested vector pick: ${bestBucket} (${bestScore}) over ${runnerUpBucket} (${runnerUpScore}).`;
   }
 
   if (semantic.reason === 'below-threshold') {
-    return `Rejected semantic pick: ${bestBucket} scored ${bestScore}, below the acceptance cutoff. Next was ${runnerUpBucket} at ${runnerUpScore}.`;
+    return `Rejected vector pick: ${bestBucket} scored ${bestScore}, below the acceptance cutoff. Next was ${runnerUpBucket} at ${runnerUpScore}.`;
   }
 
-  return `Semantic check compared ${bestBucket} (${bestScore}) with ${runnerUpBucket} (${runnerUpScore}).`;
+  if (semantic.reason === 'below-margin') {
+    return `Rejected vector pick: ${bestBucket} (${bestScore}) was too close to ${runnerUpBucket} (${runnerUpScore}).`;
+  }
+
+  return `Vector check compared ${bestBucket} (${bestScore}) with ${runnerUpBucket} (${runnerUpScore}).`;
 }
 
 function getSemanticPreviewBucket(semantic) {
@@ -83,8 +87,8 @@ function getSemanticPreviewBucket(semantic) {
   return semantic.bucket;
 }
 
-function getSemanticWinnerBucket(source, semantic) {
-  if (source !== 'embedding_fallback') {
+function getSemanticWinnerBucket(semantic) {
+  if (!semantic?.accepted) {
     return 'unknown';
   }
 
@@ -110,7 +114,7 @@ function loadStoredEntries() {
     return parsed
       .filter((entry) => entry && typeof entry.input === 'string')
       .map((entry, index) => ({
-        id: entry.id || `mood-lab-entry-restored-${index}`,
+        id: entry.id || `semantic-lab-entry-restored-${index}`,
         input: entry.input,
         nonce: entry.nonce || Math.random().toString(36).slice(2, 10),
       }))
@@ -120,7 +124,7 @@ function loadStoredEntries() {
   }
 }
 
-export default function MoodLab() {
+export default function SemanticLab() {
   const [entries, setEntries] = useState(() => loadStoredEntries());
   const [draftInput, setDraftInput] = useState('');
   const [rows, setRows] = useState([]);
@@ -163,7 +167,7 @@ export default function MoodLab() {
       try {
         const nextRows = await Promise.all(
           normalizedEntries.map(async (entry, index) => {
-            const selection = await getMoodLabSelection(entry.input, {
+            const selection = await getSemanticLabSelection(entry.input, {
               randomSeed: entry.nonce,
             });
 
@@ -174,10 +178,7 @@ export default function MoodLab() {
               mood: selection.analysis?.primaryEmotion || 'unknown',
               deterministicMood: selection.analysis?.lab?.deterministic?.bucket || 'unknown',
               source: selection.analysis?.source || 'unknown',
-              embeddingMood: getSemanticWinnerBucket(
-                selection.analysis?.source || 'unknown',
-                selection.analysis?.lab?.semantic
-              ),
+              embeddingMood: getSemanticWinnerBucket(selection.analysis?.lab?.semantic),
               fortuneText: selection.fortuneText || '',
               moderation: selection.moderation || 'clean',
               semantic: selection.analysis?.lab?.semantic || null,
@@ -218,7 +219,7 @@ export default function MoodLab() {
     setEntries((currentEntries) => [
       ...currentEntries,
       {
-        id: `mood-lab-entry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        id: `semantic-lab-entry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         input: nextWord,
         nonce: Math.random().toString(36).slice(2, 10),
       },
@@ -297,7 +298,7 @@ export default function MoodLab() {
             <Text style={[styles.headerCell, styles.inputColumn]}>Input</Text>
             <Text style={[styles.headerCell, styles.inputColumn]}>Parsed</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Deterministic</Text>
-            <Text style={[styles.headerCell, styles.moodColumn]}>Vector Match</Text>
+            <Text style={[styles.headerCell, styles.moodColumn]}>Vector Suggestion</Text>
             <Text style={[styles.headerCell, styles.semanticColumn]}>Vector Audit</Text>
             <Text style={[styles.headerCell, styles.moodColumn]}>Final</Text>
             <Text style={[styles.headerCell, styles.sourceColumn]}>Source</Text>

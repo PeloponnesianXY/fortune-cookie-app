@@ -6,8 +6,8 @@ let semanticFallbackDataCache = null;
 
 function getSemanticFallbackData() {
   if (!semanticFallbackDataCache) {
-    // Keep the large semantic fallback table out of the startup path.
-    // Most launches never need it, so we load it only for true semantic fallback.
+    // Keep the vector embeddings dataset out of the main app startup path.
+    // It is used only by lab diagnostics and offline-style validation helpers.
     ({ SEMANTIC_FALLBACK_DATA: semanticFallbackDataCache } = requireFromHere('../data/runtime/semanticFallbackData.js'));
   }
 
@@ -105,11 +105,13 @@ function analyzeSemanticFallbackInput(normalizedInput) {
 
   const bestScore = roundSemanticValue(best.score);
   const runnerUpScore = roundSemanticValue(runnerUp?.score || 0);
+  const margin = roundSemanticValue(bestScore - runnerUpScore);
   const debug = {
     bestBucket: best.bucket,
     bestScore,
     runnerUpBucket: runnerUp?.bucket || null,
     runnerUpScore,
+    margin,
   };
 
   if (bestScore < semanticFallbackData.settings.minSimilarity) {
@@ -121,6 +123,15 @@ function analyzeSemanticFallbackInput(normalizedInput) {
     };
   }
 
+  if (margin < semanticFallbackData.settings.minMargin) {
+    return {
+      accepted: false,
+      bucket: best.bucket,
+      debug,
+      reason: 'below-margin',
+    };
+  }
+
   return {
     accepted: true,
     bucket: best.bucket,
@@ -129,11 +140,6 @@ function analyzeSemanticFallbackInput(normalizedInput) {
   };
 }
 
-function getSemanticFallbackMatch(normalizedInput) {
-  return analyzeSemanticFallbackInput(normalizedInput);
-}
-
 export {
   analyzeSemanticFallbackInput,
-  getSemanticFallbackMatch,
 };

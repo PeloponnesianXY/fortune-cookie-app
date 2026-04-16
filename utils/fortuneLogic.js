@@ -11,13 +11,11 @@ import {
 } from '../data/runtime/fortunes.js';
 import {
   DETERMINISTIC_BUCKET_WORDS,
-  HANDCRAFTED_BUCKET_WORDS,
   LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
 } from '../data/runtime/moodVocabularyRuntimeWrapper.js';
 import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
-import { analyzeSemanticFallbackInput, getSemanticFallbackMatch } from './semanticFallback.js';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
 const DAY_STATE_STORAGE_KEY = '@fortune-cookie-daily/day-state';
@@ -43,55 +41,12 @@ const HIGH_RISK_WORDS = new Set([
   'shooting',
   'massacre',
 ]);
-const CUSTOM_HANDCRAFTED_BUCKET_WORDS = {
-  caring: ['affectionate'],
-  anxious: ['judged'],
-  distracted: ['unbalanced'],
-  emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
-  engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
-  guilty: ['remorseful'],
-  shaken: ['violated'],
-};
-const CUSTOM_DETERMINISTIC_BUCKET_WORDS = {
-  caring: ['affectionate'],
-  anxious: ['judged'],
-  distracted: ['unbalanced'],
-  emotional: ['emotional', 'moved', 'touched', 'sentimental', 'nostalgic'],
-  engaged: ['engaged', 'focused', 'energized', 'excited', 'eager'],
-  guilty: ['remorseful', 'regretful', 'contrite'],
-  shaken: ['violated'],
-};
 
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
-
-function mergeBucketWordMaps(...bucketWordMaps) {
-  const merged = new Map();
-
-  for (const bucketWordMap of bucketWordMaps) {
-    for (const [bucket, words] of Object.entries(bucketWordMap)) {
-      if (!merged.has(bucket)) {
-        merged.set(bucket, new Set());
-      }
-
-      for (const word of words || []) {
-        merged.get(bucket).add(word);
-      }
-    }
-  }
-
-  return Object.fromEntries(
-    [...merged.entries()].map(([bucket, words]) => [bucket, [...words]])
-  );
-}
-
-const DETERMINISTIC_RUNTIME_BUCKET_WORDS = mergeBucketWordMaps(
-  DETERMINISTIC_BUCKET_WORDS,
-  CUSTOM_DETERMINISTIC_BUCKET_WORDS
-);
-
-const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_RUNTIME_BUCKET_WORDS);
-// Routing priority is intentionally lexical-first:
-// deterministic exact -> morphology -> fuzzy -> semantic fallback -> unknown
+const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_BUCKET_WORDS);
+// Runtime routing is intentionally lexical-first:
+// deterministic exact -> morphology -> fuzzy -> unknown
+// Vector embeddings stay available only as a lab/debug suggestion layer.
 const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(DETERMINISTIC_WORD_TO_BUCKET)
   .filter(([word]) => !word.includes(' '))
   .map(([word, bucket]) => ({ word, bucket }));
@@ -526,18 +481,6 @@ function buildDeterministicMoodAnalysis(normalized) {
   });
 }
 
-function buildSemanticLabData(normalized) {
-  const semanticPreview = analyzeSemanticFallbackInput(normalized);
-
-  return {
-    bucket: semanticPreview.bucket || 'unknown',
-    accepted: Boolean(semanticPreview.accepted),
-    reason: semanticPreview.reason || null,
-    confidence: roundConfidence(semanticPreview.accepted ? (semanticPreview.confidence || 0) : 0),
-    debug: semanticPreview.debug || null,
-  };
-}
-
 function buildParsedInputLabData(normalized) {
   if (!normalized) {
     return {
@@ -629,19 +572,11 @@ export function analyzeMoodInput(input) {
           source: 'unknown',
           confidence: 0,
         },
-        semantic: {
-          bucket: 'unknown',
-          accepted: false,
-          reason: 'invalid-input',
-          confidence: 0,
-          debug: null,
-        },
       },
     });
   }
 
   const deterministicAnalysis = buildDeterministicMoodAnalysis(normalized);
-  const semanticLab = buildSemanticLabData(normalized);
   const parsedLab = buildParsedInputLabData(normalized);
   const lab = {
     parsed: parsedLab,
@@ -650,7 +585,6 @@ export function analyzeMoodInput(input) {
       source: deterministicAnalysis.source || 'unknown',
       confidence: deterministicAnalysis.confidence ?? 0,
     },
-    semantic: semanticLab,
   };
 
   if (deterministicAnalysis.primaryEmotion !== 'unknown') {
@@ -660,27 +594,10 @@ export function analyzeMoodInput(input) {
     };
   }
 
-  let semanticDebug = null;
-  if (tokenizeMoodInput(normalized).length === 1) {
-    const semanticMatch = getSemanticFallbackMatch(normalized);
-    if (semanticMatch?.accepted) {
-      return buildAnalysis(semanticMatch.bucket, {
-        confidence: roundConfidence(semanticMatch.confidence),
-      source: 'embedding_fallback',
-      score: 5,
-      semanticDebug: semanticMatch.debug,
-        lab,
-      });
-    }
-
-    semanticDebug = semanticMatch?.debug || null;
-  }
-
   return buildAnalysis('unknown', {
     confidence: 0,
     score: 0,
     source: 'unknown',
-    semanticDebug,
     lab,
   });
 }
@@ -852,15 +769,36 @@ async function buildFortuneSelection(input, {
   };
 }
 
-export async function getMoodLabSelection(input, { randomSeed = '' } = {}) {
+export async function getSemanticLabSelection(input, { randomSeed = '' } = {}) {
   const normalizedInput = input.trim().toLowerCase();
 
-  return buildFortuneSelection(normalizedInput, {
-    dayKey: 'mood-lab',
-    seedKey: `mood-lab|${normalizedInput || 'empty'}|${randomSeed}`,
+  const selection = await buildFortuneSelection(normalizedInput, {
+    dayKey: 'semantic-lab',
+    seedKey: `semantic-lab|${normalizedInput || 'empty'}|${randomSeed}`,
     includeCustomFortunes: false,
     persistSelection: false,
   });
+
+  const { analyzeSemanticFallbackInput } = await import('./semanticFallback.js');
+  const semanticPreview = analyzeSemanticFallbackInput(normalizedInput);
+  const semanticLab = {
+    bucket: semanticPreview.bucket || 'unknown',
+    accepted: Boolean(semanticPreview.accepted),
+    reason: semanticPreview.reason || null,
+    confidence: roundConfidence(semanticPreview.accepted ? (semanticPreview.confidence || 0) : 0),
+    debug: semanticPreview.debug || null,
+  };
+
+  return {
+    ...selection,
+    analysis: {
+      ...selection.analysis,
+      lab: {
+        ...selection.analysis?.lab,
+        semantic: semanticLab,
+      },
+    },
+  };
 }
 
 export async function getDailyFortuneSelection(input) {

@@ -8,7 +8,7 @@ Small Expo app that:
 - reveals fortunes locally on device, with pacing that changes as the day goes on
 - derives runtime fortune pools from one canonical fortune registry
 - includes a dev-only Fortune Lab route on web for canonical fortune editing
-- includes a dev-only Mood Lab route on web for mood mapping inspection
+- includes a dev-only Semantic Lab route on web for mood mapping inspection
 - includes a dev-only Screen Lab route on web for layout and state previews
 
 ## Key project structure
@@ -79,7 +79,7 @@ assets/
 - `components/CookieShell.js`: cookie image swap + paper overlay
 - `components/FortuneLibrarySheet.js`: history/favorites sheet with tap-to-share fortune cards
 - `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
-- `components/MoodLab.js`: dev-only browser lab for inspecting parsed input, handcrafted routing, open fallback routing, vector fallback, final bucket selection, source, and fortune output
+- `components/MoodLab.js`: dev-only browser Semantic Lab for inspecting parsed input, deterministic routing, advisory vector suggestions, final bucket selection, source, and fortune output
 - `components/CustomFortuneSheet.js`: create or edit a custom fortune locally on device
 - `components/CreatedFortunesSheet.js`: browse, edit, and delete created fortunes by mood
 - `components/SafetyLockScreen.js`: full-session lock screen for exact-match high-risk input
@@ -87,19 +87,19 @@ assets/
 - `data/fortunesRegistry.js`: canonical source-of-truth fortune registry, with one record per fortune
 - `data/runtime/fortunes.js`: runtime fortune library keyed to the live mood buckets and derived from `data/fortunesRegistry.js`
 - `data/runtime/scenes.js`: shared scene library plus bucket-to-scene mapping for the live mood set
-- `data/runtime/moodVocabularyRuntimeWrapper.js`: live bucket list plus runtime lookup tables derived from the canonical vocabulary source
-- `data/runtime/moodBucketVocabulary.js`: canonical runtime vocabulary module containing the handcrafted source-of-truth bucket vocab (`BUCKET_VOCAB`) plus the generated lower-trust open fallback vocab (`OPEN_FALLBACK_VOCAB`)
-- `data/build/openFallbackOverrides.json`: human-editable allow/deny controls for the generated open fallback layer
-- `data/build/semanticSeedVocabulary.js`: human-edited semantic seed words used when rebuilding compact vector fallback data
-- `data/build/semanticFallbackConfig.js`: semantic fallback thresholds, anchors, keep-lists, and reject-lists used when rebuilding the compact semantic runtime data
-- `data/runtime/semanticFallbackData.js`: generated compact runtime semantic fallback dataset loaded by the app after lexical matching fails
-- `data/source/embedding-raw/`: optional offline staging area for heavyweight embedding assets used to build semantic runtime data
-- `data/source/open-lexicon-raw/`: vendored local raw lexical sources used to build the open fallback section inside `moodBucketVocabulary.js`
+- `data/runtime/moodVocabularyRuntimeWrapper.js`: thin runtime wrapper that exposes the canonical bucket list, legacy normalization aliases, and the live deterministic vocabulary
+- `data/runtime/moodBucketVocabulary.js`: canonical runtime vocabulary module containing the production deterministic source (`BUCKET_VOCAB`) plus the generated lexical source material (`OPEN_FALLBACK_VOCAB`) kept for offline tooling
+- `data/build/openFallbackOverrides.json`: human-editable allow/deny controls for the generated lexical source material used by offline tooling
+- `data/build/semanticSeedVocabulary.js`: human-edited seed words used when rebuilding the vector embeddings suggestion data
+- `data/build/semanticFallbackConfig.js`: vector embeddings suggestion thresholds, anchors, keep-lists, and reject-lists used when rebuilding the runtime data
+- `data/runtime/semanticFallbackData.js`: generated vector embeddings dataset used only by Semantic Lab diagnostics and offline validation
+- `data/source/embedding-raw/`: optional offline staging area for heavyweight embedding assets used to build vector embeddings fallback data
+- `data/source/open-lexicon-raw/`: vendored local raw lexical sources used to build the generated lexical source material before runtime merging
 - `scripts/fortuneLabServer.js`: local-only Node API for reading/writing the canonical fortune registry on disk during Fortune Lab sessions
 - `scripts/fortuneRegistryStore.js`: canonical registry read/write helpers used by the Fortune Lab API
 - `scripts/bootstrapOpenLexicons.js`: one-time downloader that vendors the raw open lexical source files into the repo
-- `scripts/buildOpenFallbackVocab.js`: deterministic offline builder for the generated open fallback layer
-- `scripts/validateOpenFallback.js`: deterministic sanity-check helper for the open fallback path
+- `scripts/buildOpenFallbackVocab.js`: deterministic offline builder for the generated lexical source material
+- `scripts/validateOpenFallback.js`: deterministic sanity-check helper for the lexical-source build path
 - `utils/fortuneLogic.js`: input normalization, vocabulary lookup, conservative morphology/fuzzy matching, moderation hooks, scene selection, and day-state tracking
 - `utils/customFortunes.js`: local persistence and validation for user-created fortunes
 - `utils/savedFortunes.js`: local history/favorites persistence
@@ -155,24 +155,27 @@ Current Fortune Lab behavior includes:
 - `Discard Draft`, which clears the local browser draft and reloads from the canonical file
 - dev-only local use on web; it is not part of the shipped native app
 
-## Mood Lab
+## Semantic Lab
 
-Mood Lab is a dev-only browser route for checking how the live classifier routes words.
+Semantic Lab is a dev-only browser route for checking how the live classifier routes words and for inspecting advisory vector suggestions.
 
 - Route options:
-  - `/mood-lab`
-  - `?moodLab=1`
-  - `#/mood-lab`
+  - `/lab`
+  - `/semantic-lab`
+  - `?semanticLab=1`
+  - `#/lab`
+  - `#/semantic-lab`
 - Entry point: `App.js` only enables it in `__DEV__` on web
 - Main file: `components/MoodLab.js`
-- Runtime source: `utils/fortuneLogic.js` via `getMoodLabSelection`
+- Runtime source: `utils/fortuneLogic.js` via `getSemanticLabSelection`
 
-Current Mood Lab behavior includes:
+Current Semantic Lab behavior includes:
 
 - entering single words or short phrases and appending them to a local results table
-- showing the parsed input, handcrafted bucket, open fallback bucket, vector match, vector audit, final bucket, source, and selected fortune for each row
+- showing the parsed input, deterministic bucket, advisory vector suggestion, final bucket, source, and selected fortune for each row
 - keeping up to 100 recent rows in browser `localStorage`
-- using the same bucket mapping and fortune selection logic as the app, without persisting daily fortune state
+- using the same deterministic bucket mapping and fortune selection logic as the app, without persisting daily fortune state
+- showing vector embeddings as a lab-only suggestion layer, not as part of live app routing
 
 ## Screen Lab
 
@@ -233,11 +236,13 @@ Open Screen Lab locally on web:
 http://localhost:8081/screen-lab
 ```
 
-Open Mood Lab locally on web:
+Open Semantic Lab locally on web:
 
 ```text
-http://localhost:8081/mood-lab
+http://localhost:8081/lab
 ```
+
+Expo may choose a different port if `8081` is busy, so use whatever local URL the dev server prints.
 
 Open Fortune Lab locally on web:
 
@@ -298,11 +303,12 @@ eas submit --platform ios
 - The app uses local persistence via `AsyncStorage` to keep the current day state on device, including pacing/count information and replacement continuity.
 - Daily streaks, history, favorites, and the one-time replace mechanic are all stored or coordinated locally on device only.
 - User-created fortunes are also stored locally on device only.
-- The classifier now derives its handcrafted runtime lookups from the canonical `BUCKET_VOCAB` source in `data/runtime/moodBucketVocabulary.js`.
-- The handcrafted runtime vocabulary is still the source of truth. The generated open fallback vocabulary now lives in `data/runtime/moodBucketVocabulary.js`, is lower trust, and only runs as a later exact-match tier.
+- The classifier now derives its live deterministic runtime lookup directly from the canonical `BUCKET_VOCAB` source in `data/runtime/moodBucketVocabulary.js`.
+- The generated lexical source material still lives in `data/runtime/moodBucketVocabulary.js`, but it is tooling-only and no longer participates in production routing.
 - The app now runs on a single-mood path: one word in, one detected mood out, then one matching fortune pool and scene.
-- Mood input processing is deterministic and local: safety checks, handcrafted exact lookup, generated open fallback exact lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, semantic fallback, then `unknown` fallback.
-- Mood Lab uses that same live routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
+- Mood input processing is deterministic and local: safety checks, deterministic exact lookup, conservative morphology handling, strict typo-tolerant fuzzy matching, then `unknown` fallback.
+- Semantic Lab uses that same live deterministic routing path for inspection, but does not save daily state or custom-fortune weighting into the main app flow.
+- Vector embeddings remain in the repo as tooling and lab diagnostics, not as part of live production mood routing.
 - The runtime fortune system now uses 31 mood buckets:
   - `caring`
   - `engaged`
