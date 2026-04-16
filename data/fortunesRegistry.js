@@ -229,7 +229,7 @@ const FORTUNES = [
   },
   {
     id: "f_0036",
-    text: "You do not owe every day a grand emotional arc.",
+    text: "Not every day requires a grand design.",
     primaryBucket: "neutral",
     alsoFits: [],
     scope: "specific"
@@ -727,7 +727,7 @@ const FORTUNES = [
   },
   {
     id: "f_0208",
-    text: "Life is made of moments like this. Step back to appreciate.",
+    text: "A bright moment deserves a second look.",
     primaryBucket: "happy",
     alsoFits: [
       "wowed",
@@ -847,7 +847,7 @@ const FORTUNES = [
   },
   {
     id: "f_0221",
-    text: "This may be your nature getting interrupted less.",
+    text: "This may be your truest nature, lightly revealed.",
     primaryBucket: "happy",
     alsoFits: [
       "calm",
@@ -897,7 +897,7 @@ const FORTUNES = [
   },
   {
     id: "f_0236",
-    text: "Some wins arrive without confetti and still matter more.",
+    text: "Some wins arrive without confetti but feel better than a parade.",
     primaryBucket: "proud",
     alsoFits: [],
     scope: "specific"
@@ -913,7 +913,7 @@ const FORTUNES = [
   },
   {
     id: "f_0245",
-    text: "Some outcomes fit better because you grew into them.",
+    text: "Some outcomes fit because you grew to meet them.",
     primaryBucket: "proud",
     alsoFits: [
       "confident"
@@ -1058,7 +1058,7 @@ const FORTUNES = [
   },
   {
     id: "f_0265",
-    text: "Heavy feelings can be sincere and still exaggerate.",
+    text: "Heavy feelings can sound wise without being right.",
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
@@ -2055,7 +2055,7 @@ const FORTUNES = [
   },
   {
     id: "f_0490",
-    text: "Someone else’s shine is not proof of your dimness.",
+    text: "Another's shine need not dim your own light.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
@@ -2111,7 +2111,7 @@ const FORTUNES = [
   },
   {
     id: "f_0520",
-    text: "Your taste is part of your wisdom. It is allowed to vote.",
+    text: "Taste is one of wisdom's louder votes.",
     primaryBucket: "disgusted",
     alsoFits: [],
     scope: "specific"
@@ -2776,7 +2776,7 @@ const FORTUNES = [
   },
   {
     id: "f_0709",
-    text: "Some feelings arrive softly and stay a long time.",
+    text: "Some feelings arrive softly and remain.",
     primaryBucket: "caring",
     alsoFits: [
       "grateful"
@@ -2899,7 +2899,7 @@ const FORTUNES = [
   },
   {
     id: "f_0727",
-    text: "Romance flourishes when curiosity about the other is a habit.",
+    text: "Romance thrives where curiosity is practiced.",
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific"

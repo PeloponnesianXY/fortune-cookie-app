@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 const API_PORT = 4312;
+const ACCEPTED_CURRENT_STORAGE_KEY = 'classic-fortune-lab:accepted-current:v1';
 const SUSPECT_FORTUNE_SUGGESTIONS = {
   anxious: {
     f_0329: 'A fearful heart mistakes many shadows for danger.',
@@ -477,12 +478,39 @@ function getEditorTextSizing(text) {
   };
 }
 
+function loadAcceptedCurrentIds() {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(ACCEPTED_CURRENT_STORAGE_KEY);
+    const parsedValue = rawValue ? JSON.parse(rawValue) : [];
+    return Array.isArray(parsedValue) ? parsedValue.filter((value) => typeof value === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistAcceptedCurrentIds(acceptedCurrentIds) {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(ACCEPTED_CURRENT_STORAGE_KEY, JSON.stringify(acceptedCurrentIds));
+  } catch {
+    // Ignore local review-persistence failures in the dev-only lab.
+  }
+}
+
 export default function ClassicFortuneLab() {
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
   const [fortunes, setFortunes] = useState([]);
   const [currentDrafts, setCurrentDrafts] = useState({});
   const [drafts, setDrafts] = useState({});
   const [dismissedIds, setDismissedIds] = useState([]);
+  const [acceptedCurrentIds, setAcceptedCurrentIds] = useState(() => loadAcceptedCurrentIds());
   const [retryCounts, setRetryCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -559,6 +587,10 @@ export default function ClassicFortuneLab() {
     };
   }, [apiBaseUrl]);
 
+  useEffect(() => {
+    persistAcceptedCurrentIds(acceptedCurrentIds);
+  }, [acceptedCurrentIds]);
+
   const bucketSections = useMemo(() => {
     const fortunesByBucket = BUCKET_ORDER.map((bucket) => {
       const liveBucketFortunes = fortunes.filter((fortune) => fortune.primaryBucket === bucket);
@@ -569,6 +601,7 @@ export default function ClassicFortuneLab() {
           const originalText = ORIGINAL_REVIEW_FORTUNES[bucket]?.[fortune.id];
           return !originalText || fortune.text === originalText;
         })
+        .filter((fortune) => !acceptedCurrentIds.includes(fortune.id))
         .filter((fortune) => !dismissedIds.includes(fortune.id))
         .sort((left, right) => left.id.localeCompare(right.id));
 
@@ -580,7 +613,7 @@ export default function ClassicFortuneLab() {
     }).filter((section) => section.suspectFortunes.length > 0);
 
     return fortunesByBucket;
-  }, [dismissedIds, fortunes]);
+  }, [acceptedCurrentIds, dismissedIds, fortunes]);
 
   function updateDraft(fortuneId, value) {
     setDrafts((current) => ({
@@ -604,6 +637,20 @@ export default function ClassicFortuneLab() {
 
   function restoreFortuneId(fortuneId) {
     setDismissedIds((current) => current.filter((id) => id !== fortuneId));
+  }
+
+  function markAcceptedCurrentId(fortuneId) {
+    setAcceptedCurrentIds((current) => (
+      current.includes(fortuneId) ? current : [...current, fortuneId]
+    ));
+  }
+
+  function unmarkAcceptedCurrentId(fortuneId) {
+    setAcceptedCurrentIds((current) => current.filter((id) => id !== fortuneId));
+  }
+
+  function handleResetAcceptedCurrentRows() {
+    setAcceptedCurrentIds([]);
   }
 
   function handleTryAgain(fortune) {
@@ -682,6 +729,7 @@ export default function ClassicFortuneLab() {
     dismissFortuneId(fortune.id);
 
     if (nextText === fortune.text) {
+      markAcceptedCurrentId(fortune.id);
       return;
     }
 
@@ -699,6 +747,7 @@ export default function ClassicFortuneLab() {
       });
     } catch (error) {
       restoreFortuneId(fortune.id);
+      unmarkAcceptedCurrentId(fortune.id);
       throw error;
     } finally {
       setBusyId(null);
@@ -756,6 +805,11 @@ export default function ClassicFortuneLab() {
       {!isLoading && !loadError && bucketSections.length === 0 ? (
         <View style={styles.loadingCard}>
           <Text style={styles.loadingText}>No review rows remain in the current live file.</Text>
+          {acceptedCurrentIds.length > 0 ? (
+            <Pressable onPress={handleResetAcceptedCurrentRows} style={styles.resetAcceptedButton}>
+              <Text style={styles.resetAcceptedButtonText}>Show accepted current rows</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -912,6 +966,17 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 14,
     color: '#58483b',
+  },
+  resetAcceptedButton: {
+    borderRadius: 999,
+    backgroundColor: '#d8a66b',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  resetAcceptedButtonText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#2f2015',
   },
   errorCard: {
     padding: 14,
