@@ -1242,7 +1242,7 @@ const FORTUNES = [
   },
   {
     id: "f_0305",
-    text: "Flat is still a feeling, just with the volume lowered.",
+    text: "Even low light is not darkness, and can illuminate what's there.",
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific"
@@ -1270,7 +1270,7 @@ const FORTUNES = [
   },
   {
     id: "f_0325",
-    text: "A flat day can still register one kind thing.",
+    text: "Even a flat day may notice one kind thing.",
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific"
@@ -2799,7 +2799,7 @@ const FORTUNES = [
   },
   {
     id: "f_0712",
-    text: "The heart has its own way of recognizing meaning.",
+    text: "The heart often recognizes meaning before the mind catches up.",
     primaryBucket: "emotional",
     alsoFits: [
       "caring"
@@ -3869,13 +3869,6 @@ const FORTUNES = [
     id: "f_0873",
     text: "Envy asks a rude question that may still be worth hearing.",
     primaryBucket: "jealous",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
-    id: "f_0874",
-    text: "Some feelings arrive carrying more than one meaning.",
-    primaryBucket: "emotional",
     alsoFits: [],
     scope: "specific"
   },
