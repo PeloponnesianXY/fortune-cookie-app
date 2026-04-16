@@ -210,7 +210,12 @@ const BUCKET_VOCAB = {
     "focused",
     "energized",
     "excited",
-    "eager"
+    "eager",
+    "absorbed",
+    "immersed",
+    "intrigued",
+    "engrossed",
+    "captivated"
   ],
   "calm": [
     "calm",
@@ -394,6 +399,7 @@ const BUCKET_VOCAB = {
   "grateful": [
     "grateful",
     "gratitude",
+    "appreciation",
     "appreciative",
     "thankful",
     "blessed",
@@ -585,6 +591,7 @@ const BUCKET_VOCAB = {
     "romantic",
     "flirty",
     "sexy",
+    "adoration",
     "smitten",
     "infatuated",
     "lovestruck",
