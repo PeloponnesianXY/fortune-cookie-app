@@ -4,27 +4,55 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import FortuneHomeScreen from './components/FortuneHomeScreen';
 
-function isSemanticLabRoute() {
+function getDevWebLabRoute() {
   if (!__DEV__ || Platform.OS !== 'web' || typeof window === 'undefined') {
-    return false;
+    return null;
   }
 
   const { hash, pathname, search } = window.location;
   const normalizedPathname = pathname.replace(/\/+$/, '');
   const normalizedHash = hash.replace(/\/+$/, '');
-  return (
+
+  if (
     normalizedPathname === '/semantic-lab'
     || normalizedPathname === '/lab'
     || search.includes('semanticLab=1')
     || normalizedHash === '#/semantic-lab'
     || normalizedHash === '#/lab'
-  );
+  ) {
+    return 'semantic';
+  }
+
+  if (
+    normalizedPathname === '/screen-lab'
+    || search.includes('screenLab=1')
+    || normalizedHash === '#/screen-lab'
+  ) {
+    return 'screen';
+  }
+
+  if (
+    normalizedPathname === '/fortune-lab'
+    || search.includes('fortuneLab=1')
+    || normalizedHash === '#/fortune-lab'
+  ) {
+    return 'fortune';
+  }
+
+  return null;
 }
 
 export default function App() {
-  const rootContent = isSemanticLabRoute()
-    ? React.createElement(require('./components/SemanticLab').default)
-    : <FortuneHomeScreen />;
+  const devLabRoute = getDevWebLabRoute();
+  let rootContent = <FortuneHomeScreen />;
+
+  if (devLabRoute === 'semantic') {
+    rootContent = React.createElement(require('./components/SemanticLab').default);
+  } else if (devLabRoute === 'screen') {
+    rootContent = React.createElement(require('./components/ScreenLab').default);
+  } else if (devLabRoute === 'fortune') {
+    rootContent = React.createElement(require('./components/FortuneLab').default);
+  }
 
   return (
     <SafeAreaProvider>

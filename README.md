@@ -9,7 +9,9 @@ Expo app that takes a one-word mood input, routes it to one local mood bucket, a
 - The canonical mood vocabulary lives in `data/runtime/moodBucketVocabulary.js`.
 - The canonical fortune registry lives in `data/fortunesRegistry.js`.
 - Runtime fortune pools are derived in `data/runtime/fortunes.js`.
+- Fortune Lab is a dev-only web editor for the canonical fortune registry.
 - Semantic Lab is a dev-only web inspector for routing plus advisory vector diagnostics.
+- Screen Lab is a dev-only web preview surface for layout and state checks.
 
 ## Project structure
 
@@ -23,12 +25,14 @@ components/
   FortuneCard.js
   FortuneHomeContent.js
   FortuneHomeScreen.js
+  FortuneLab.js
   FortuneLibrarySheet.js
   PreviewFrame.js
   PreviewLayoutContext.js
   PreviewModal.js
   SafetyLockScreen.js
   SemanticLab.js
+  ScreenLab.js
   StreakStatus.js
 data/
   fortunesRegistry.js
@@ -39,6 +43,8 @@ data/
     scenes.js
     semanticFallbackData.js
 scripts/
+  fortuneLabServer.js
+  fortuneRegistryStore.js
   validateSceneMapping.js
 utils/
   appBadge.js
@@ -64,7 +70,9 @@ netlify.toml
 - `components/FortuneHomeScreen.js`: app state orchestration, reveal flow, streaks, safety lock, persistence handoff
 - `components/FortuneHomeContent.js`: shared main screen renderer
 - `components/FortuneCard.js`: prompt, cookie, sheets, drawer, and action tray layout
+- `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
 - `components/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
+- `components/ScreenLab.js`: dev-only browser preview surface for layout and state review
 - `data/fortunesRegistry.js`: canonical source of truth for all live fortunes
 - `data/runtime/fortunes.js`: derived runtime fortune pools
 - `data/runtime/moodBucketVocabulary.js`: canonical deterministic accepted-input vocabulary
@@ -72,6 +80,8 @@ netlify.toml
 - `data/runtime/scenes.js`: scene library and bucket-to-scene mapping
 - `utils/fortuneLogic.js`: moderation, normalization, routing, selection, and daily-state logic
 - `utils/semanticFallback.js`: lab-only vector suggestion logic used by Semantic Lab
+- `scripts/fortuneLabServer.js`: local Node API for Fortune Lab editing
+- `scripts/fortuneRegistryStore.js`: file IO helpers for the canonical fortune registry
 
 ## Fortune model
 
@@ -127,6 +137,17 @@ Current live fortune counts by bucket:
 
 ## Labs
 
+### Fortune Lab
+
+Fortune Lab is a dev-only browser route for editing the canonical fortune registry.
+
+- Route options:
+  - `/fortune-lab`
+  - `?fortuneLab=1`
+  - `#/fortune-lab`
+- Requires the local API:
+  - `npm run fortune-lab:server`
+
 ### Semantic Lab
 
 Semantic Lab is a dev-only browser route for checking how the live classifier routes words.
@@ -140,6 +161,16 @@ Semantic Lab is a dev-only browser route for checking how the live classifier ro
 - Uses the live deterministic runtime path.
 - Also shows advisory vector suggestions from `utils/semanticFallback.js`.
 - Vector suggestions are diagnostic only; they are not part of production app routing.
+
+### Screen Lab
+
+Screen Lab is a dev-only browser route for layout and state review.
+
+- Route options:
+  - `/screen-lab`
+  - `?screenLab=1`
+  - `#/screen-lab`
+- It is not part of the shipped native app path.
 
 ## Run locally
 
@@ -155,6 +186,12 @@ Start Expo web:
 npm run web
 ```
 
+Start the Fortune Lab API in a separate terminal when using Fortune Lab:
+
+```bash
+npm run fortune-lab:server
+```
+
 If PowerShell does not see `npm`, use:
 
 ```powershell
@@ -166,6 +203,18 @@ Open Semantic Lab locally on web:
 
 ```text
 http://localhost:8081/lab
+```
+
+Open Screen Lab locally on web:
+
+```text
+http://localhost:8081/screen-lab
+```
+
+Open Fortune Lab locally on web:
+
+```text
+http://localhost:8081/fortune-lab
 ```
 
 Expo may choose a different port if `8081` is busy, so use the printed local URL.
