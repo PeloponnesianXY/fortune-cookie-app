@@ -1159,20 +1159,6 @@ export default function ClassicFortuneLab() {
     ));
   }
 
-  function restoreFortuneId(fortuneId) {
-    setDismissedIds((current) => current.filter((id) => id !== fortuneId));
-  }
-
-  function markAcceptedCurrentId(fortuneId) {
-    setAcceptedCurrentIds((current) => (
-      current.includes(fortuneId) ? current : [...current, fortuneId]
-    ));
-  }
-
-  function unmarkAcceptedCurrentId(fortuneId) {
-    setAcceptedCurrentIds((current) => current.filter((id) => id !== fortuneId));
-  }
-
   function handleResetAcceptedCurrentRows() {
     setAcceptedCurrentIds([]);
     setPendingAcceptedCurrentIds([]);

@@ -5,6 +5,8 @@ dist/
 .runtime/
 .vscode/
 .claude/
+.edge-headless/
+classic-lab-shot.png
 REMINDERS.txt
 DbP-fortune-cookie.html
 sora-video.mp4

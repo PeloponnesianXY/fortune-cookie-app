@@ -12,6 +12,7 @@ Expo app that takes a one-word mood input, routes it to one local mood bucket, a
 - Fortune Lab is a dev-only web editor for the canonical fortune registry.
 - Semantic Lab is a dev-only web inspector for routing plus advisory vector diagnostics.
 - Screen Lab is a dev-only web preview surface for layout and state checks.
+- Custom fortunes are locally moderated before save, including embedded high-risk self-harm terms.
 
 ## Project structure
 
@@ -105,37 +106,37 @@ Current live fortune counts by bucket:
 
 | Bucket | Primary | AlsoFits | Total |
 |---|---:|---:|---:|
-| `stressed` | 13 | 60 | 73 |
-| `shaken` | 26 | 24 | 50 |
-| `anxious` | 28 | 19 | 47 |
-| `frustrated` | 5 | 29 | 34 |
+| `stressed` | 13 | 58 | 71 |
+| `shaken` | 25 | 24 | 49 |
+| `anxious` | 27 | 18 | 45 |
 | `tired` | 28 | 6 | 34 |
-| `confused` | 23 | 10 | 33 |
-| `hopeful` | 20 | 12 | 32 |
-| `angry` | 24 | 6 | 30 |
-| `calm` | 21 | 9 | 30 |
-| `distracted` | 2 | 25 | 27 |
+| `frustrated` | 5 | 27 | 32 |
+| `confused` | 23 | 8 | 31 |
+| `hopeful` | 20 | 10 | 30 |
+| `angry` | 24 | 5 | 29 |
+| `calm` | 19 | 8 | 27 |
+| `distracted` | 2 | 23 | 25 |
 | `lonely` | 16 | 8 | 24 |
-| `sad` | 23 | 1 | 24 |
 | `grateful` | 16 | 6 | 22 |
-| `guilty` | 16 | 6 | 22 |
 | `hungry` | 22 | 0 | 22 |
 | `neutral` | 22 | 0 | 22 |
+| `sad` | 21 | 1 | 22 |
 | `sick` | 12 | 10 | 22 |
-| `confident` | 6 | 15 | 21 |
-| `jealous` | 18 | 3 | 21 |
-| `emotional` | 20 | 0 | 20 |
-| `engaged` | 20 | 0 | 20 |
-| `happy` | 19 | 1 | 20 |
-| `numb` | 15 | 5 | 20 |
+| `guilty` | 16 | 5 | 21 |
 | `romantic` | 19 | 1 | 20 |
-| `wired` | 6 | 14 | 20 |
-| `wowed` | 14 | 6 | 20 |
-| `embarrassed` | 12 | 8 | 20 |
-| `caring` | 15 | 3 | 18 |
-| `proud` | 11 | 5 | 16 |
+| `jealous` | 17 | 3 | 20 |
 | `disgusted` | 19 | 0 | 19 |
-| `unknown` | 10 | 0 | 10 |
+| `caring` | 18 | 1 | 19 |
+| `confident` | 6 | 13 | 19 |
+| `wired` | 4 | 14 | 18 |
+| `emotional` | 17 | 0 | 17 |
+| `happy` | 17 | 0 | 17 |
+| `numb` | 13 | 4 | 17 |
+| `wowed` | 11 | 6 | 17 |
+| `engaged` | 16 | 0 | 16 |
+| `embarrassed` | 9 | 7 | 16 |
+| `proud` | 10 | 5 | 15 |
+| `unknown` | 9 | 0 | 9 |
 
 ## Labs
 
@@ -225,9 +226,15 @@ Expo may choose a different port if `8081` is busy, so use the printed local URL
 ## Safety lock
 
 - Exact-match high-risk words bypass the fortune flow and show a locked safety screen.
+- Custom fortunes also block embedded high-risk terms such as self-harm language inside longer sentences.
 - The lock is session-only.
 - Restarting the app clears the lock.
 - The safety path does not create a fortune or save history/favorites.
+
+## Cleanup notes
+
+- Local test artifacts such as `.edge-headless/` and `classic-lab-shot.png` are ignored and should not be committed.
+- `dist/` is generated output and is ignored.
 
 ## Support page
 

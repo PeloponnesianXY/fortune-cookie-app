@@ -676,8 +676,6 @@ function pickFortuneTextFromPools({
   excludeFortuneText,
   seed,
 }) {
-  // TODO: Gradually revise fortune copy so lines do not explicitly name the routed bucket
-  // unless they still read naturally after many distinct user words collapse into one bucket.
   const weightedSource = customPool.length > 0 && seed % 10 < 2 ? 'custom' : 'built-in';
   const orderedPools = weightedSource === 'custom'
     ? [customPool, builtInPool]
