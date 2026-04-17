@@ -1,12 +1,11 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import WebLabRouter from './dev/labs/WebLabRouter';
 import FortuneHomeScreen from './components/home/FortuneHomeScreen';
+import WebLabRouter from './dev/labs/WebLabRouter';
 
 function getDevWebLabRoute() {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     return null;
   }
 
@@ -53,15 +52,10 @@ function getDevWebLabRoute() {
 
 export default function App() {
   const devLabRoute = getDevWebLabRoute();
-  let rootContent = <FortuneHomeScreen />;
-
-  if (devLabRoute) {
-    rootContent = <WebLabRouter route={devLabRoute} />;
-  }
 
   return (
     <SafeAreaProvider>
-      {rootContent}
+      {devLabRoute ? <WebLabRouter route={devLabRoute} /> : <FortuneHomeScreen />}
     </SafeAreaProvider>
   );
 }

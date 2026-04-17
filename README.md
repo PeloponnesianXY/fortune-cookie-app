@@ -17,7 +17,8 @@ Expo app that takes a one-word mood input, routes it to one local mood bucket, a
 ## Project structure
 
 ```text
-App.js
+App.native.js
+App.web.js
 components/
   home/
     CookieShell.js
