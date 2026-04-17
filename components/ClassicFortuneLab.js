@@ -433,6 +433,216 @@ const NEXT_BATCH_FORTUNE_SUGGESTIONS = {
   },
 };
 
+const ORIGINAL_HYPER_CRITICAL_FORTUNES = {
+  calm: {
+    f_0005: "Calm doesn't just happen. You've earned it.",
+  },
+  tired: {
+    f_0108: 'Rest never gets added to the agenda. It should.',
+    f_0109: 'Your body has filed a complaint. Consider settling.',
+    f_0113: 'No cat says, “I’ll nap, but first, a few more emails.”',
+    f_0119: 'Usually willpower wins. Today, let the couch and the remote.',
+    f_0128: 'Burn-out is not a badge of honor. It’s just burnout.',
+  },
+  hungry: {
+    f_0155: 'Low fuel gives bad advice with confidence.',
+    f_0721: 'Laughter is the spice of life; so is a well-seasoned burrito.',
+    f_0807: 'A snack may now qualify as emotional support.',
+    f_0808: 'Your wisdom is currently under review by your stomach.',
+    f_0876: 'The Cookie Oracle see big things in your future. A footlong sandwich.',
+    f_0879: 'The universe supports your goals and also a second taco.',
+    f_0880: 'The mind seeks truth, justice, and something crunchy.',
+  },
+  lonely: {
+    f_0202: 'Low today? A friend - or your cat - may lift your mood.',
+  },
+  happy: {
+    f_0211: 'Your energy is smoothing things out in your favor.',
+    f_0218: 'A mindful moment can turn enough into plenty.',
+    f_0754: "Happiness does not just appear; it's made of your own actions.",
+  },
+  proud: {
+    f_0244: 'A standard was met. Enjoy the internal applause.',
+  },
+  sad: {
+    f_0254: 'Heavy hearts still get decent sunsets.',
+    f_0270: 'A sad day may need less meaning and more kitten videos.',
+  },
+  numb: {
+    f_0305: "Even low light is not darkness, and can illuminate what's there.",
+  },
+  stressed: {
+    f_0368: 'Stress makes the choice of socks a major crisis.',
+    f_0380: 'A shorter list can be an act of intelligence and self-care.',
+  },
+  wired: {
+    f_0391: 'This buzz needs less fuel, not more meaning.',
+  },
+  hopeful: {
+    f_0419: 'Something may be shifting, and your intuition sensed it.',
+    f_0420: 'Thinking this way is not naive; it may be observant.',
+    f_0434: 'Optimism sometimes is a sneak preview into reality.',
+  },
+  angry: {
+    f_0455: 'Holding on to anger hurts you and you alone.',
+  },
+  jealous: {
+    f_0492: 'Comparison is a thief. It robs you of yourself.',
+    f_0503: 'Jealousy squints at abundance until it looks scarce.',
+    f_0795: 'What catches in you may also be telling you where you ache.',
+  },
+  disgusted: {
+    f_0529: 'Bad vibes rarely improve with more exposure.',
+    f_0890: 'Disgust can be discernment with no time for manners.',
+    f_0897: 'Aversion is your stomach reacting faster than your brain.',
+  },
+  confused: {
+    f_0539: 'Perfect clarity is like perfect pitch: lovely, not necessary.',
+  },
+  embarrassed: {
+    f_0569: 'Most people are too busy surviving themselves to keep score.',
+  },
+  distracted: {
+    f_0591: 'The day may improve when one thing holds the floor.',
+  },
+  wowed: {
+    f_0609: 'Awe is what happens when reality overachieves.',
+    f_0615: 'The view just made your inner narrator sit down.',
+  },
+  shaken: {
+    f_0632: 'Today upgraded itself without asking. Explore the features.',
+    f_0646: 'A perfectly predictable year would need resuscitation.',
+    f_0657: 'Reality occasionally likes to freestyle. Catch the beat.',
+  },
+  engaged: {
+    f_0699: 'Sparks fly when you notice what captivates your attention.',
+    f_0741: 'The successful warrior is an average man, with laser focus.',
+    f_0765: 'If you focus on change, you will get results.',
+  },
+  grateful: {
+    f_0836: 'Weary world travelers sometimes realize what they seek is back at home.',
+    f_0837: 'Gratitude turns a tin cup into a golden chalice.',
+    f_0839: 'A cherished pebble sparkles like a diamond.',
+  },
+  embarrassed: {
+    f_0842: "A small bruise on an apple doesn't make any less sweet.",
+  },
+  guilty: {
+    f_0865: 'Responsibility is useful; replay is vanity.',
+  },
+  romantic: {
+    f_0870: 'If love is a battlefield, courage will win the day.',
+  },
+  emotional: {
+    f_0711: 'Some feelings defy explanation, and yet are most logical.',
+  },
+};
+
+const HYPER_CRITICAL_FORTUNE_SUGGESTIONS = {
+  calm: {
+    f_0005: 'Calm arrives more readily where effort has already done its work.',
+  },
+  tired: {
+    f_0108: 'Rest is seldom invited, yet often wise.',
+    f_0109: 'The body asks plainly when it has had enough.',
+    f_0113: 'Even the cat advises a nap.',
+    f_0119: 'Today favors rest over insistence.',
+    f_0128: 'Weariness is no medal, only a message.',
+  },
+  hungry: {
+    f_0155: 'Hunger makes poor counsel sound wise.',
+    f_0721: 'A cheerful table improves the day.',
+    f_0807: 'A small meal may restore good judgment.',
+    f_0808: 'The stomach now advises the mind.',
+    f_0876: 'Fortune points first toward a hearty meal.',
+    f_0879: 'The day favors your plans and a good meal besides.',
+    f_0880: 'Even noble thoughts pause for a snack.',
+  },
+  lonely: {
+    f_0202: 'A friendly companion may lift this hour.',
+  },
+  happy: {
+    f_0211: 'Your bright spirit smooths the road ahead.',
+    f_0218: 'Enough grows richer when well noticed.',
+    f_0754: 'Happiness is often built from smaller acts than expected.',
+  },
+  proud: {
+    f_0244: 'A standard was met; let quiet pride answer.',
+  },
+  sad: {
+    f_0254: 'Even a heavy heart may meet a fair sunset.',
+    f_0270: 'A sad day may ask less for meaning than for kindness.',
+  },
+  numb: {
+    f_0305: 'Low light may still reveal the way ahead.',
+  },
+  stressed: {
+    f_0368: 'Stress makes small choices wear heavy boots.',
+    f_0380: 'A shorter list is often the wiser one.',
+  },
+  wired: {
+    f_0391: 'This restless hour asks for less fuel and more quiet.',
+  },
+  hopeful: {
+    f_0419: 'A shift unseen may already be underway.',
+    f_0420: 'Hope is not always naive; sometimes it is observant.',
+    f_0434: 'Optimism may simply be early sight.',
+  },
+  angry: {
+    f_0455: 'Anger carried too long taxes its bearer first.',
+  },
+  jealous: {
+    f_0492: 'Comparison steals from the hand that holds it.',
+    f_0503: 'Jealousy can make abundance look sparse.',
+    f_0795: 'What catches in you may reveal where longing lives.',
+  },
+  disgusted: {
+    f_0529: 'What feels foul rarely improves with further company.',
+    f_0890: 'Disgust may be discernment speaking shortly.',
+    f_0897: 'Aversion often knows before explanation arrives.',
+  },
+  confused: {
+    f_0539: 'Perfect clarity is lovely, not required.',
+  },
+  embarrassed: {
+    f_0569: 'Most people are occupied with their own missteps.',
+  },
+  distracted: {
+    f_0591: 'The day improves when one thing leads and the rest wait.',
+  },
+  wowed: {
+    f_0609: 'Awe is reality exceeding its own rumor.',
+    f_0615: 'The view has quieted even your inner commentary.',
+  },
+  shaken: {
+    f_0632: 'An unplanned turn may still hold good use.',
+    f_0646: 'Too much predictability can drain a year of life.',
+    f_0657: 'Reality sometimes changes step without warning.',
+  },
+  engaged: {
+    f_0699: 'Attention often points toward what matters.',
+    f_0741: 'Great focus often belongs to ordinary people used well.',
+    f_0765: 'Steady attention gives change its chance.',
+  },
+  grateful: {
+    f_0836: 'Travel far enough and home may shine more clearly.',
+    f_0837: 'Gratitude makes simple vessels seem generous.',
+    f_0839: 'What is cherished gathers its own brightness.',
+  },
+  embarrassed: {
+    f_0842: 'A small bruise need not spoil the fruit.',
+  },
+  guilty: {
+    f_0865: 'Responsibility is useful; replay seldom is.',
+  },
+  romantic: {
+    f_0870: 'In love, courage often outlasts confusion.',
+  },
+  emotional: {
+    f_0711: 'Some feelings resist explanation and still ring true.',
+  },
+};
+
 function mergeReviewMaps(primaryMap, secondaryMap) {
   const merged = { ...primaryMap };
 
@@ -448,18 +658,24 @@ function mergeReviewMaps(primaryMap, secondaryMap) {
 
 const REVIEW_FORTUNE_SUGGESTIONS = mergeReviewMaps(
   mergeReviewMaps(
-    SUSPECT_FORTUNE_SUGGESTIONS,
-    BORDERLINE_FORTUNE_SUGGESTIONS,
+    mergeReviewMaps(
+      SUSPECT_FORTUNE_SUGGESTIONS,
+      BORDERLINE_FORTUNE_SUGGESTIONS,
+    ),
+    NEXT_BATCH_FORTUNE_SUGGESTIONS,
   ),
-  NEXT_BATCH_FORTUNE_SUGGESTIONS,
+  HYPER_CRITICAL_FORTUNE_SUGGESTIONS,
 );
 
 const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
   mergeReviewMaps(
-    ORIGINAL_SUSPECT_FORTUNES,
-    ORIGINAL_BORDERLINE_FORTUNES,
+    mergeReviewMaps(
+      ORIGINAL_SUSPECT_FORTUNES,
+      ORIGINAL_BORDERLINE_FORTUNES,
+    ),
+    ORIGINAL_NEXT_BATCH_FORTUNES,
   ),
-  ORIGINAL_NEXT_BATCH_FORTUNES,
+  ORIGINAL_HYPER_CRITICAL_FORTUNES,
 );
 
 const BUCKET_ORDER = Object.keys(REVIEW_FORTUNE_SUGGESTIONS);

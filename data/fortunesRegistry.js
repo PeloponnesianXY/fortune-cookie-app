@@ -61,7 +61,7 @@ const FORTUNES = [
   },
   {
     id: "f_0005",
-    text: "Calm doesn't just happen. You've earned it.",
+    text: "Calm arrives more readily where the mind has already done its work.",
     primaryBucket: "calm",
     alsoFits: [],
     scope: "specific"
@@ -159,13 +159,6 @@ const FORTUNES = [
     scope: "shared"
   },
   {
-    id: "f_0025",
-    text: "Peace looks unusually good on your nervous system.",
-    primaryBucket: "calm",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
     id: "f_0026",
     text: "Sometimes not moving is the best move.",
     primaryBucket: "calm",
@@ -202,13 +195,6 @@ const FORTUNES = [
   {
     id: "f_0030",
     text: "Peace is not lazy; it is well edited.",
-    primaryBucket: "calm",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
-    id: "f_0031",
-    text: "A calm mind wastes less electricity.",
     primaryBucket: "calm",
     alsoFits: [],
     scope: "specific"
@@ -354,7 +340,7 @@ const FORTUNES = [
   },
   {
     id: "f_0108",
-    text: "Rest never gets added to the agenda. It should.",
+    text: "Today is the time to add rest to the agenda.",
     primaryBucket: "tired",
     alsoFits: [
       "sick",
@@ -516,7 +502,7 @@ const FORTUNES = [
   },
   {
     id: "f_0128",
-    text: "Burn-out is not a badge of honor. It’s just burnout.",
+    text: "Weariness is not a medal, but a warning.",
     primaryBucket: "tired",
     alsoFits: [],
     scope: "specific"
@@ -572,7 +558,7 @@ const FORTUNES = [
   },
   {
     id: "f_0155",
-    text: "Low fuel gives bad advice with confidence.",
+    text: "Hunger makes poor counsel sound wise.",
     primaryBucket: "hungry",
     alsoFits: [
       "tired"
@@ -696,7 +682,7 @@ const FORTUNES = [
   },
   {
     id: "f_0202",
-    text: "Low today? A friend - or your cat - may lift your mood.",
+    text: "A friendly companion may lighten this dark moment.",
     primaryBucket: "lonely",
     alsoFits: [],
     scope: "specific"
@@ -765,7 +751,7 @@ const FORTUNES = [
   },
   {
     id: "f_0211",
-    text: "Your energy is smoothing things out in your favor.",
+    text: "Your bright spirit smooths the road ahead.",
     primaryBucket: "happy",
     alsoFits: [
       "confident",
@@ -817,7 +803,7 @@ const FORTUNES = [
   },
   {
     id: "f_0218",
-    text: "A mindful moment can turn enough into plenty.",
+    text: "Enough grows richer when well noticed.",
     primaryBucket: "happy",
     alsoFits: [
       "grateful",
@@ -858,16 +844,6 @@ const FORTUNES = [
     scope: "shared"
   },
   {
-    id: "f_0222",
-    text: "This state can be just your true self with better reception.",
-    primaryBucket: "happy",
-    alsoFits: [
-      "calm",
-      "hopeful"
-    ],
-    scope: "shared"
-  },
-  {
     id: "f_0225",
     text: "You did not borrow this feeling. You built it.",
     primaryBucket: "proud",
@@ -904,7 +880,7 @@ const FORTUNES = [
   },
   {
     id: "f_0244",
-    text: "A standard was met. Enjoy the internal applause.",
+    text: "Getting here deserves the internal applause.",
     primaryBucket: "proud",
     alsoFits: [
       "confident"
@@ -957,7 +933,7 @@ const FORTUNES = [
   },
   {
     id: "f_0254",
-    text: "Heavy hearts still get decent sunsets.",
+    text: "Even a heavy heart may meet a fair sunset.",
     primaryBucket: "sad",
     alsoFits: [
       "anxious",
@@ -1118,7 +1094,7 @@ const FORTUNES = [
   },
   {
     id: "f_0270",
-    text: "A sad day may need less meaning and more kitten videos.",
+    text: "A sad day may ask less for meaning than for kindness.",
     primaryBucket: "sad",
     alsoFits: [],
     scope: "specific"
@@ -1242,7 +1218,7 @@ const FORTUNES = [
   },
   {
     id: "f_0305",
-    text: "Even low light is not darkness, and can illuminate what's there.",
+    text: "Low light may still reveal the way ahead.",
     primaryBucket: "numb",
     alsoFits: [],
     scope: "specific"
@@ -1544,7 +1520,7 @@ const FORTUNES = [
   },
   {
     id: "f_0368",
-    text: "Stress makes the choice of socks a major crisis.",
+    text: "Stress makes small choices wear heavy boots.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific"
@@ -1586,7 +1562,7 @@ const FORTUNES = [
   },
   {
     id: "f_0380",
-    text: "A shorter list can be an act of intelligence and self-care.",
+    text: "A shorter list is often the wiser one.",
     primaryBucket: "stressed",
     alsoFits: [],
     scope: "specific"
@@ -1614,7 +1590,7 @@ const FORTUNES = [
   },
   {
     id: "f_0391",
-    text: "This buzz needs less fuel, not more meaning.",
+    text: "This restless hour asks for less fuel and more stillness.",
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific"
@@ -1636,13 +1612,6 @@ const FORTUNES = [
   {
     id: "f_0404",
     text: "A pinging system narrates badly.",
-    primaryBucket: "wired",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
-    id: "f_0407",
-    text: "This feels urgent because your wiring brought a megaphone.",
     primaryBucket: "wired",
     alsoFits: [],
     scope: "specific"
@@ -1705,14 +1674,14 @@ const FORTUNES = [
   },
   {
     id: "f_0419",
-    text: "Something may be shifting, and your intuition sensed it.",
+    text: "A shift unseen but intuited may already be underway.",
     primaryBucket: "hopeful",
     alsoFits: [],
     scope: "specific"
   },
   {
     id: "f_0420",
-    text: "Thinking this way is not naive; it may be observant.",
+    text: "Hope is not always naive; sometimes it is observant.",
     primaryBucket: "hopeful",
     alsoFits: [
       "confident"
@@ -1939,7 +1908,7 @@ const FORTUNES = [
   },
   {
     id: "f_0455",
-    text: "Holding on to anger hurts you and you alone.",
+    text: "Anger carried too long punishes the bearer more than the object.",
     primaryBucket: "angry",
     alsoFits: [],
     scope: "specific"
@@ -2062,7 +2031,7 @@ const FORTUNES = [
   },
   {
     id: "f_0492",
-    text: "Comparison is a thief. It robs you of yourself.",
+    text: "Beware comparison, for it will rob you of all your riches.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
@@ -2337,7 +2306,7 @@ const FORTUNES = [
   },
   {
     id: "f_0569",
-    text: "Most people are too busy surviving themselves to keep score.",
+    text: "Most people are too busy surviving themselves to notice your misstep.",
     primaryBucket: "embarrassed",
     alsoFits: [],
     scope: "specific"
@@ -2378,15 +2347,8 @@ const FORTUNES = [
     scope: "specific"
   },
   {
-    id: "f_0607",
-    text: "Wonder looks good on a nervous system.",
-    primaryBucket: "wowed",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
     id: "f_0609",
-    text: "Awe is what happens when reality overachieves.",
+    text: "Awe is reality exceeding its own rumor.",
     primaryBucket: "wowed",
     alsoFits: [],
     scope: "specific"
@@ -2407,7 +2369,7 @@ const FORTUNES = [
   },
   {
     id: "f_0615",
-    text: "The view just made your inner narrator sit down.",
+    text: "Some views have a way of quieting even your inner commentary.",
     primaryBucket: "wowed",
     alsoFits: [],
     scope: "specific"
@@ -2518,7 +2480,7 @@ const FORTUNES = [
   },
   {
     id: "f_0646",
-    text: "A perfectly predictable year would need resuscitation.",
+    text: "Too much predictability can drain a year of life.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific"
@@ -2570,13 +2532,6 @@ const FORTUNES = [
   {
     id: "f_0654",
     text: "Not every jolt is a verdict; some are a summons to wake.",
-    primaryBucket: "shaken",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
-    id: "f_0655",
-    text: "Not every accident is a setback. Ask penicillin.",
     primaryBucket: "shaken",
     alsoFits: [],
     scope: "specific"
@@ -2720,7 +2675,7 @@ const FORTUNES = [
   },
   {
     id: "f_0699",
-    text: "Sparks fly when you notice what captivates your attention.",
+    text: "Attention often points toward what you can make sparkle.",
     primaryBucket: "engaged",
     alsoFits: [],
     scope: "specific"
@@ -2792,7 +2747,7 @@ const FORTUNES = [
   },
   {
     id: "f_0711",
-    text: "Some feelings defy explanation, and yet are most logical.",
+    text: "Some feelings resist explanation and still ring true.",
     primaryBucket: "emotional",
     alsoFits: [],
     scope: "specific"
@@ -2990,7 +2945,7 @@ const FORTUNES = [
   },
   {
     id: "f_0741",
-    text: "The successful warrior is an average man, with laser focus.",
+    text: "The greatest warrior is an ordinary person, with laser focus.",
     primaryBucket: "engaged",
     alsoFits: [],
     scope: "specific"
@@ -3081,7 +3036,7 @@ const FORTUNES = [
   },
   {
     id: "f_0754",
-    text: "Happiness does not just appear; it's made of your own actions.",
+    text: "Allow happiness to grow from small bright moments.",
     primaryBucket: "happy",
     alsoFits: [],
     scope: "specific"
@@ -3153,7 +3108,7 @@ const FORTUNES = [
   },
   {
     id: "f_0765",
-    text: "If you focus on change, you will get results.",
+    text: "If you sometimes let your mind wander, it may guide you to change.",
     primaryBucket: "engaged",
     alsoFits: [],
     scope: "specific"
@@ -3328,7 +3283,7 @@ const FORTUNES = [
   },
   {
     id: "f_0795",
-    text: "What catches in you may also be telling you where you ache.",
+    text: "What catches in you may reveal where longing lives.",
     primaryBucket: "jealous",
     alsoFits: [],
     scope: "specific"
@@ -3804,7 +3759,7 @@ const FORTUNES = [
   },
   {
     id: "f_0865",
-    text: "Responsibility is useful; replay is vanity.",
+    text: "Responsibility is useful; replay seldom is.",
     primaryBucket: "guilty",
     alsoFits: [],
     scope: "specific"
@@ -3839,7 +3794,7 @@ const FORTUNES = [
   },
   {
     id: "f_0870",
-    text: "If love is a battlefield, courage will win the day.",
+    text: "If love is a battlefield, a courageous gesture will win the day.",
     primaryBucket: "romantic",
     alsoFits: [],
     scope: "specific"
@@ -3874,7 +3829,7 @@ const FORTUNES = [
   },
   {
     id: "f_0876",
-    text: "The Cookie Oracle see big things in your future. A footlong sandwich.",
+    text: "The Cookie Oracle sees big things in your future. A footlong sandwich.",
     primaryBucket: "hungry",
     alsoFits: [],
     scope: "specific"
@@ -4021,7 +3976,7 @@ const FORTUNES = [
   },
   {
     id: "f_0897",
-    text: "Aversion is your stomach reacting faster than your brain.",
+    text: "Aversion often knows before explanation arrives.",
     primaryBucket: "disgusted",
     alsoFits: [],
     scope: "specific"
