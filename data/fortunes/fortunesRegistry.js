@@ -1139,7 +1139,7 @@ const FORTUNES = [
   },
   {
     id: "f_0296",
-    text: "A simple amends outweigh a grand remorse.",
+    text: "A simple amend outweighs a grand remorse.",
     primaryBucket: "guilty",
     alsoFits: [],
     scope: "specific"
@@ -1251,7 +1251,7 @@ const FORTUNES = [
   },
   {
     id: "f_0338",
-    text: "Anxious body is not always a threatened one.",
+    text: "An anxious body is not always a threatened one.",
     primaryBucket: "anxious",
     alsoFits: [
       "stressed"
@@ -1693,7 +1693,7 @@ const FORTUNES = [
   },
   {
     id: "f_0434",
-    text: "Optimism sometimes is a sneak preview into reality.",
+    text: "Optimism is sometimes a sneak preview into reality.",
     primaryBucket: "hopeful",
     alsoFits: [
       "confident"
@@ -2548,7 +2548,7 @@ const FORTUNES = [
   },
   {
     id: "f_0717",
-    text: "Some moments speak to your heart, not mind.",
+    text: "Some moments speak to your heart, not your mind.",
     primaryBucket: "emotional",
     alsoFits: [],
     scope: "specific"
@@ -2800,7 +2800,7 @@ const FORTUNES = [
   },
   {
     id: "f_0755",
-    text: "What is needed to be happy is already all within youself.",
+    text: "What is needed to be happy is already all within yourself.",
     primaryBucket: "happy",
     alsoFits: [],
     scope: "specific"
@@ -3131,7 +3131,7 @@ const FORTUNES = [
   },
   {
     id: "f_0810",
-    text: "Greatest thinkers also need something crunchy.",
+    text: "Great thinkers also need something crunchy.",
     primaryBucket: "hungry",
     alsoFits: [],
     scope: "specific"
