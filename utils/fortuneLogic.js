@@ -420,7 +420,23 @@ function normalizeHighRiskInput(input) {
 }
 
 export function isHighRiskMoodInput(input) {
-  return HIGH_RISK_WORDS.has(normalizeHighRiskInput(input));
+  const rawInput = String(input || '').toLowerCase().trim();
+  if (!rawInput) {
+    return false;
+  }
+
+  const collapsedInput = normalizeHighRiskInput(rawInput);
+  if (HIGH_RISK_WORDS.has(collapsedInput)) {
+    return true;
+  }
+
+  const normalizedWordTokens = rawInput
+    .replace(/[^\w\s-]/g, ' ')
+    .split(/[\s_-]+/)
+    .map((token) => normalizeHighRiskInput(token))
+    .filter(Boolean);
+
+  return normalizedWordTokens.some((token) => HIGH_RISK_WORDS.has(token));
 }
 
 function roundConfidence(value) {
