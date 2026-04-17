@@ -643,6 +643,170 @@ const HYPER_CRITICAL_FORTUNE_SUGGESTIONS = {
   },
 };
 
+const ORIGINAL_FORTUNE_STYLE_BATCH_FORTUNES = {
+  disgusted: {
+    f_0515: 'Your body often spots trouble before your mind explains it.',
+    f_0516: 'What repels you need not earn a long defense.',
+    f_0517: "Knowing what you don't like is a form of self-respect.",
+    f_0520: "Taste is one of wisdom's louder votes.",
+    f_0524: 'Not everything deserves a second look, let alone approval.',
+    f_0525: 'Discernment can grow sharp when patience runs thin.',
+  },
+  happy: {
+    f_0203: 'Your mood is making the day sparkle. Stay with it.',
+    f_0207: 'This bright hour may already know its next step.',
+    f_0208: 'A bright moment deserves a second look.',
+    f_0209: 'A small yes today can move a mountain down the line.',
+    f_0210: 'The more you savor this, the more alive the day gets.',
+    f_0211: 'Your bright spirit smooths the road ahead.',
+  },
+  numb: {
+    f_0304: 'Even a muted soul can notice one warm thing.',
+    f_0305: 'Low light may still reveal the way ahead.',
+    f_0308: 'A dim day may only ask for one human-sized sensation.',
+    f_0314: 'Feeling returns best when not dragged through the door.',
+    f_0321: 'Numbness often leaves by teaspoons.',
+    f_0325: 'Even a flat day may notice one kind thing.',
+  },
+  wowed: {
+    f_0609: 'Awe is reality exceeding its own rumor.',
+    f_0610: 'Life just showed off a little.',
+    f_0612: 'The ceiling on ordinary just moved.',
+    f_0615: 'Some views have a way of quieting even your inner commentary.',
+    f_0729: 'Wonder is life showing off a little.',
+    f_0730: 'Some moments move the ceiling on ordinary.',
+  },
+  embarrassed: {
+    f_0565: 'Social gravity gets odd around everyone eventually.',
+    f_0567: 'Some moments fit like borrowed shoes.',
+    f_0569: 'Most people are too busy surviving themselves to notice your misstep.',
+    f_0574: 'A clumsy moment is not a character witness.',
+    f_0575: 'Self-consciousness is loud, not omniscient.',
+    f_0576: 'Every room keeps a private archive of missteps.',
+  },
+  wired: {
+    f_0391: 'This restless hour asks for less fuel and more stillness.',
+    f_0396: 'This much activation needs a dimmer switch.',
+    f_0399: 'A buzzing body can mistake motion for necessity.',
+    f_0404: 'A pinging system narrates badly.',
+    f_0408: 'Too much activation makes everything look like a crisis.',
+  },
+  engaged: {
+    f_0693: 'A mind awake to opportunities makes strong company.',
+    f_0694: 'Interest often points toward opportunity.',
+    f_0695: 'An open mind is already halfway there.',
+    f_0697: 'Good energy often finds an open door.',
+    f_0698: 'A ready spirit attracts discovery.',
+    f_0699: 'Attention often points toward what you can make sparkle.',
+  },
+  emotional: {
+    f_0710: 'What moves you reveals what matters.',
+    f_0711: 'Some feelings resist explanation and still ring true.',
+    f_0712: 'The heart often recognizes meaning before the mind catches up.',
+    f_0713: 'Some moments ask not to be rushed past.',
+    f_0715: 'Some truths are felt before they are spoken.',
+    f_0716: 'A full heart is its own kind of knowing.',
+  },
+  caring: {
+    f_0069: 'Affection makes the world less drafty.',
+    f_0072: 'Warmth travels farther than most arguments.',
+    f_0682: 'A warm heart changes the room before words do.',
+    f_0683: 'Kindness can reach places words never do.',
+    f_0684: 'A kind heart can leave a big mark.',
+    f_0685: 'Affection is its own kind of wisdom.',
+  },
+  proud: {
+    f_0225: 'You did not borrow this feeling. You built it.',
+    f_0228: 'Earned satisfaction lands better than luck.',
+    f_0232: 'You stood fast where quitting had good arguments.',
+    f_0236: 'Some wins arrive without confetti but feel better than a parade.',
+    f_0244: 'Getting here deserves the internal applause.',
+    f_0245: 'Some outcomes fit because you grew to meet them.',
+  },
+};
+
+const FORTUNE_STYLE_BATCH_SUGGESTIONS = {
+  disgusted: {
+    f_0515: 'What repels you may be saving you time.',
+    f_0516: 'A clear no is sometimes the cleanest wisdom.',
+    f_0517: 'Taste is a lantern as much as a preference.',
+    f_0520: 'Some doors are best closed by instinct.',
+    f_0524: 'Aversion can be clarity arriving early.',
+    f_0525: 'What turns your stomach may sharpen your judgment.',
+  },
+  happy: {
+    f_0203: 'A cheerful hour often opens a second one.',
+    f_0207: 'Joy travels farther when welcomed without apology.',
+    f_0208: 'A bright spirit improves the weather around it.',
+    f_0209: 'Delight often multiplies when noticed on purpose.',
+    f_0210: 'This gladness may know a door your worry missed.',
+    f_0211: 'A happy heart makes ordinary luck look plentiful.',
+  },
+  numb: {
+    f_0304: 'Even a quiet heart may still hear one true note.',
+    f_0305: 'A muted day is not an empty one.',
+    f_0308: 'Feeling often returns by footsteps, not thunder.',
+    f_0314: 'Low light can still show the way home.',
+    f_0321: 'What feels distant is not always gone.',
+    f_0325: 'A small kindness may wake what the day has dimmed.',
+  },
+  wowed: {
+    f_0609: 'Wonder is often truth arriving in ceremonial dress.',
+    f_0610: 'A moment of awe can widen the whole road ahead.',
+    f_0612: 'Marvel gladly; the world is showing its fine work.',
+    f_0615: 'Some sights leave wisdom where words cannot.',
+    f_0729: 'Awe turns an ordinary hour into a landmark.',
+    f_0730: 'The amazed heart remembers longer than the busy mind.',
+  },
+  embarrassed: {
+    f_0565: 'A blush fades faster than self-judgment predicts.',
+    f_0567: 'One awkward moment cannot write your whole character.',
+    f_0569: 'Most rooms forget your misstep before you do.',
+    f_0574: 'A stumble is often smaller than the story around it.',
+    f_0575: 'Grace visits those who survive their own cringe.',
+    f_0576: 'What feels exposing now may soon become harmless folklore.',
+  },
+  wired: {
+    f_0391: 'A racing spirit benefits from fewer sparks.',
+    f_0396: 'Not every bright buzz deserves a chase.',
+    f_0399: 'Speed in the body can borrow urgency it did not earn.',
+    f_0404: 'A quieter rhythm may reveal the wiser move.',
+    f_0408: 'Restless energy often improves when given less audience.',
+  },
+  engaged: {
+    f_0693: 'Attention is often destiny choosing its entrance.',
+    f_0694: 'What catches your mind may be worth your hands.',
+    f_0695: 'A lively interest is already half a path.',
+    f_0697: 'Curiosity points more accurately than pressure.',
+    f_0698: 'Follow what quickens your spirit; it usually knows why.',
+    f_0699: 'A willing mind makes fine company for good fortune.',
+  },
+  emotional: {
+    f_0710: 'What moves the heart often marks what matters.',
+    f_0711: 'A stirred feeling may be carrying honest news.',
+    f_0712: 'Some truths arrive through feeling before language.',
+    f_0713: 'A touched heart is rarely touched for nothing.',
+    f_0715: 'Emotion sometimes reads the meaning before thought does.',
+    f_0716: 'What lingers in feeling may deserve a second look.',
+  },
+  caring: {
+    f_0069: 'Gentleness often reaches farther than force.',
+    f_0072: 'Warmth does quiet work with lasting results.',
+    f_0682: 'A kind heart leaves doors easier to open.',
+    f_0683: 'Affection improves the air before words begin.',
+    f_0684: 'Care given freely often returns in unexpected weather.',
+    f_0685: 'The gentlest gesture may travel the longest distance.',
+  },
+  proud: {
+    f_0225: 'A quiet victory still knows its own value.',
+    f_0228: 'What you built within yourself now shows on the outside.',
+    f_0232: 'Earned pride wears well in any season.',
+    f_0236: 'Some triumphs arrive softly and still deserve a bow.',
+    f_0244: 'The road behind you has improved the traveler.',
+    f_0245: 'You have become equal to something that once seemed larger.',
+  },
+};
+
 function mergeReviewMaps(primaryMap, secondaryMap) {
   const merged = { ...primaryMap };
 
@@ -662,9 +826,12 @@ const REVIEW_FORTUNE_SUGGESTIONS = mergeReviewMaps(
       SUSPECT_FORTUNE_SUGGESTIONS,
       BORDERLINE_FORTUNE_SUGGESTIONS,
     ),
-    NEXT_BATCH_FORTUNE_SUGGESTIONS,
+    mergeReviewMaps(
+      NEXT_BATCH_FORTUNE_SUGGESTIONS,
+      HYPER_CRITICAL_FORTUNE_SUGGESTIONS,
+    ),
   ),
-  HYPER_CRITICAL_FORTUNE_SUGGESTIONS,
+  FORTUNE_STYLE_BATCH_SUGGESTIONS,
 );
 
 const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
@@ -673,9 +840,12 @@ const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
       ORIGINAL_SUSPECT_FORTUNES,
       ORIGINAL_BORDERLINE_FORTUNES,
     ),
-    ORIGINAL_NEXT_BATCH_FORTUNES,
+    mergeReviewMaps(
+      ORIGINAL_NEXT_BATCH_FORTUNES,
+      ORIGINAL_HYPER_CRITICAL_FORTUNES,
+    ),
   ),
-  ORIGINAL_HYPER_CRITICAL_FORTUNES,
+  ORIGINAL_FORTUNE_STYLE_BATCH_FORTUNES,
 );
 
 const BUCKET_ORDER = Object.keys(REVIEW_FORTUNE_SUGGESTIONS);

@@ -4,7 +4,6 @@ const MOOD_BUCKET_KEYS = Object.freeze(Object.keys(BUCKET_VOCAB));
 
 const LEGACY_BUCKET_NORMALIZATION = {
   averse: 'disgusted',
-  weird: 'confused',
   loving: 'caring',
   affectionate: 'caring',
   remorseful: 'guilty',

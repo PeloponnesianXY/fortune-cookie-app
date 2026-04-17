@@ -268,7 +268,6 @@ const BUCKET_VOCAB = {
     "bemused",
     "perplexed",
     "befuddled",
-    "weird",
     "unclear",
     "cloudy",
     "mixed",
