@@ -13,15 +13,15 @@ const LEGACY_BUCKET_NORMALIZATION = {
   amazed: 'wowed',
   delighted: 'wowed',
   awkward: 'embarrassed',
-  embarassed: 'embarrassed',
   overwhelmed: 'stressed',
   focused: 'engaged',
   mysterious: 'confused',
 };
 
 // Runtime routing uses one authoritative deterministic lexicon: the curated
-// BUCKET_VOCAB source. Generated fallback vocab stays available for tooling,
-// but no longer participates in production routing.
+// single-token BUCKET_VOCAB source. Multi-word phrases are parked in
+// futureExpansionMoodPhraseVocabulary.js for later UX support and do not
+// participate in current production routing.
 const DETERMINISTIC_BUCKET_WORDS = BUCKET_VOCAB;
 
 export {

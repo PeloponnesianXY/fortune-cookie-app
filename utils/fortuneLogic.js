@@ -62,6 +62,15 @@ const MORPHOLOGY_IRREGULAR_MAP = {
   saddest: 'sad',
   slighted: 'betrayed',
 };
+
+const DERIVATIONAL_IRREGULAR_MAP = {
+  affection: 'affectionate',
+  anticipation: 'anticipatory',
+  emotion: 'emotional',
+  engagement: 'engaged',
+  nostalgia: 'nostalgic',
+  romance: 'romantic',
+};
 const FUZZY_MIN_LENGTH = 4;
 const FUZZY_MAX_LENGTH_DELTA = 2;
 const FUZZY_MIN_SCORE = 0.8;
@@ -95,6 +104,24 @@ function tokenizeMoodInput(normalizedInput) {
 
 function isKnownMoodWord(candidate) {
   return Boolean(DETERMINISTIC_WORD_TO_BUCKET[candidate]);
+}
+
+function firstKnownMoodWord(candidates) {
+  const seen = new Set();
+
+  for (const candidate of candidates) {
+    const normalizedCandidate = normalizeLookupKey(candidate);
+    if (!normalizedCandidate || seen.has(normalizedCandidate)) {
+      continue;
+    }
+
+    seen.add(normalizedCandidate);
+    if (isKnownMoodWord(normalizedCandidate)) {
+      return normalizedCandidate;
+    }
+  }
+
+  return null;
 }
 
 function createMoodScoreCard(primaryEmotion = null, score = 0) {
@@ -149,6 +176,55 @@ function tryMorphology(normalizedInput) {
   const exactIrregularMatch = MORPHOLOGY_IRREGULAR_MAP[normalizedInput];
   if (exactIrregularMatch && isKnownMoodWord(exactIrregularMatch)) {
     return exactIrregularMatch;
+  }
+
+  const derivationalIrregularMatch = DERIVATIONAL_IRREGULAR_MAP[normalizedInput];
+  if (derivationalIrregularMatch && isKnownMoodWord(derivationalIrregularMatch)) {
+    return derivationalIrregularMatch;
+  }
+
+  const derivationalCandidates = [];
+
+  if (normalizedInput.endsWith('ness') && normalizedInput.length > 6) {
+    const stem = normalizedInput.slice(0, -4);
+    derivationalCandidates.push(stem);
+
+    if (stem.endsWith('i')) {
+      derivationalCandidates.push(`${stem.slice(0, -1)}y`);
+    }
+  }
+
+  if (normalizedInput.endsWith('osity') && normalizedInput.length > 7) {
+    derivationalCandidates.push(`${normalizedInput.slice(0, -5)}ous`);
+  }
+
+  if (normalizedInput.endsWith('ity') && normalizedInput.length > 5) {
+    const stem = normalizedInput.slice(0, -3);
+    derivationalCandidates.push(stem);
+    derivationalCandidates.push(`${stem}e`);
+  }
+
+  if (normalizedInput.endsWith('ation') && normalizedInput.length > 7) {
+    const stem = normalizedInput.slice(0, -5);
+    derivationalCandidates.push(`${stem}ate`);
+    derivationalCandidates.push(`${stem}ated`);
+    derivationalCandidates.push(`${stem}atory`);
+  }
+
+  if (normalizedInput.endsWith('sion') && normalizedInput.length > 6) {
+    const stem = normalizedInput.slice(0, -4);
+    derivationalCandidates.push(`${stem}sed`);
+    derivationalCandidates.push(`${stem}sive`);
+  }
+
+  if (normalizedInput.endsWith('tion') && normalizedInput.length > 6) {
+    const stem = normalizedInput.slice(0, -4);
+    derivationalCandidates.push(`${stem}ted`);
+  }
+
+  const derivationalMatch = firstKnownMoodWord(derivationalCandidates);
+  if (derivationalMatch) {
+    return derivationalMatch;
   }
 
   const suffixTransforms = [
