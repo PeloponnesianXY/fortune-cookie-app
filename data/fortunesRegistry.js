@@ -127,28 +127,6 @@ const FORTUNES = [
     scope: "shared"
   },
   {
-    id: "f_0021",
-    text: "Life has a soft place for the person who does not force it.",
-    primaryBucket: "calm",
-    alsoFits: [
-      "frustrated"
-    ],
-    scope: "shared"
-  },
-  {
-    id: "f_0022",
-    text: "Stillness can reveal what pressure hides.",
-    primaryBucket: "calm",
-    alsoFits: [
-      "confused",
-      "distracted",
-      "frustrated",
-      "stressed",
-      "shaken"
-    ],
-    scope: "shared"
-  },
-  {
     id: "f_0023",
     text: "When you soften, the right things stand out.",
     primaryBucket: "calm",
@@ -1705,16 +1683,6 @@ const FORTUNES = [
     scope: "shared"
   },
   {
-    id: "f_0431",
-    text: "A positive mind can spot doors doubt walks past.",
-    primaryBucket: "hopeful",
-    alsoFits: [
-      "frustrated",
-      "shaken"
-    ],
-    scope: "shared"
-  },
-  {
     id: "f_0432",
     text: "Sometimes progress first appears as less resistance.",
     primaryBucket: "hopeful",
@@ -1747,16 +1715,6 @@ const FORTUNES = [
     scope: "specific"
   },
   {
-    id: "f_0438",
-    text: "Asking what this feeling protects may point to a measured reaction.",
-    primaryBucket: "angry",
-    alsoFits: [
-      "anxious",
-      "frustrated"
-    ],
-    scope: "shared"
-  },
-  {
     id: "f_0439",
     text: "Keeping your composure means not surrendering to the trigger.",
     primaryBucket: "angry",
@@ -1777,7 +1735,7 @@ const FORTUNES = [
   },
   {
     id: "f_0442",
-    text: "What hurt you matters. Respond without losing yourself.",
+    text: "A steadier hour may make better sense of matters.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -1847,16 +1805,6 @@ const FORTUNES = [
     scope: "specific"
   },
   {
-    id: "f_0453",
-    text: "There is a question under this. Do not rush the answer.",
-    primaryBucket: "angry",
-    alsoFits: [
-      "frustrated",
-      "stressed"
-    ],
-    scope: "shared"
-  },
-  {
     id: "f_0454",
     text: "Something in you says a line got crossed.",
     primaryBucket: "angry",
@@ -1879,7 +1827,7 @@ const FORTUNES = [
   },
   {
     id: "f_0457",
-    text: "Refusing to give others power over our feelings is a quiet win.",
+    text: "Refusing to give others power over your feelings is a quiet win.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -1888,7 +1836,7 @@ const FORTUNES = [
   },
   {
     id: "f_0459",
-    text: "Intensity is not the same thing as direction.",
+    text: "Intense response is not the same thing as finding direction.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -1897,7 +1845,7 @@ const FORTUNES = [
   },
   {
     id: "f_0461",
-    text: "This can be a map with the polite labels burned off.",
+    text: "This can be a map to what's next with the polite labels burned off.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -1906,7 +1854,7 @@ const FORTUNES = [
   },
   {
     id: "f_0462",
-    text: "Some refusals are dignity declining a bad seat.",
+    text: "Some reactions are dignity declining a bad seat.",
     primaryBucket: "angry",
     alsoFits: [
       "frustrated"
@@ -1945,22 +1893,15 @@ const FORTUNES = [
     scope: "specific"
   },
   {
-    id: "f_0468",
-    text: "Jammed gears are not a character flaw.",
-    primaryBucket: "frustrated",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
     id: "f_0477",
-    text: "A stubborn problem is not a referendum on your talent.",
+    text: "A stubborn problem may be the one that needs solving the most.",
     primaryBucket: "frustrated",
     alsoFits: [],
     scope: "specific"
   },
   {
     id: "f_0479",
-    text: "Some days require less force and better leverage.",
+    text: "Some days require less force and more time outdoors.",
     primaryBucket: "frustrated",
     alsoFits: [],
     scope: "specific"
@@ -1974,7 +1915,7 @@ const FORTUNES = [
   },
   {
     id: "f_0487",
-    text: "Try a smaller move. Stuck things respect increments.",
+    text: "Stuck things respect small increments.",
     primaryBucket: "frustrated",
     alsoFits: [],
     scope: "specific"
@@ -2074,7 +2015,7 @@ const FORTUNES = [
   },
   {
     id: "f_0533",
-    text: "Your next move may be simpler than you think.",
+    text: "Sometimes the path is obvious if you stop fighting the current.",
     primaryBucket: "confused",
     alsoFits: [
       "anxious",
@@ -2096,7 +2037,7 @@ const FORTUNES = [
   },
   {
     id: "f_0535",
-    text: "Ask only for the next step, not the whole answer.",
+    text: "You only need the next step, not a map of the entire journey.",
     primaryBucket: "confused",
     alsoFits: [
       "frustrated",
@@ -2167,19 +2108,6 @@ const FORTUNES = [
     primaryBucket: "confused",
     alsoFits: [],
     scope: "specific"
-  },
-  {
-    id: "f_0546",
-    text: "The next step does not need the whole map.",
-    primaryBucket: "confused",
-    alsoFits: [
-      "anxious",
-      "distracted",
-      "frustrated",
-      "stressed",
-      "shaken"
-    ],
-    scope: "shared"
   },
   {
     id: "f_0548",
@@ -3898,6 +3826,13 @@ const FORTUNES = [
     id: "f_0910",
     text: "A mind fully present is halfway to discovery.",
     primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0911",
+    text: "Remember, you can always yell tomorrow. Today is for cooling down.",
+    primaryBucket: "angry",
     alsoFits: [],
     scope: "specific"
   }

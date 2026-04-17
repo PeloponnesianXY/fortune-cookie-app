@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { FORTUNES } from '../data/fortunesRegistry.js';
 
 const API_PORT = 4312;
 const AUTO_SAVE_THRESHOLD = 20;
@@ -820,6 +821,26 @@ function mergeReviewMaps(primaryMap, secondaryMap) {
   return merged;
 }
 
+function isFrustratedAuditFortune(fortune) {
+  return fortune.primaryBucket === 'frustrated' || (fortune.alsoFits || []).includes('frustrated');
+}
+
+const FRUSTRATED_AUDIT_FORTUNES = FORTUNES
+  .filter((fortune) => isFrustratedAuditFortune(fortune))
+  .sort((left, right) => left.id.localeCompare(right.id));
+
+const FRUSTRATED_AUDIT_SUGGESTIONS = {
+  frustrated: Object.fromEntries(
+    FRUSTRATED_AUDIT_FORTUNES.map((fortune) => [fortune.id, fortune.text])
+  ),
+};
+
+const ORIGINAL_FRUSTRATED_AUDIT_FORTUNES = {
+  frustrated: Object.fromEntries(
+    FRUSTRATED_AUDIT_FORTUNES.map((fortune) => [fortune.id, fortune.text])
+  ),
+};
+
 const REVIEW_FORTUNE_SUGGESTIONS = mergeReviewMaps(
   mergeReviewMaps(
     mergeReviewMaps(
@@ -831,7 +852,10 @@ const REVIEW_FORTUNE_SUGGESTIONS = mergeReviewMaps(
       HYPER_CRITICAL_FORTUNE_SUGGESTIONS,
     ),
   ),
-  FORTUNE_STYLE_BATCH_SUGGESTIONS,
+  mergeReviewMaps(
+    FORTUNE_STYLE_BATCH_SUGGESTIONS,
+    FRUSTRATED_AUDIT_SUGGESTIONS,
+  ),
 );
 
 const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
@@ -845,10 +869,21 @@ const ORIGINAL_REVIEW_FORTUNES = mergeReviewMaps(
       ORIGINAL_HYPER_CRITICAL_FORTUNES,
     ),
   ),
-  ORIGINAL_FORTUNE_STYLE_BATCH_FORTUNES,
+  mergeReviewMaps(
+    ORIGINAL_FORTUNE_STYLE_BATCH_FORTUNES,
+    ORIGINAL_FRUSTRATED_AUDIT_FORTUNES,
+  ),
 );
 
 const BUCKET_ORDER = Object.keys(REVIEW_FORTUNE_SUGGESTIONS);
+
+function reviewBucketMatchesFortune(bucket, fortune) {
+  if (bucket === 'frustrated') {
+    return isFrustratedAuditFortune(fortune);
+  }
+
+  return fortune.primaryBucket === bucket;
+}
 
 const STOP_WORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'because', 'before', 'but', 'by',
@@ -1048,7 +1083,9 @@ export default function ClassicFortuneLab() {
 
       for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
         for (const fortuneId of Object.keys(suggestions)) {
-          const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
+          const liveFortune = incomingFortunes.find(
+            (fortune) => fortune.id === fortuneId && reviewBucketMatchesFortune(bucket, fortune)
+          );
           if (liveFortune) {
             nextCurrentDrafts[fortuneId] = liveFortune.text;
           }
@@ -1062,7 +1099,9 @@ export default function ClassicFortuneLab() {
 
       for (const [bucket, suggestions] of Object.entries(REVIEW_FORTUNE_SUGGESTIONS)) {
         for (const [fortuneId, suggestion] of Object.entries(suggestions)) {
-          const liveFortune = incomingFortunes.find((fortune) => fortune.id === fortuneId && fortune.primaryBucket === bucket);
+          const liveFortune = incomingFortunes.find(
+            (fortune) => fortune.id === fortuneId && reviewBucketMatchesFortune(bucket, fortune)
+          );
           if (liveFortune) {
             nextDrafts[fortuneId] = suggestion;
           }
@@ -1114,7 +1153,7 @@ export default function ClassicFortuneLab() {
 
   const bucketSections = useMemo(() => {
     const fortunesByBucket = BUCKET_ORDER.map((bucket) => {
-      const liveBucketFortunes = fortunes.filter((fortune) => fortune.primaryBucket === bucket);
+      const liveBucketFortunes = fortunes.filter((fortune) => reviewBucketMatchesFortune(bucket, fortune));
       const suspectIds = new Set(Object.keys(REVIEW_FORTUNE_SUGGESTIONS[bucket] || {}));
       const suspectFortunes = liveBucketFortunes
         .filter((fortune) => suspectIds.has(fortune.id))
