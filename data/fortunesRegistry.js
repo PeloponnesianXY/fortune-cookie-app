@@ -3879,6 +3879,27 @@ const FORTUNES = [
     primaryBucket: "caring",
     alsoFits: [],
     scope: "specific"
+  },
+  {
+    id: "f_0908",
+    text: "What draws your mind may already be drawing your future.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0909",
+    text: "Interest is a thread; follow it before it gets cut off.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0910",
+    text: "A mind fully present is halfway to discovery.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
   }
 ];
 
