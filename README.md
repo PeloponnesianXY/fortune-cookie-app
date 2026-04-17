@@ -6,9 +6,9 @@ Expo app that takes a one-word mood input, routes it to one local mood bucket, a
 
 - Runtime routing is local and deterministic.
 - Runtime path is: moderation -> exact vocab -> morphology -> fuzzy -> `unknown`.
-- The canonical mood vocabulary lives in `data/runtime/moodBucketVocabulary.js`.
-- The canonical fortune registry lives in `data/fortunesRegistry.js`.
-- Runtime fortune pools are derived in `data/runtime/fortunes.js`.
+- The canonical mood vocabulary lives in `data/vocabulary/moodBucketVocabulary.js`.
+- The canonical fortune registry lives in `data/fortunes/fortunesRegistry.js`.
+- Runtime fortune pools are derived in `data/fortunes/runtimeFortunes.js`.
 - Fortune Lab is a dev-only web editor for the canonical fortune registry.
 - Semantic Lab is a dev-only web inspector for routing plus advisory vector diagnostics.
 - Screen Lab is a dev-only web preview surface for layout and state checks.
@@ -38,13 +38,17 @@ components/
   ScreenLab.js
   StreakStatus.js
 data/
-  fortunesRegistry.js
-  runtime/
-    fortunes.js
+  fortunes/
+    fortunesRegistry.js
+    runtimeFortunes.js
+  scenes/
+    scenes.js
+  semanticLab/
+    semanticFallbackData.js
+  vocabulary/
+    futureExpansionMoodPhraseVocabulary.js
     moodBucketVocabulary.js
     moodVocabularyRuntimeWrapper.js
-    scenes.js
-    semanticFallbackData.js
 scripts/
   fortuneLabServer.js
   fortuneRegistryStore.js
@@ -76,11 +80,11 @@ netlify.toml
 - `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
 - `components/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
 - `components/ScreenLab.js`: dev-only browser preview surface for layout, state review, and paper-fit sampling
-- `data/fortunesRegistry.js`: canonical source of truth for all live fortunes
-- `data/runtime/fortunes.js`: derived runtime fortune pools
-- `data/runtime/moodBucketVocabulary.js`: canonical deterministic accepted-input vocabulary
-- `data/runtime/moodVocabularyRuntimeWrapper.js`: thin runtime wrapper for bucket keys and legacy aliases
-- `data/runtime/scenes.js`: scene library and bucket-to-scene mapping
+- `data/fortunes/fortunesRegistry.js`: canonical source of truth for all live fortunes
+- `data/fortunes/runtimeFortunes.js`: derived runtime fortune pools
+- `data/vocabulary/moodBucketVocabulary.js`: canonical deterministic accepted-input vocabulary
+- `data/vocabulary/moodVocabularyRuntimeWrapper.js`: runtime bucket-key export surface
+- `data/scenes/scenes.js`: scene library and bucket-to-scene mapping
 - `utils/fortuneLogic.js`: moderation, normalization, routing, selection, and daily-state logic
 - `utils/semanticFallback.js`: lab-only vector suggestion logic used by Semantic Lab
 - `scripts/fortuneLabServer.js`: local Node API for Fortune Lab editing
@@ -88,7 +92,7 @@ netlify.toml
 
 ## Fortune model
 
-Fortunes live once in `data/fortunesRegistry.js`.
+Fortunes live once in `data/fortunes/fortunesRegistry.js`.
 
 Each record has:
 

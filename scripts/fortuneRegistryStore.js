@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const REGISTRY_FILE_PATH = path.resolve(__dirname, '../data/fortunesRegistry.js');
+const REGISTRY_FILE_PATH = path.resolve(__dirname, '../data/fortunes/fortunesRegistry.js');
 const CANONICAL_BUCKET_KEYS = [
   'caring',
   'wowed',

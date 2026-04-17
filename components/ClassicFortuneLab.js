@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { FORTUNES } from '../data/fortunesRegistry.js';
+import { FORTUNES } from '../data/fortunes/fortunesRegistry.js';
 
 const API_PORT = 4312;
 const AUTO_SAVE_THRESHOLD = 20;

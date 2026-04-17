@@ -4,8 +4,8 @@ import { Animated, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, Vi
 import CookieShell, { getOpenedCookieImageBottom } from './CookieShell';
 import FortuneHomeContent from './FortuneHomeContent';
 import PreviewFrame from './PreviewFrame';
-import { FORTUNES } from '../data/fortunesRegistry';
-import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes';
+import { FORTUNES } from '../data/fortunes/fortunesRegistry';
+import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/scenes/scenes';
 
 const LAB_HISTORY_FORTUNES = [
   {

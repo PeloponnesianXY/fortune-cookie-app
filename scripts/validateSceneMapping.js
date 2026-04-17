@@ -1,6 +1,6 @@
 async function main() {
-  const { MOOD_BUCKET_KEYS } = await import('../data/runtime/moodVocabularyRuntimeWrapper.js');
-  const { MOOD_SCENE_KEYS, SCENE_LIBRARY } = await import('../data/runtime/scenes.js');
+  const { MOOD_BUCKET_KEYS } = await import('../data/vocabulary/moodVocabularyRuntimeWrapper.js');
+  const { MOOD_SCENE_KEYS, SCENE_LIBRARY } = await import('../data/scenes/scenes.js');
 
   const errors = [];
   const sceneKeys = new Set(Object.keys(SCENE_LIBRARY));

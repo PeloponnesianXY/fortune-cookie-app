@@ -1,6 +1,6 @@
 /* Runtime fortune copy and bucket profiles. */
 
-import { FORTUNES, FORTUNE_BUCKET_KEYS } from '../fortunesRegistry.js';
+import { FORTUNES, FORTUNE_BUCKET_KEYS } from './fortunesRegistry.js';
 
 function buildBaseFortuneLibrary() {
   const library = Object.fromEntries(FORTUNE_BUCKET_KEYS.map((bucket) => [bucket, []]));

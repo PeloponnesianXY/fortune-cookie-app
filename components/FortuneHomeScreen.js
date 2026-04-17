@@ -15,7 +15,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import FortuneHomeContent from './FortuneHomeContent';
 import { PreviewSafeAreaView } from './PreviewLayoutContext';
 import SafetyLockScreen from './SafetyLockScreen';
-import { SCENE_LIBRARY } from '../data/runtime/scenes';
+import { SCENE_LIBRARY } from '../data/scenes/scenes';
 import { syncAppBadgeAsync } from '../utils/appBadge';
 import {
   clearAllStoredFortuneState,

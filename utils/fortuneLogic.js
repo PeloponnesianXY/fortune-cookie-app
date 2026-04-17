@@ -7,13 +7,12 @@ import {
   HATE_PATTERNS,
   MOOD_BUCKET_PROFILES,
   PROTECTED_GROUP_TERMS,
-} from '../data/runtime/fortunes.js';
+} from '../data/fortunes/runtimeFortunes.js';
 import {
   DETERMINISTIC_BUCKET_WORDS,
-  LEGACY_BUCKET_NORMALIZATION,
   MOOD_BUCKET_KEYS,
-} from '../data/runtime/moodVocabularyRuntimeWrapper.js';
-import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/runtime/scenes.js';
+} from '../data/vocabulary/moodVocabularyRuntimeWrapper.js';
+import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/scenes/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
 
 const USER_ID_STORAGE_KEY = '@fortune-cookie-daily/user-id';
@@ -92,10 +91,6 @@ function normalizeLookupKey(value) {
     .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-}
-
-function normalizeMoodBucketKey(moodKey) {
-  return LEGACY_BUCKET_NORMALIZATION[moodKey] || moodKey;
 }
 
 function tokenizeMoodInput(normalizedInput) {
@@ -378,7 +373,7 @@ function normalizeStoredSelection(selection) {
     return selection;
   }
 
-  const normalizedPrimaryEmotion = normalizeMoodBucketKey(selection.analysis?.primaryEmotion);
+  const normalizedPrimaryEmotion = selection.analysis?.primaryEmotion;
   const normalizedAnalysis = selection.analysis
     ? {
         ...selection.analysis,
