@@ -13,10 +13,10 @@ import { Asset } from 'expo-asset';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
 import FortuneHomeContent from './FortuneHomeContent';
-import { PreviewSafeAreaView } from './PreviewLayoutContext';
+import { PreviewSafeAreaView } from '../preview/PreviewLayoutContext';
 import SafetyLockScreen from './SafetyLockScreen';
-import { SCENE_LIBRARY } from '../data/scenes/scenes';
-import { syncAppBadgeAsync } from '../utils/appBadge';
+import { SCENE_LIBRARY } from '../../data/scenes/scenes';
+import { syncAppBadgeAsync } from '../../utils/appBadge';
 import {
   clearAllStoredFortuneState,
   getDailyFortuneSelection,
@@ -24,7 +24,7 @@ import {
   getReplacementFortuneSelection,
   getStoredFortuneDayState,
   isHighRiskMoodInput,
-} from '../utils/fortuneLogic';
+} from '../../utils/fortuneLogic';
 import {
   collapseFortuneRuns,
   createSavedFortuneRecord,
@@ -32,14 +32,14 @@ import {
   saveFortuneToFavorites,
   saveFortuneToHistory,
   toggleFavoriteFortune,
-} from '../utils/savedFortunes';
+} from '../../utils/savedFortunes';
 import {
   getStoredStreak,
   registerDailyStreak,
-} from '../utils/streaks';
+} from '../../utils/streaks';
 
-const COOKIE_CLOSED_IMAGE = require('../assets/cookie/closed-2.png');
-const COOKIE_OPEN_IMAGE = require('../assets/cookie/open-final.png');
+const COOKIE_CLOSED_IMAGE = require('../../assets/cookie/closed-2.png');
+const COOKIE_OPEN_IMAGE = require('../../assets/cookie/open-final.png');
 
 const COOKIE_TIMINGS = {
   shell: 1320,

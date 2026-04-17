@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import PreviewModal from './PreviewModal';
+import PreviewModal from '../preview/PreviewModal';
 
 function MoodSection({ onDelete, onEdit, section }) {
   return (

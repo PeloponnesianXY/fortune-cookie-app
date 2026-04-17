@@ -14,14 +14,14 @@ import {
 } from 'react-native';
 
 import CookieShell, { COOKIE_SHELL_FRAME, getOpenedCookieImageBottom } from './CookieShell';
-import CreatedFortunesSheet from './CreatedFortunesSheet';
-import CustomFortuneSheet from './CustomFortuneSheet';
+import CreatedFortunesSheet from '../sheets/CreatedFortunesSheet';
+import CustomFortuneSheet from '../sheets/CustomFortuneSheet';
 import DrawerItem from './DrawerItem';
 import DrawerSection from './DrawerSection';
 import FortuneActionTray from './FortuneActionTray';
-import FortuneLibrarySheet from './FortuneLibrarySheet';
+import FortuneLibrarySheet from '../sheets/FortuneLibrarySheet';
 import StreakStatus from './StreakStatus';
-import { usePreviewLayout } from './PreviewLayoutContext';
+import { usePreviewLayout } from '../preview/PreviewLayoutContext';
 import {
   buildCreatedFortuneSections,
   clearAllCustomFortunes,
@@ -30,8 +30,8 @@ import {
   loadCustomFortunes,
   saveCustomFortune,
   updateCustomFortune,
-} from '../utils/customFortunes';
-import { MOOD_BUCKET_KEYS } from '../utils/fortuneLogic';
+} from '../../utils/customFortunes';
+import { MOOD_BUCKET_KEYS } from '../../utils/fortuneLogic';
 
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 const BASE_CONTENT_MAX_WIDTH = 540;

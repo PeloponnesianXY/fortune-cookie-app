@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import PreviewModal from './PreviewModal';
+import PreviewModal from '../preview/PreviewModal';
 
 function formatFortuneTimestamp(value) {
   if (!value) {

@@ -12,8 +12,8 @@ import {
   View,
 } from 'react-native';
 
-import PreviewModal from './PreviewModal';
-import { usePreviewLayout } from './PreviewLayoutContext';
+import PreviewModal from '../preview/PreviewModal';
+import { usePreviewLayout } from '../preview/PreviewLayoutContext';
 
 const MAX_LENGTH = 140;
 

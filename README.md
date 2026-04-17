@@ -19,24 +19,31 @@ Expo app that takes a one-word mood input, routes it to one local mood bucket, a
 ```text
 App.js
 components/
-  CookieShell.js
-  CreatedFortunesSheet.js
-  CustomFortuneSheet.js
-  DevWebLabs.js
-  DevWebLabs.web.js
-  FortuneActionTray.js
-  FortuneCard.js
-  FortuneHomeContent.js
-  FortuneHomeScreen.js
-  FortuneLab.js
-  FortuneLibrarySheet.js
-  PreviewFrame.js
-  PreviewLayoutContext.js
-  PreviewModal.js
-  SafetyLockScreen.js
-  SemanticLab.js
-  ScreenLab.js
-  StreakStatus.js
+  home/
+    CookieShell.js
+    DrawerItem.js
+    DrawerSection.js
+    FortuneActionTray.js
+    FortuneCard.js
+    FortuneHomeContent.js
+    FortuneHomeScreen.js
+    SafetyLockScreen.js
+    StreakStatus.js
+  labs/
+    ClassicFortuneLab.js
+    DevWebLabs.js
+    DevWebLabs.web.js
+    FortuneLab.js
+    ScreenLab.js
+    SemanticLab.js
+  preview/
+    PreviewFrame.js
+    PreviewLayoutContext.js
+    PreviewModal.js
+  sheets/
+    CreatedFortunesSheet.js
+    CustomFortuneSheet.js
+    FortuneLibrarySheet.js
 data/
   fortunes/
     fortunesRegistry.js
@@ -74,12 +81,12 @@ netlify.toml
 
 ## Key files
 
-- `components/FortuneHomeScreen.js`: app state orchestration, reveal flow, streaks, safety lock, persistence handoff
-- `components/FortuneHomeContent.js`: shared main screen renderer
-- `components/FortuneCard.js`: prompt, cookie, sheets, drawer, and action tray layout
-- `components/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
-- `components/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
-- `components/ScreenLab.js`: dev-only browser preview surface for layout, state review, and paper-fit sampling
+- `components/home/FortuneHomeScreen.js`: app state orchestration, reveal flow, streaks, safety lock, persistence handoff
+- `components/home/FortuneHomeContent.js`: shared main screen renderer
+- `components/home/FortuneCard.js`: prompt, cookie, sheets, drawer, and action tray layout
+- `components/labs/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
+- `components/labs/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
+- `components/labs/ScreenLab.js`: dev-only browser preview surface for layout, state review, and paper-fit sampling
 - `data/fortunes/fortunesRegistry.js`: canonical source of truth for all live fortunes
 - `data/fortunes/runtimeFortunes.js`: derived runtime fortune pools
 - `data/vocabulary/moodBucketVocabulary.js`: canonical deterministic accepted-input vocabulary

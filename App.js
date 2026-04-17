@@ -2,8 +2,8 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import DevWebLabs from './components/DevWebLabs';
-import FortuneHomeScreen from './components/FortuneHomeScreen';
+import DevWebLabs from './components/labs/DevWebLabs';
+import FortuneHomeScreen from './components/home/FortuneHomeScreen';
 
 function getDevWebLabRoute() {
   if (Platform.OS !== 'web' || typeof window === 'undefined') {
