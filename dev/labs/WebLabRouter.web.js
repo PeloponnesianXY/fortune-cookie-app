@@ -5,7 +5,7 @@ import FortuneLab from './FortuneLab';
 import ScreenLab from './ScreenLab';
 import SemanticLab from './SemanticLab';
 
-export default function DevWebLabs({ route }) {
+export default function WebLabRouter({ route }) {
   if (route === 'semantic') {
     return <SemanticLab />;
   }

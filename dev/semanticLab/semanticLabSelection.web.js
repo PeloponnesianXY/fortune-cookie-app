@@ -1,7 +1,7 @@
 import {
   getSemanticLabBaseSelection,
   roundConfidence,
-} from './fortuneLogic';
+} from '../../utils/fortuneLogic';
 import { analyzeSemanticFallbackInput } from './semanticFallback';
 
 export async function getSemanticLabSelection(input, options = {}) {

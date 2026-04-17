@@ -13,6 +13,36 @@ function createEmptyCustomFortunes() {
   }, {});
 }
 
+const LEGACY_CUSTOM_FORTUNE_BUCKET_MAP = {
+  affectionate: 'caring',
+  amazed: 'wowed',
+  averse: 'disgusted',
+  awkward: 'embarrassed',
+  blindsided: 'shaken',
+  delighted: 'wowed',
+  loving: 'caring',
+  surprised: 'shaken',
+};
+
+function collectNormalizedFortunes(value) {
+  return Array.isArray(value)
+    ? value.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
+    : [];
+}
+
+function migrateLegacyCustomFortunes(value, base) {
+  for (const [legacyKey, canonicalKey] of Object.entries(LEGACY_CUSTOM_FORTUNE_BUCKET_MAP)) {
+    const legacyItems = collectNormalizedFortunes(value[legacyKey]);
+    if (legacyItems.length === 0) {
+      continue;
+    }
+
+    base[canonicalKey] = [...new Set([...base[canonicalKey], ...legacyItems])];
+  }
+
+  return base;
+}
+
 function normalizeStoredCustomFortunes(value) {
   const base = createEmptyCustomFortunes();
 
@@ -20,77 +50,11 @@ function normalizeStoredCustomFortunes(value) {
     return base;
   }
 
-  if (Array.isArray(value.averse)) {
-    base.disgusted = value.averse
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim());
-  }
-
-  if (Array.isArray(value.loving)) {
-    base.caring = value.loving
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim());
-  }
-
-  if (Array.isArray(value.affectionate)) {
-    base.caring = [
-      ...base.caring,
-      ...value.affectionate
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim()),
-    ];
-  }
-
-  if (Array.isArray(value.romantic)) {
-    base.romantic = value.romantic
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim());
-  }
-
-  if (Array.isArray(value.amazed)) {
-    base.wowed = value.amazed
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim());
-  }
-
-  if (Array.isArray(value.delighted)) {
-    base.wowed = [
-      ...base.wowed,
-      ...value.delighted
-        .filter((item) => typeof item === 'string' && item.trim())
-        .map((item) => item.trim()),
-    ];
-  }
-
-  if (Array.isArray(value.surprised)) {
-    base.shaken = value.surprised
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim());
-  }
-
-  if (Array.isArray(value.blindsided)) {
-    base.shaken = [
-      ...base.shaken,
-      ...value.blindsided
-        .filter((item) => typeof item === 'string' && item.trim())
-        .map((item) => item.trim()),
-    ];
-  }
-
-  if (Array.isArray(value.awkward)) {
-    base.embarrassed = value.awkward
-      .filter((item) => typeof item === 'string' && item.trim())
-      .map((item) => item.trim());
-  }
+  migrateLegacyCustomFortunes(value, base);
 
   for (const key of MOOD_BUCKET_KEYS) {
-    const normalizedItems = Array.isArray(value[key])
-      ? value[key].filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
-      : [];
-
-    base[key] = key === 'disgusted' || key === 'caring' || key === 'romantic'
-      ? [...new Set([...base[key], ...normalizedItems])]
-      : normalizedItems;
+    const normalizedItems = collectNormalizedFortunes(value[key]);
+    base[key] = [...new Set([...base[key], ...normalizedItems])];
   }
 
   return base;
@@ -101,36 +65,12 @@ function normalizeForDuplicateCheck(value) {
 }
 
 export function formatMoodBucketLabel(moodKey) {
-  if (moodKey === 'averse' || moodKey === 'disgusted') {
-    return 'Disgusted';
+  if (!moodKey) {
+    return 'Unknown';
   }
 
   if (moodKey === 'caring') {
     return 'Affectionate';
-  }
-
-  if (moodKey === 'emotional') {
-    return 'Emotional';
-  }
-
-  if (moodKey === 'engaged') {
-    return 'Engaged';
-  }
-
-  if (moodKey === 'romantic') {
-    return 'Romantic';
-  }
-
-  if (moodKey === 'embarrassed') {
-    return 'Embarrassed';
-  }
-
-  if (moodKey === 'shaken') {
-    return 'Shaken';
-  }
-
-  if (moodKey === 'wowed') {
-    return 'Wowed';
   }
 
   if (moodKey === 'guilty') {

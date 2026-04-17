@@ -113,10 +113,6 @@ function formatBucketLabel(bucket) {
     return 'Unknown';
   }
 
-  if (bucket === 'unknown') {
-    return 'Unknown';
-  }
-
   if (bucket === 'caring') {
     return 'Affectionate';
   }
@@ -536,7 +532,7 @@ export default function FortuneLab() {
     } catch (error) {
       setLoadError(
         error.message
-          || `Start the local API with \`node scripts/fortuneLabServer.js\` and reload this lab.`
+          || `Start the local API with \`node tools/fortuneLab/server.js\` and reload this lab.`
       );
     } finally {
       setIsLoading(false);

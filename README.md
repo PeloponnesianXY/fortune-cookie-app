@@ -8,7 +8,7 @@ Expo app that takes a one-word mood input, routes it to one local mood bucket, a
 - Runtime path is: moderation -> exact vocab -> morphology -> fuzzy -> `unknown`.
 - The canonical mood vocabulary lives in `data/vocabulary/moodBucketVocabulary.js`.
 - The canonical fortune registry lives in `data/fortunes/fortunesRegistry.js`.
-- Runtime fortune pools are derived in `data/fortunes/runtimeFortunes.js`.
+- Runtime fortune pools are derived in `data/fortunes/fortuneLibrary.js`.
 - Fortune Lab is a dev-only web editor for the canonical fortune registry.
 - Semantic Lab is a dev-only web inspector for routing plus advisory vector diagnostics.
 - Screen Lab is a dev-only web preview surface for layout and state checks.
@@ -29,13 +29,6 @@ components/
     FortuneHomeScreen.js
     SafetyLockScreen.js
     StreakStatus.js
-  labs/
-    ClassicFortuneLab.js
-    DevWebLabs.js
-    DevWebLabs.web.js
-    FortuneLab.js
-    ScreenLab.js
-    SemanticLab.js
   preview/
     PreviewFrame.js
     PreviewLayoutContext.js
@@ -44,10 +37,22 @@ components/
     CreatedFortunesSheet.js
     CustomFortuneSheet.js
     FortuneLibrarySheet.js
+dev/
+  labs/
+    ClassicFortuneLab.js
+    FortuneLab.js
+    ScreenLab.js
+    SemanticLab.js
+    WebLabRouter.js
+    WebLabRouter.web.js
+  semanticLab/
+    semanticFallback.js
+    semanticLabSelection.js
+    semanticLabSelection.web.js
 data/
   fortunes/
     fortunesRegistry.js
-    runtimeFortunes.js
+    fortuneLibrary.js
   scenes/
     scenes.js
   semanticLab/
@@ -55,11 +60,12 @@ data/
   vocabulary/
     futureExpansionMoodPhraseVocabulary.js
     moodBucketVocabulary.js
-    moodVocabularyRuntimeWrapper.js
-scripts/
-  fortuneLabServer.js
-  fortuneRegistryStore.js
-  validateSceneMapping.js
+tools/
+  fortuneLab/
+    registryStore.js
+    server.js
+  validate/
+    sceneMapping.js
 utils/
   appBadge.js
   customFortunes.js
@@ -84,18 +90,19 @@ netlify.toml
 - `components/home/FortuneHomeScreen.js`: app state orchestration, reveal flow, streaks, safety lock, persistence handoff
 - `components/home/FortuneHomeContent.js`: shared main screen renderer
 - `components/home/FortuneCard.js`: prompt, cookie, sheets, drawer, and action tray layout
-- `components/labs/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
-- `components/labs/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
-- `components/labs/ScreenLab.js`: dev-only browser preview surface for layout, state review, and paper-fit sampling
+- `dev/labs/FortuneLab.js`: dev-only browser lab for editing the canonical fortune registry
+- `dev/labs/SemanticLab.js`: dev-only browser lab for inspecting routing and vector suggestions
+- `dev/labs/ScreenLab.js`: dev-only browser preview surface for layout, state review, and paper-fit sampling
+- `dev/labs/WebLabRouter.web.js`: web-only lab route switch
 - `data/fortunes/fortunesRegistry.js`: canonical source of truth for all live fortunes
-- `data/fortunes/runtimeFortunes.js`: derived runtime fortune pools
+- `data/fortunes/fortuneLibrary.js`: derived runtime fortune pools
 - `data/vocabulary/moodBucketVocabulary.js`: canonical deterministic accepted-input vocabulary
-- `data/vocabulary/moodVocabularyRuntimeWrapper.js`: runtime bucket-key export surface
 - `data/scenes/scenes.js`: scene library and bucket-to-scene mapping
 - `utils/fortuneLogic.js`: moderation, normalization, routing, selection, and daily-state logic
-- `utils/semanticFallback.js`: lab-only vector suggestion logic used by Semantic Lab
-- `scripts/fortuneLabServer.js`: local Node API for Fortune Lab editing
-- `scripts/fortuneRegistryStore.js`: file IO helpers for the canonical fortune registry
+- `dev/semanticLab/semanticFallback.js`: lab-only vector suggestion logic used by Semantic Lab
+- `tools/fortuneLab/server.js`: local Node API for Fortune Lab editing
+- `tools/fortuneLab/registryStore.js`: file IO helpers for the canonical fortune registry
+- `tools/validate/sceneMapping.js`: CLI validation for bucket-to-scene consistency
 
 ## Fortune model
 
@@ -173,7 +180,7 @@ Semantic Lab is a dev-only browser route for checking how the live classifier ro
   - `#/lab`
   - `#/semantic-lab`
 - Uses the live deterministic runtime path.
-- Also shows advisory vector suggestions from `utils/semanticFallback.js`.
+- Also shows advisory vector suggestions from `dev/semanticLab/semanticFallback.js`.
 - Vector suggestions are diagnostic only; they are not part of production app routing.
 
 ### Screen Lab

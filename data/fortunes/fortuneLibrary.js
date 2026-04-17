@@ -1,4 +1,4 @@
-/* Runtime fortune copy and bucket profiles. */
+/* Derived fortune pools and routing profiles. */
 
 import { FORTUNES, FORTUNE_BUCKET_KEYS } from './fortunesRegistry.js';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import DevWebLabs from './components/labs/DevWebLabs';
+import WebLabRouter from './dev/labs/WebLabRouter';
 import FortuneHomeScreen from './components/home/FortuneHomeScreen';
 
 function getDevWebLabRoute() {
@@ -56,7 +56,7 @@ export default function App() {
   let rootContent = <FortuneHomeScreen />;
 
   if (devLabRoute) {
-    rootContent = <DevWebLabs route={devLabRoute} />;
+    rootContent = <WebLabRouter route={devLabRoute} />;
   }
 
   return (

@@ -2,12 +2,11 @@ const http = require('http');
 const { URL } = require('url');
 
 const {
-  CANONICAL_BUCKET_KEYS,
+  BUCKET_KEYS,
   readRegistry,
-  toUiFortune,
+  toEditorFortune,
   writeRegistry,
-  normalizeStorageBucketKey,
-} = require('./fortuneRegistryStore');
+} = require('./registryStore');
 
 const PORT = Number(process.env.FORTUNE_LAB_PORT || 4312);
 const HOST = process.env.FORTUNE_LAB_HOST || '127.0.0.1';
@@ -26,8 +25,8 @@ function sendJson(response, statusCode, payload) {
 
 function getUiBucketOrder() {
   return [
-    ...CANONICAL_BUCKET_KEYS.slice(0, FIRST_USER_BUCKET_COUNT),
-    ...CANONICAL_BUCKET_KEYS.slice(FIRST_USER_BUCKET_COUNT),
+    ...BUCKET_KEYS.slice(0, FIRST_USER_BUCKET_COUNT),
+    ...BUCKET_KEYS.slice(FIRST_USER_BUCKET_COUNT),
   ];
 }
 
@@ -39,7 +38,7 @@ function getSelectedBuckets(fortune) {
 }
 
 function toApiFortune(fortune) {
-  const uiFortune = toUiFortune(fortune);
+  const uiFortune = toEditorFortune(fortune);
   const buckets = getSelectedBuckets(uiFortune);
 
   return {
@@ -52,9 +51,8 @@ function toApiFortune(fortune) {
 function normalizeSelectedBuckets(selectedBuckets, currentPrimaryBucket) {
   const seen = new Set();
   const normalized = selectedBuckets
-    .map((bucket) => normalizeStorageBucketKey(bucket))
     .filter((bucket) => {
-      if (!CANONICAL_BUCKET_KEYS.includes(bucket)) {
+      if (!BUCKET_KEYS.includes(bucket)) {
         return false;
       }
 
@@ -70,7 +68,7 @@ function normalizeSelectedBuckets(selectedBuckets, currentPrimaryBucket) {
     return null;
   }
 
-  const existingPrimary = normalizeStorageBucketKey(currentPrimaryBucket);
+  const existingPrimary = currentPrimaryBucket;
   const primaryBucket = normalized.includes(existingPrimary)
     ? existingPrimary
     : normalized[0];

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
-import CookieShell, { getOpenedCookieImageBottom } from '../home/CookieShell';
-import FortuneHomeContent from '../home/FortuneHomeContent';
-import PreviewFrame from '../preview/PreviewFrame';
+import CookieShell, { getOpenedCookieImageBottom } from '../../components/home/CookieShell';
+import FortuneHomeContent from '../../components/home/FortuneHomeContent';
+import PreviewFrame from '../../components/preview/PreviewFrame';
 import { FORTUNES } from '../../data/fortunes/fortunesRegistry';
 import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../../data/scenes/scenes';
 

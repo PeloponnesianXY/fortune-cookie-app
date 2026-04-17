@@ -8,8 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "fortune-lab:server": "node scripts/fortuneLabServer.js",
-    "validate:scene-mapping": "node scripts/validateSceneMapping.js"
+    "fortune-lab:server": "node tools/fortuneLab/server.js",
+    "validate:scene-mapping": "node tools/validate/sceneMapping.js"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { MOOD_BUCKET_KEYS } from '../../utils/fortuneLogic';
-import { getSemanticLabSelection } from '../../utils/semanticLabSelection';
+import { getSemanticLabSelection } from '../semanticLab/semanticLabSelection';
 
 const MAX_ROWS = 100;
 const SEMANTIC_LAB_STORAGE_KEY = 'fortune-cookie:semantic-lab:entries';

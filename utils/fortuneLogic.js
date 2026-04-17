@@ -7,11 +7,8 @@ import {
   HATE_PATTERNS,
   MOOD_BUCKET_PROFILES,
   PROTECTED_GROUP_TERMS,
-} from '../data/fortunes/runtimeFortunes.js';
-import {
-  DETERMINISTIC_BUCKET_WORDS,
-  MOOD_BUCKET_KEYS,
-} from '../data/vocabulary/moodVocabularyRuntimeWrapper.js';
+} from '../data/fortunes/fortuneLibrary.js';
+import { BUCKET_VOCAB } from '../data/vocabulary/moodBucketVocabulary.js';
 import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/scenes/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
 
@@ -40,8 +37,9 @@ const HIGH_RISK_WORDS = new Set([
   'massacre',
 ]);
 
+const MOOD_BUCKET_KEYS = Object.freeze(Object.keys(BUCKET_VOCAB));
 const MOOD_BUCKET_PRIORITY = [...MOOD_BUCKET_KEYS];
-const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(DETERMINISTIC_BUCKET_WORDS);
+const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(BUCKET_VOCAB);
 // Runtime routing is intentionally lexical-first:
 // deterministic exact -> morphology -> fuzzy -> unknown
 // Vector embeddings stay available only as a lab/debug suggestion layer.

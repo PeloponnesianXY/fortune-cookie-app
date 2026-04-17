@@ -1,4 +1,4 @@
-import { SEMANTIC_FALLBACK_DATA } from '../data/semanticLab/semanticFallbackData';
+import { SEMANTIC_FALLBACK_DATA } from '../../data/semanticLab/semanticFallbackData';
 
 function cosineSimilarity(left, right) {
   let dot = 0;
