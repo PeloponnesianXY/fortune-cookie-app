@@ -3835,6 +3835,251 @@ const FORTUNES = [
     primaryBucket: "angry",
     alsoFits: [],
     scope: "specific"
+  },
+  {
+    id: "f_0912",
+    text: "What once seemed difficult will soon feel natural.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0913",
+    text: "A fine outcome will warm both heart and spirit.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0914",
+    text: "What has been nurtured with care will soon shine bright.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0915",
+    text: "What has been cared for faithfully will soon reward the heart.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0916",
+    text: "Something you hold dear will soon give you much to celebrate.",
+    primaryBucket: "proud",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0917",
+    text: "A playful mind will soon find a worthy path.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0918",
+    text: "What engages the mind often rewards the heart.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0919",
+    text: "An unexpected turn of thought will serve you well.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0920",
+    text: "A searching mind seldom stays idle for long.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0921",
+    text: "What captivates your spirit may soon enlarge your world.",
+    primaryBucket: "engaged",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0922",
+    text: "A blush passes faster than the lesson it brings.",
+    primaryBucket: "embarrassed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0923",
+    text: "A small misstep is often followed by a big step forward.",
+    primaryBucket: "embarrassed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0924",
+    text: "An awkward turn does not spoil the journey.",
+    primaryBucket: "embarrassed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0925",
+    text: "A moment of unease may yet leave behind a wiser smile.",
+    primaryBucket: "embarrassed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0926",
+    text: "A moment of awe may imprint itself on your spirit.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0927",
+    text: "What fills you with wonder may also guide you.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0928",
+    text: "What amazes the eye may also nourish the heart.",
+    primaryBucket: "wowed",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0929",
+    text: "Feelings now distant are not beyond return.",
+    primaryBucket: "numb",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0930",
+    text: "A sleeping garden still remembers how to bloom.",
+    primaryBucket: "numb",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0931",
+    text: "Frozen ground may already be hiding the first green shoot.",
+    primaryBucket: "numb",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0932",
+    text: "A light heart will carry you far even when the load is heavy.",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0933",
+    text: "Joy shared will return to you increased.",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0934",
+    text: "A cheerful heart draws good things near.",
+    primaryBucket: "happy",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0935",
+    text: "What catches in the throat may linger in the memory.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0936",
+    text: "The heart sometimes opens a door the mind had left shut.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0937",
+    text: "Some feelings are older than the moment that awakens them.",
+    primaryBucket: "emotional",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0938",
+    text: "Calm may arrive the moment you stop waiting for it.",
+    primaryBucket: "wired",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0939",
+    text: "A hurried spirit often profits from a quiet room.",
+    primaryBucket: "wired",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0940",
+    text: "What offends your sense may be best left untouched.",
+    primaryBucket: "disgusted",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0941",
+    text: "Quiet confidence often arrives before visible success.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0942",
+    text: "Confidence grows stronger when it is put to use.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0943",
+    text: "Trust in your footing; the ground is firmer than it seems.",
+    primaryBucket: "confident",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0944",
+    text: "What is offered with warmth seldom goes to waste.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0945",
+    text: "A kind word can travel farther than you can see.",
+    primaryBucket: "caring",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0946",
+    text: "This mood is a mystery to the cookie. Your bright future less so.",
+    primaryBucket: "unknown",
+    alsoFits: [],
+    scope: "specific"
   }
 ];
 

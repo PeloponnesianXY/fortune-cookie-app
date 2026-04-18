@@ -125,37 +125,37 @@ Current live fortune counts by bucket:
 
 | Bucket | Primary | AlsoFits | Total |
 |---|---:|---:|---:|
-| `stressed` | 13 | 58 | 71 |
-| `shaken` | 25 | 24 | 49 |
-| `anxious` | 27 | 18 | 45 |
+| `stressed` | 13 | 55 | 68 |
+| `shaken` | 25 | 21 | 46 |
+| `anxious` | 27 | 16 | 43 |
 | `tired` | 28 | 6 | 34 |
-| `frustrated` | 5 | 27 | 32 |
-| `confused` | 23 | 8 | 31 |
-| `hopeful` | 20 | 10 | 30 |
-| `angry` | 24 | 5 | 29 |
-| `calm` | 19 | 8 | 27 |
-| `distracted` | 2 | 23 | 25 |
+| `confused` | 22 | 7 | 29 |
+| `hopeful` | 19 | 10 | 29 |
+| `angry` | 23 | 5 | 28 |
+| `calm` | 17 | 8 | 25 |
+| `frustrated` | 4 | 21 | 25 |
 | `lonely` | 16 | 8 | 24 |
+| `distracted` | 2 | 21 | 23 |
 | `grateful` | 16 | 6 | 22 |
 | `hungry` | 22 | 0 | 22 |
 | `neutral` | 22 | 0 | 22 |
 | `sad` | 21 | 1 | 22 |
 | `sick` | 12 | 10 | 22 |
+| `confident` | 9 | 13 | 22 |
+| `caring` | 20 | 1 | 21 |
+| `engaged` | 21 | 0 | 21 |
 | `guilty` | 16 | 5 | 21 |
-| `romantic` | 19 | 1 | 20 |
+| `disgusted` | 20 | 0 | 20 |
+| `embarrassed` | 13 | 7 | 20 |
+| `emotional` | 20 | 0 | 20 |
+| `happy` | 20 | 0 | 20 |
 | `jealous` | 17 | 3 | 20 |
-| `disgusted` | 19 | 0 | 19 |
-| `caring` | 18 | 1 | 19 |
-| `confident` | 6 | 13 | 19 |
-| `wired` | 4 | 14 | 18 |
-| `emotional` | 17 | 0 | 17 |
-| `happy` | 17 | 0 | 17 |
-| `numb` | 13 | 4 | 17 |
-| `wowed` | 11 | 6 | 17 |
-| `engaged` | 16 | 0 | 16 |
-| `embarrassed` | 9 | 7 | 16 |
-| `proud` | 10 | 5 | 15 |
-| `unknown` | 9 | 0 | 9 |
+| `numb` | 16 | 4 | 20 |
+| `proud` | 15 | 5 | 20 |
+| `romantic` | 19 | 1 | 20 |
+| `wired` | 6 | 14 | 20 |
+| `wowed` | 14 | 6 | 20 |
+| `unknown` | 10 | 0 | 10 |
 
 ## Labs
 
