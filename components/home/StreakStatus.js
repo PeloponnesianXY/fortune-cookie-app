@@ -20,7 +20,7 @@ function formatCollapsedLabel(streakCount, tierTitle) {
   }
 
   if (tierTitle) {
-    return `${formatDayLabel(streakCount)} · ${tierTitle}`;
+    return `${formatDayLabel(streakCount)} - ${tierTitle}`;
   }
 
   return formatDayLabel(streakCount);
@@ -201,9 +201,28 @@ export default function StreakStatus({
           >
             {isCelebrating && tierTitle ? (
               <>
-                <Text style={styles.celebrationEyebrow}>New tier unlocked</Text>
-                <Text style={styles.celebrationTitle}>{tierTitle}</Text>
-                <Text style={styles.celebrationMeta}>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.82}
+                  numberOfLines={1}
+                  style={styles.celebrationEyebrow}
+                >
+                  New tier unlocked
+                </Text>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.68}
+                  numberOfLines={1}
+                  style={styles.celebrationTitle}
+                >
+                  {tierTitle}
+                </Text>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.76}
+                  numberOfLines={1}
+                  style={styles.celebrationMeta}
+                >
                   {formatExpandedTitle(streakCount, null).replace('!', '')}
                 </Text>
               </>
@@ -332,20 +351,27 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: '700',
     letterSpacing: 0.9,
+    lineHeight: 12,
     textTransform: 'uppercase',
     color: '#916335',
     opacity: 0.82,
+    textAlign: 'center',
   },
   celebrationTitle: {
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: -0.12,
+    lineHeight: 16,
     color: '#5a3b23',
+    textAlign: 'center',
   },
   celebrationMeta: {
-    fontSize: 14,
+    marginTop: 1,
+    fontSize: 11,
     fontWeight: '600',
     letterSpacing: -0.12,
+    lineHeight: 13,
     color: '#8b603a',
+    textAlign: 'center',
   },
 });

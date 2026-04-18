@@ -184,6 +184,7 @@ const BUCKET_VOCAB = {
     'excited',
     'focused',
     'immersed',
+    'inspired',
     'interested',
     'intrigued'
   ],
@@ -226,6 +227,7 @@ const BUCKET_VOCAB = {
   ],
   confident: [
     'able',
+    'assertive',
     'assured',
     'bold',
     'capable',
