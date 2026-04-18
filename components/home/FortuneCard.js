@@ -97,6 +97,7 @@ const CREATE_FORTUNE_MOOD_SECTIONS = [
     key: 'neutral',
     label: 'Could go either way',
     moods: [
+      'bored',
       'confused',
       'emotional',
       'neutral',

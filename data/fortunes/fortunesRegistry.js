@@ -4,6 +4,7 @@ const FORTUNE_BUCKET_KEYS = [
   "angry",
   "anxious",
   "embarrassed",
+  "bored",
   "calm",
   "confident",
   "confused",
@@ -4077,6 +4078,146 @@ const FORTUNES = [
     id: "f_0946",
     text: "This mood is a mystery to the cookie. Your bright future less so.",
     primaryBucket: "unknown",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0947",
+    text: "Restlessness may be curiosity looking for somewhere to land.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0948",
+    text: "Boredom may be honesty about what no longer belongs.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0949",
+    text: "What bores you may be helping you rule things out.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0950",
+    text: "Boredom may be a message in search of its meaning.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0951",
+    text: "A bored mind is often a ready one.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0952",
+    text: "Boredom may be a sign you have outgrown your routine.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0953",
+    text: "Boredom often arrives right before change does.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0954",
+    text: "The problem may not be you, but what surrounds you.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0955",
+    text: "The spirit sometimes yawns before it stretches.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0956",
+    text: "Boredom may be the first hint that discovery is near.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0957",
+    text: "You may need motion more than meaning right now.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0958",
+    text: "Boredom is often a compass with nowhere worthy to point.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0959",
+    text: "What feels stale may simply be finished.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0960",
+    text: "Some boredom is a lantern, not a fog.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0961",
+    text: "Boredom often arrives with a folded map inside it.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0962",
+    text: "A lifeless moment may be asking for a lively choice.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0963",
+    text: "If you can't start a fire, maybe you need new wood.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0964",
+    text: "A wandering mind may be scouting ahead for you.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0965",
+    text: "Cobwebs are often the price of staying too long.",
+    primaryBucket: "bored",
+    alsoFits: [],
+    scope: "specific"
+  },
+  {
+    id: "f_0966",
+    text: "Some boredom is the outline of something new.",
+    primaryBucket: "bored",
     alsoFits: [],
     scope: "specific"
   }

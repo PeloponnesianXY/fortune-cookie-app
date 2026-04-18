@@ -98,6 +98,7 @@ const MOOD_BUCKET_PROFILES = {
   confident: { fortuneKey: 'confident', tone: 'affirming', valence: 'positive', energy: 'medium' },
   calm: { fortuneKey: 'calm', tone: 'grounding', valence: 'positive', energy: 'low' },
   caring: { fortuneKey: 'caring', tone: 'warm', valence: 'positive', energy: 'medium' },
+  bored: { fortuneKey: 'bored', tone: 'stirring', valence: 'neutral', energy: 'low' },
   emotional: { fortuneKey: 'emotional', tone: 'tender', valence: 'neutral', energy: 'low' },
   engaged: { fortuneKey: 'engaged', tone: 'energizing', valence: 'positive', energy: 'medium' },
   grateful: { fortuneKey: 'grateful', tone: 'appreciative', valence: 'positive', energy: 'low' },

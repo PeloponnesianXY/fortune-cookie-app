@@ -154,6 +154,7 @@ const MOOD_SCENE_KEYS = {
   wired: 'heatHaze',
 
   // Intentionally isolated singletons. Do not merge these with adjacent moods.
+  bored: 'softStatic',
   neutral: 'fogDrift',
   unknown: 'plainLight',
   confused: 'fogDrift',
