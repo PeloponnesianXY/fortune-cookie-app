@@ -9,6 +9,7 @@ import {
   PROTECTED_GROUP_TERMS,
 } from '../data/fortunes/fortuneLibrary.js';
 import { BUCKET_VOCAB } from '../data/vocabulary/moodBucketVocabulary.js';
+import { MOOD_MORPH_FALLBACK } from '../data/vocabulary/moodMorphFallback.js';
 import { MOOD_SCENE_KEYS, SCENE_LIBRARY } from '../data/scenes/scenes.js';
 import { getLocalDayKey } from './dateUtils.js';
 
@@ -46,28 +47,6 @@ const DETERMINISTIC_WORD_TO_BUCKET = createLookupTable(BUCKET_VOCAB);
 const SINGLE_TOKEN_VOCAB_CANDIDATES = Object.entries(DETERMINISTIC_WORD_TO_BUCKET)
   .filter(([word]) => !word.includes(' '))
   .map(([word, bucket]) => ({ word, bucket }));
-const MORPHOLOGY_IRREGULAR_MAP = {
-  anxiety: 'anxious',
-  confusion: 'confused',
-  frustration: 'frustrated',
-  gratitude: 'grateful',
-  happier: 'happy',
-  happiest: 'happy',
-  jealousy: 'jealous',
-  loneliness: 'lonely',
-  sadder: 'sad',
-  saddest: 'sad',
-  slighted: 'betrayed',
-};
-
-const DERIVATIONAL_IRREGULAR_MAP = {
-  affection: 'affectionate',
-  anticipation: 'anticipatory',
-  emotion: 'emotional',
-  engagement: 'engaged',
-  nostalgia: 'nostalgic',
-  romance: 'romantic',
-};
 const FUZZY_MIN_LENGTH = 4;
 const FUZZY_MAX_LENGTH_DELTA = 2;
 const FUZZY_MIN_SCORE = 0.8;
@@ -97,24 +76,6 @@ function tokenizeMoodInput(normalizedInput) {
 
 function isKnownMoodWord(candidate) {
   return Boolean(DETERMINISTIC_WORD_TO_BUCKET[candidate]);
-}
-
-function firstKnownMoodWord(candidates) {
-  const seen = new Set();
-
-  for (const candidate of candidates) {
-    const normalizedCandidate = normalizeLookupKey(candidate);
-    if (!normalizedCandidate || seen.has(normalizedCandidate)) {
-      continue;
-    }
-
-    seen.add(normalizedCandidate);
-    if (isKnownMoodWord(normalizedCandidate)) {
-      return normalizedCandidate;
-    }
-  }
-
-  return null;
 }
 
 function createMoodScoreCard(primaryEmotion = null, score = 0) {
@@ -166,107 +127,10 @@ function findBucketInLookup(normalizedInput, tokens, lookupTable) {
 }
 
 function tryMorphology(normalizedInput) {
-  const exactIrregularMatch = MORPHOLOGY_IRREGULAR_MAP[normalizedInput];
-  if (exactIrregularMatch && isKnownMoodWord(exactIrregularMatch)) {
-    return exactIrregularMatch;
-  }
-
-  const derivationalIrregularMatch = DERIVATIONAL_IRREGULAR_MAP[normalizedInput];
-  if (derivationalIrregularMatch && isKnownMoodWord(derivationalIrregularMatch)) {
-    return derivationalIrregularMatch;
-  }
-
-  const derivationalCandidates = [];
-
-  if (normalizedInput.endsWith('ness') && normalizedInput.length > 6) {
-    const stem = normalizedInput.slice(0, -4);
-    derivationalCandidates.push(stem);
-
-    if (stem.endsWith('i')) {
-      derivationalCandidates.push(`${stem.slice(0, -1)}y`);
-    }
-  }
-
-  if (normalizedInput.endsWith('osity') && normalizedInput.length > 7) {
-    derivationalCandidates.push(`${normalizedInput.slice(0, -5)}ous`);
-  }
-
-  if (normalizedInput.endsWith('ity') && normalizedInput.length > 5) {
-    const stem = normalizedInput.slice(0, -3);
-    derivationalCandidates.push(stem);
-    derivationalCandidates.push(`${stem}e`);
-  }
-
-  if (normalizedInput.endsWith('ation') && normalizedInput.length > 7) {
-    const stem = normalizedInput.slice(0, -5);
-    derivationalCandidates.push(`${stem}ate`);
-    derivationalCandidates.push(`${stem}ated`);
-    derivationalCandidates.push(`${stem}atory`);
-  }
-
-  if (normalizedInput.endsWith('sion') && normalizedInput.length > 6) {
-    const stem = normalizedInput.slice(0, -4);
-    derivationalCandidates.push(`${stem}sed`);
-    derivationalCandidates.push(`${stem}sive`);
-  }
-
-  if (normalizedInput.endsWith('tion') && normalizedInput.length > 6) {
-    const stem = normalizedInput.slice(0, -4);
-    derivationalCandidates.push(`${stem}ted`);
-  }
-
-  const derivationalMatch = firstKnownMoodWord(derivationalCandidates);
-  if (derivationalMatch) {
-    return derivationalMatch;
-  }
-
-  const suffixTransforms = [
-    {
-      suffix: 'iest',
-      transform: (value) => `${value.slice(0, -4)}y`,
-    },
-    {
-      suffix: 'ier',
-      transform: (value) => `${value.slice(0, -3)}y`,
-    },
-    {
-      suffix: 'ily',
-      transform: (value) => `${value.slice(0, -3)}y`,
-    },
-    {
-      suffix: 'ly',
-      transform: (value) => value.slice(0, -2),
-    },
-    {
-      suffix: 'ed',
-      transform: (value) => value.slice(0, -2),
-    },
-    {
-      suffix: 'est',
-      transform: (value) => value.slice(0, -3),
-    },
-    {
-      suffix: 'er',
-      transform: (value) => value.slice(0, -2),
-    },
-    {
-      suffix: 'ing',
-      transform: (value) => value.slice(0, -3),
-    },
-  ];
-
-  for (const { suffix, transform } of suffixTransforms) {
-    if (!normalizedInput.endsWith(suffix) || normalizedInput.length <= suffix.length + 1) {
-      continue;
-    }
-
-    const transformed = transform(normalizedInput);
-    if (isKnownMoodWord(transformed)) {
-      return transformed;
-    }
-  }
-
-  return null;
+  // Morphology fallback is intentionally auditable and deterministic:
+  // variants map only to canonical words that already live in the primary vocab.
+  const canonicalWord = MOOD_MORPH_FALLBACK[normalizedInput];
+  return canonicalWord && isKnownMoodWord(canonicalWord) ? canonicalWord : null;
 }
 
 function getDamerauLevenshteinDistance(source, target) {

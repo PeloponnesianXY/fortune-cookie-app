@@ -211,19 +211,11 @@ export default function StreakStatus({
                 </Text>
                 <Text
                   adjustsFontSizeToFit
-                  minimumFontScale={0.68}
+                  minimumFontScale={0.78}
                   numberOfLines={1}
                   style={styles.celebrationTitle}
                 >
                   {tierTitle}
-                </Text>
-                <Text
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.76}
-                  numberOfLines={1}
-                  style={styles.celebrationMeta}
-                >
-                  {formatExpandedTitle(streakCount, null).replace('!', '')}
                 </Text>
               </>
             ) : (
@@ -307,6 +299,8 @@ const styles = StyleSheet.create({
   cardCelebrating: {
     backgroundColor: 'rgba(255, 241, 212, 0.99)',
     borderColor: 'rgba(177, 129, 75, 0.28)',
+    paddingTop: 4,
+    paddingBottom: 4,
   },
   collapsedText: {
     position: 'absolute',
@@ -348,30 +342,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   celebrationEyebrow: {
-    fontSize: 10.5,
+    fontSize: 9.5,
     fontWeight: '700',
-    letterSpacing: 0.9,
-    lineHeight: 12,
+    letterSpacing: 0.8,
+    lineHeight: 11,
     textTransform: 'uppercase',
     color: '#916335',
     opacity: 0.82,
     textAlign: 'center',
   },
   celebrationTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     letterSpacing: -0.12,
-    lineHeight: 16,
+    lineHeight: 15,
     color: '#5a3b23',
-    textAlign: 'center',
-  },
-  celebrationMeta: {
-    marginTop: 1,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: -0.12,
-    lineHeight: 13,
-    color: '#8b603a',
     textAlign: 'center',
   },
 });
