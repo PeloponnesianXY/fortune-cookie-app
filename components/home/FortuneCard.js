@@ -1324,6 +1324,7 @@ export default function FortuneCard({
           setIsCreatedFortunesSheetVisible(false);
           setIsCustomFortuneSheetVisible(true);
         }}
+        onShareFortune={onShareSavedFortune}
         onClose={() => setIsCreatedFortunesSheetVisible(false)}
         sections={createdFortuneSections}
         visible={isCreatedFortunesSheetVisible}

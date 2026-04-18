@@ -493,7 +493,10 @@ export default function FortuneHomeScreen() {
       setIsPreparingNextFortune(true);
       const sessionMood = moodInput;
       const selection = await getDailyFortuneSelection(sessionMood);
-      const nextFortuneCount = sessionFortuneCount + 1;
+      const countsTowardDailyWisdomLock = selection.analysis?.primaryEmotion !== 'unknown';
+      const nextFortuneCount = countsTowardDailyWisdomLock
+        ? sessionFortuneCount + 1
+        : sessionFortuneCount;
       const savedFortuneRecord = createSavedFortuneRecord(selection, sessionMood);
       beginFortuneSession({
         mood: sessionMood || selection.inputMood || selection.analysis?.primaryEmotion || '',

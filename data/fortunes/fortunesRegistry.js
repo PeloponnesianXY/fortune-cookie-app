@@ -1033,8 +1033,7 @@ const FORTUNES = [
       "frustrated",
       "stressed",
       "shaken",
-      "tired",
-      "wired"
+      "tired"
     ],
     scope: "shared"
   },

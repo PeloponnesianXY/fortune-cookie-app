@@ -10,7 +10,7 @@ import {
 
 import PreviewModal from '../preview/PreviewModal';
 
-function MoodSection({ onDelete, onEdit, section }) {
+function MoodSection({ onDelete, onEdit, onShare, section }) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{section.label}</Text>
@@ -19,6 +19,9 @@ function MoodSection({ onDelete, onEdit, section }) {
           <View key={item.id} style={styles.card}>
             <Text style={styles.cardText}>{item.text}</Text>
             <View style={styles.actions}>
+              <Pressable onPress={() => onShare(item)} style={styles.actionButton}>
+                <Text style={styles.actionText}>Share</Text>
+              </Pressable>
               <Pressable onPress={() => onEdit(item)} style={styles.actionButton}>
                 <Text style={styles.actionText}>Edit</Text>
               </Pressable>
@@ -37,6 +40,7 @@ export default function CreatedFortunesSheet({
   onClearAll,
   onDeleteFortune,
   onEditFortune,
+  onShareFortune,
   onClose,
   sections,
   visible,
@@ -49,20 +53,20 @@ export default function CreatedFortunesSheet({
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.sheet}>
             <View style={styles.header}>
-              <View>
+              <View style={styles.headerTopRow}>
                 <Text style={styles.title}>Your created fortunes</Text>
-                <Text style={styles.subtitle}>Saved locally on this device</Text>
-              </View>
-              <View style={styles.headerActions}>
-                {hasContent ? (
-                  <Pressable hitSlop={8} onPress={onClearAll}>
-                    <Text style={styles.clearText}>Clear all</Text>
+                <View style={styles.headerActions}>
+                  {hasContent ? (
+                    <Pressable hitSlop={8} onPress={onClearAll}>
+                      <Text style={styles.headerActionText}>Clear all</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable hitSlop={8} onPress={onClose}>
+                    <Text style={styles.headerActionText}>Close</Text>
                   </Pressable>
-                ) : null}
-                <Pressable hitSlop={8} onPress={onClose}>
-                  <Text style={styles.closeText}>Close</Text>
-                </Pressable>
+                </View>
               </View>
+              <Text style={styles.subtitle}>Click to share</Text>
             </View>
 
             <ScrollView
@@ -75,6 +79,7 @@ export default function CreatedFortunesSheet({
                     key={section.key}
                     onDelete={onDeleteFortune}
                     onEdit={onEditFortune}
+                    onShare={onShareFortune}
                     section={section}
                   />
                 ))
@@ -113,11 +118,14 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   header: {
+    gap: 6,
+    marginBottom: 14,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'baseline',
     gap: 12,
-    marginBottom: 14,
   },
   headerActions: {
     flexDirection: 'row',
@@ -131,17 +139,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   subtitle: {
-    marginTop: 4,
     fontSize: 13,
     lineHeight: 18,
     color: '#8f6b4f',
   },
-  clearText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#a14f3a',
-  },
-  closeText: {
+  headerActionText: {
     fontSize: 15,
     fontWeight: '600',
     color: '#8d6748',
