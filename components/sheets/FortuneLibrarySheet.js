@@ -4,12 +4,14 @@ import {
   FlatList,
   Pressable,
   SafeAreaView,
+  SectionList,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
 import PreviewModal from '../preview/PreviewModal';
+import { formatMoodBucketLabel } from '../../utils/customFortunes';
 
 function formatFortuneTimestamp(value) {
   if (!value) {
@@ -25,9 +27,9 @@ function formatFortuneTimestamp(value) {
 function formatMeta(item, library) {
   const detailParts = [];
 
-  if (item.mood) {
+  if (library !== 'favorites' && item.mood) {
     detailParts.push(library === 'history' ? `"${item.mood}"` : item.mood);
-  } else if (item.category) {
+  } else if (library !== 'favorites' && item.category) {
     detailParts.push(item.category);
   }
 
@@ -50,22 +52,24 @@ function LibraryItem({ item, library, onRemoveFavorite, onShareItem, onToggleFav
       <View style={styles.itemHeader}>
         <Text style={styles.itemMeta}>{formatMeta(item, library)}</Text>
         <View style={styles.itemHeaderActions}>
-          {!isFavorites ? (
-            <Pressable
-              hitSlop={8}
-              onPress={(event) => {
-                event.stopPropagation?.();
-                onToggleFavorite(item);
-              }}
-              style={styles.favoriteButton}
-            >
-              <Ionicons
-                color={item.isFavorite ? '#b85f4b' : '#9b7c64'}
-                name={item.isFavorite ? 'heart' : 'heart-outline'}
-                size={18}
-              />
-            </Pressable>
-          ) : null}
+          <Pressable
+            hitSlop={8}
+            onPress={(event) => {
+              event.stopPropagation?.();
+              if (isFavorites) {
+                onRemoveFavorite(item);
+                return;
+              }
+              onToggleFavorite(item);
+            }}
+            style={styles.favoriteButton}
+          >
+            <Ionicons
+              color={isFavorites || item.isFavorite ? '#b85f4b' : '#9b7c64'}
+              name={isFavorites || item.isFavorite ? 'heart' : 'heart-outline'}
+              size={18}
+            />
+          </Pressable>
           {item.repeatCount > 1 ? (
             <View style={styles.repeatBadge}>
               <Text style={styles.repeatBadgeText}>x{item.repeatCount}</Text>
@@ -75,12 +79,6 @@ function LibraryItem({ item, library, onRemoveFavorite, onShareItem, onToggleFav
       </View>
 
       <Text style={styles.itemText}>{item.text}</Text>
-
-      {isFavorites ? (
-        <Pressable onPress={() => onRemoveFavorite(item)} style={styles.inlineAction}>
-          <Text style={styles.inlineActionText}>Remove</Text>
-        </Pressable>
-      ) : null}
     </Pressable>
   );
 }
@@ -100,6 +98,26 @@ function EmptyLibraryMessage({ isFavorites }) {
   );
 }
 
+function buildFavoriteSections(favorites) {
+  const sectionsByKey = new Map();
+
+  favorites.forEach((item) => {
+    const bucketKey = item.category || 'unknown';
+
+    if (!sectionsByKey.has(bucketKey)) {
+      sectionsByKey.set(bucketKey, {
+        title: formatMoodBucketLabel(bucketKey),
+        key: bucketKey,
+        data: [],
+      });
+    }
+
+    sectionsByKey.get(bucketKey).data.push(item);
+  });
+
+  return [...sectionsByKey.values()].sort((a, b) => a.title.localeCompare(b.title));
+}
+
 export default function FortuneLibrarySheet({
   activeLibrary,
   favorites,
@@ -113,6 +131,7 @@ export default function FortuneLibrarySheet({
 }) {
   const isFavorites = activeLibrary === 'favorites';
   const items = isFavorites ? favorites : history;
+  const favoriteSections = React.useMemo(() => buildFavoriteSections(favorites), [favorites]);
 
   return (
     <PreviewModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -146,32 +165,61 @@ export default function FortuneLibrarySheet({
               </Pressable>
             </View>
 
-            <FlatList
-              contentContainerStyle={items.length ? styles.listContent : styles.emptyContent}
-              data={items}
-              initialNumToRender={8}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <LibraryItem
-                  item={item}
-                  library={activeLibrary}
-                  onRemoveFavorite={onRemoveFavorite}
-                  onShareItem={onShareItem}
-                  onToggleFavorite={onToggleFavorite}
-                />
-              )}
-              removeClippedSubviews
-              ListEmptyComponent={(
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>
-                    {isFavorites ? 'No favorites yet' : 'No fortune history yet'}
-                  </Text>
-                  <EmptyLibraryMessage isFavorites={isFavorites} />
-                </View>
-              )}
-              showsVerticalScrollIndicator={false}
-              windowSize={5}
-            />
+            {isFavorites ? (
+              <SectionList
+                contentContainerStyle={items.length ? styles.listContent : styles.emptyContent}
+                initialNumToRender={8}
+                keyExtractor={(item) => item.id}
+                removeClippedSubviews
+                renderItem={({ item }) => (
+                  <LibraryItem
+                    item={item}
+                    library={activeLibrary}
+                    onRemoveFavorite={onRemoveFavorite}
+                    onShareItem={onShareItem}
+                    onToggleFavorite={onToggleFavorite}
+                  />
+                )}
+                renderSectionHeader={({ section }) => (
+                  <Text style={styles.sectionHeader}>{section.title}</Text>
+                )}
+                sections={favoriteSections}
+                ListEmptyComponent={(
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyTitle}>No favorites yet</Text>
+                    <EmptyLibraryMessage isFavorites />
+                  </View>
+                )}
+                showsVerticalScrollIndicator={false}
+                stickySectionHeadersEnabled={false}
+                windowSize={5}
+              />
+            ) : (
+              <FlatList
+                contentContainerStyle={items.length ? styles.listContent : styles.emptyContent}
+                data={items}
+                initialNumToRender={8}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <LibraryItem
+                    item={item}
+                    library={activeLibrary}
+                    onRemoveFavorite={onRemoveFavorite}
+                    onShareItem={onShareItem}
+                    onToggleFavorite={onToggleFavorite}
+                  />
+                )}
+                removeClippedSubviews
+                ListEmptyComponent={(
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyTitle}>No fortune history yet</Text>
+                    <EmptyLibraryMessage isFavorites={false} />
+                  </View>
+                )}
+                showsVerticalScrollIndicator={false}
+                windowSize={5}
+              />
+            )}
           </View>
         </SafeAreaView>
       </View>
@@ -244,6 +292,16 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 12,
   },
+  sectionHeader: {
+    marginBottom: 8,
+    marginTop: 2,
+    marginLeft: 2,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: '#8a674c',
+  },
   emptyContent: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -297,15 +355,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#3f3023',
     fontWeight: '600',
-  },
-  inlineAction: {
-    alignSelf: 'flex-start',
-    marginTop: 10,
-  },
-  inlineActionText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#a0612f',
   },
   emptyState: {
     alignItems: 'center',

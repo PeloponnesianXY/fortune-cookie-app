@@ -1,4 +1,5 @@
 import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Pressable,
   SafeAreaView,
@@ -19,14 +20,14 @@ function MoodSection({ onDelete, onEdit, onShare, section }) {
           <View key={item.id} style={styles.card}>
             <Text style={styles.cardText}>{item.text}</Text>
             <View style={styles.actions}>
-              <Pressable onPress={() => onShare(item)} style={styles.actionButton}>
-                <Text style={styles.actionText}>Share</Text>
-              </Pressable>
               <Pressable onPress={() => onEdit(item)} style={styles.actionButton}>
                 <Text style={styles.actionText}>Edit</Text>
               </Pressable>
               <Pressable onPress={() => onDelete(item)} style={styles.actionButton}>
                 <Text style={styles.actionText}>Delete</Text>
+              </Pressable>
+              <Pressable hitSlop={8} onPress={() => onShare(item)} style={styles.shareButton}>
+                <Ionicons color="#8d6748" name="share-outline" size={18} />
               </Pressable>
             </View>
           </View>
@@ -66,7 +67,6 @@ export default function CreatedFortunesSheet({
                   </Pressable>
                 </View>
               </View>
-              <Text style={styles.subtitle}>Click to share</Text>
             </View>
 
             <ScrollView
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   header: {
-    gap: 6,
     marginBottom: 14,
   },
   headerTopRow: {
@@ -137,11 +136,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#4f3828',
     letterSpacing: -0.2,
-  },
-  subtitle: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: '#8f6b4f',
   },
   headerActionText: {
     fontSize: 15,
@@ -185,6 +179,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 16,
     marginTop: 10,
   },
@@ -196,6 +191,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8d6748',
     letterSpacing: -0.12,
+  },
+  shareButton: {
+    marginLeft: 'auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 24,
+    minHeight: 24,
   },
   emptyState: {
     alignItems: 'center',
