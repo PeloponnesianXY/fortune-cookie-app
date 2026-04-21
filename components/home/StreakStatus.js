@@ -41,6 +41,8 @@ function formatExpandedTitle(streakCount, tierTitle) {
 }
 
 export default function StreakStatus({
+  collapsedWidth = 146,
+  expandedWidth: expandedCardWidth = 292,
   streakCount,
   tierTitle,
   nextTierTitle,
@@ -142,13 +144,13 @@ export default function StreakStatus({
   const collapsedText = formatCollapsedLabel(streakCount, tierTitle);
   const expandedTitle = formatExpandedTitle(streakCount, tierTitle);
 
-  const expandedWidth = progress.interpolate({
+  const animatedCardWidth = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [146, 292],
+    outputRange: [collapsedWidth, expandedCardWidth],
   });
   const expandedMinHeight = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [22, 42],
+    outputRange: [24, 50],
   });
   const detailOpacity = progress;
   const collapsedOpacity = progress.interpolate({
@@ -181,12 +183,13 @@ export default function StreakStatus({
             isExpanded ? styles.cardExpanded : null,
             isCelebrating ? styles.cardCelebrating : null,
             {
-              width: expandedWidth,
+              width: animatedCardWidth,
               minHeight: expandedMinHeight,
             },
           ]}
         >
           <Animated.Text
+            allowFontScaling={false}
             adjustsFontSizeToFit
             minimumFontScale={0.74}
             numberOfLines={1}
@@ -202,6 +205,7 @@ export default function StreakStatus({
             {isCelebrating && tierTitle ? (
               <>
                 <Text
+                  allowFontScaling={false}
                   adjustsFontSizeToFit
                   minimumFontScale={0.82}
                   numberOfLines={1}
@@ -210,6 +214,7 @@ export default function StreakStatus({
                   New tier unlocked
                 </Text>
                 <Text
+                  allowFontScaling={false}
                   adjustsFontSizeToFit
                   minimumFontScale={0.78}
                   numberOfLines={1}
@@ -221,6 +226,7 @@ export default function StreakStatus({
             ) : (
               <>
                 <Text
+                  allowFontScaling={false}
                   adjustsFontSizeToFit
                   minimumFontScale={0.62}
                   numberOfLines={1}
@@ -230,6 +236,7 @@ export default function StreakStatus({
                 </Text>
                 {streakCount > 0 && nextTierTitle && daysToNextTier ? (
                   <Text
+                    allowFontScaling={false}
                     adjustsFontSizeToFit
                     minimumFontScale={0.78}
                     numberOfLines={1}
@@ -239,6 +246,7 @@ export default function StreakStatus({
                   </Text>
                 ) : streakCount <= 0 ? (
                   <Text
+                    allowFontScaling={false}
                     adjustsFontSizeToFit
                     minimumFontScale={0.78}
                     numberOfLines={1}
@@ -248,6 +256,7 @@ export default function StreakStatus({
                   </Text>
                 ) : (
                   <Text
+                    allowFontScaling={false}
                     adjustsFontSizeToFit
                     minimumFontScale={0.78}
                     numberOfLines={1}
@@ -285,16 +294,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142, 104, 69, 0.18)',
     backgroundColor: 'rgba(250, 242, 229, 0.95)',
     paddingHorizontal: 12,
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingTop: 5,
+    paddingBottom: 5,
     overflow: 'hidden',
   },
   cardExpanded: {
     backgroundColor: 'rgba(255, 247, 228, 0.98)',
     borderColor: 'rgba(196, 156, 104, 0.24)',
     paddingHorizontal: 18,
-    paddingTop: 6,
-    paddingBottom: 6,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   cardCelebrating: {
     backgroundColor: 'rgba(255, 241, 212, 0.99)',
@@ -304,24 +313,24 @@ const styles = StyleSheet.create({
   },
   collapsedText: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
+    top: 1,
+    bottom: 1,
     left: 12,
     right: 12,
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: -0.12,
-    lineHeight: 16,
+    lineHeight: 18,
     color: '#5b3d26',
     textAlign: 'center',
     textAlignVertical: 'center',
   },
   expandedContent: {
     position: 'absolute',
-    top: 6,
+    top: 8,
     left: 18,
     right: 18,
-    bottom: 6,
+    bottom: 8,
     justifyContent: 'center',
     gap: 0,
   },
@@ -330,14 +339,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.12,
     color: '#5a3b23',
-    lineHeight: 16,
+    lineHeight: 19,
   },
   expandedMeta: {
     marginTop: 4,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: -0.12,
-    lineHeight: 13,
+    lineHeight: 15,
     color: '#1f1a17',
     textAlign: 'center',
   },
@@ -355,7 +364,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: -0.12,
-    lineHeight: 15,
+    lineHeight: 17,
     color: '#5a3b23',
     textAlign: 'center',
   },

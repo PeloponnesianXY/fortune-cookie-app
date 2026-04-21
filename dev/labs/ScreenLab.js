@@ -82,11 +82,19 @@ const PREVIEW_DEVICES = [
     insets: { top: 47, right: 0, bottom: 34, left: 0 },
   },
   {
-    key: 'proMax',
-    label: '6.7-inch Class, such as iPhone 14 Pro Max',
+    key: 'iphone16',
+    label: '6.1-inch Class, such as iPhone 16',
+    width: 393,
+    height: 852,
+    displayDiagonalInches: 6.12,
+    insets: { top: 59, right: 0, bottom: 34, left: 0 },
+  },
+  {
+    key: 'iphone16Plus',
+    label: '6.7-inch Class, such as iPhone 16 Plus',
     width: 430,
     height: 932,
-    displayDiagonalInches: 6.7,
+    displayDiagonalInches: 6.69,
     insets: { top: 59, right: 0, bottom: 34, left: 0 },
   },
 ];
@@ -108,9 +116,29 @@ const SCENE_OPTIONS = Object.keys(SCENE_LIBRARY).map((key) => ({
   label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
 }));
 
+function getPreviewDeviceShortLabel(device) {
+  if (device.key === 'se') {
+    return 'SE';
+  }
+
+  if (device.key === 'iphone14') {
+    return '14';
+  }
+
+  if (device.key === 'iphone16') {
+    return '16';
+  }
+
+  if (device.key === 'iphone16Plus') {
+    return '16 Plus';
+  }
+
+  return device.label;
+}
+
 const FORTUNE_FIT_DEVICES = PREVIEW_DEVICES.map((device) => ({
   key: device.key,
-  label: device.key === 'se' ? 'SE' : device.key === 'iphone14' ? '14' : 'Pro Max',
+  label: getPreviewDeviceShortLabel(device),
   scale: getDisplayPreviewScale(device),
 }));
 
@@ -218,6 +246,7 @@ function ToggleRow({ label, onValueChange, value }) {
 export default function ScreenLab() {
   const [selectedSceneKey, setSelectedSceneKey] = useState('sunlitAir');
   const [isSceneLegendOpen, setIsSceneLegendOpen] = useState(false);
+  const [isPaperFitOpen, setIsPaperFitOpen] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
   const [isActionTrayExpanded, setIsActionTrayExpanded] = useState(false);
   const [isCreateFortuneSheetOpen, setIsCreateFortuneSheetOpen] = useState(false);
@@ -253,6 +282,9 @@ export default function ScreenLab() {
     () => sampledFortunes.find((fortune) => fortune.sampleId === selectedSampleId) || null,
     [sampledFortunes, selectedSampleId]
   );
+  const selectedSampleLineCounts = selectedSampleId ? (fortuneFitLineCounts[selectedSampleId] || {}) : {};
+  const selectedSampleFitVerdict = getFitVerdict(selectedSampleLineCounts);
+  const selectedSampleFitTone = getFitVerdictTone(selectedSampleLineCounts);
 
   const handlePaperTextLayout = (sampleId, deviceKey) => (event) => {
     const nextLineCount = event?.nativeEvent?.lines?.length || 0;
@@ -453,6 +485,31 @@ export default function ScreenLab() {
             <View style={styles.sceneBlock}>
               <View style={styles.sceneControlsRow}>
                 <Pressable
+                  onPress={() => setIsPaperFitOpen((current) => !current)}
+                  style={({ pressed }) => [
+                    styles.paperFitToggle,
+                    pressed ? styles.paperFitTogglePressed : null,
+                  ]}
+                >
+                  <Text style={styles.paperFitToggleEyebrow}>Paper Fit</Text>
+                  <Text style={styles.paperFitToggleTitle}>
+                    {isPaperFitOpen ? 'Hide sampler' : 'Show sampler'}
+                  </Text>
+                  <View style={styles.paperFitToggleMetaRow}>
+                    <Text style={styles.paperFitToggleMeta}>{selectedSampleFitVerdict}</Text>
+                    <View
+                      style={[
+                        styles.paperFitToggleDot,
+                        selectedSampleFitTone === 'good'
+                          ? styles.paperFitToggleDotGood
+                          : selectedSampleFitTone === 'bad'
+                            ? styles.paperFitToggleDotBad
+                            : styles.paperFitToggleDotNeutral,
+                      ]}
+                    />
+                  </View>
+                </Pressable>
+                <Pressable
                   onPress={() => setIsSceneLegendOpen((current) => !current)}
                   style={({ pressed }) => [
                     styles.sceneLegendButton,
@@ -557,71 +614,78 @@ export default function ScreenLab() {
                   ))}
                 </View>
               ) : null}
+              {isPaperFitOpen ? (
+                <View style={styles.paperFitInlineCard}>
+                  <View style={styles.fortuneFitHeader}>
+                    <View style={styles.fortuneFitHeaderCopy}>
+                      <Text style={styles.fortuneFitEyebrow}>Paper Fit</Text>
+                      <Text style={styles.fortuneFitTitle}>10 live fortunes</Text>
+                      <Text style={styles.fortuneFitSubtitle}>
+                        Tap a fortune to load it into the previews.
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => {
+                        setFortuneFitSeed(Date.now() >>> 0);
+                        setFortuneFitLineCounts({});
+                      }}
+                      style={styles.fortuneFitRefreshButton}
+                    >
+                      <Text style={styles.fortuneFitRefreshButtonText}>Sample 10</Text>
+                    </Pressable>
+                  </View>
+                  <View style={styles.fortuneFitLegendRow}>
+                    <Text style={[styles.fortuneFitHeaderCell, styles.fortuneFitBucketColumn]}>Bucket</Text>
+                    <Text style={[styles.fortuneFitHeaderCell, styles.fortuneFitCharsColumn]}>Chars</Text>
+                    <Text style={[styles.fortuneFitHeaderCell, styles.fortuneFitTextColumn]}>Fortune</Text>
+                  </View>
+                  <ScrollView
+                    style={styles.fortuneFitInlineList}
+                    contentContainerStyle={styles.fortuneFitListContent}
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator
+                  >
+                    {sampledFortunes.map((fortune) => {
+                      const isSelected = fortune.sampleId === selectedSampleId;
+
+                      return (
+                        <View
+                          key={fortune.sampleId}
+                          style={[
+                            styles.fortuneFitRow,
+                            isSelected ? styles.fortuneFitRowSelected : null,
+                          ]}
+                        >
+                          <Text style={[styles.fortuneFitCell, styles.fortuneFitBucketColumn]}>{formatLabel(fortune.primaryBucket)}</Text>
+                          <Text style={[styles.fortuneFitCell, styles.fortuneFitCharsColumn]}>{fortune.text.length}</Text>
+                          <Pressable
+                            onPress={() => setSelectedSampleId(fortune.sampleId)}
+                            style={styles.fortuneFitTextPressable}
+                          >
+                            <Text style={[styles.fortuneFitCell, styles.fortuneFitTextColumn, styles.fortuneFitTextLink]}>
+                              {fortune.text}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
       </View>
 
       <View style={styles.framesWrap}>
-        <View style={styles.paperFitSplit}>
-          <View style={styles.fortuneFitCard}>
-            <View style={styles.fortuneFitHeader}>
-              <View style={styles.fortuneFitHeaderCopy}>
-                <Text style={styles.fortuneFitEyebrow}>Paper Fit</Text>
-                <Text style={styles.fortuneFitTitle}>10 live fortunes</Text>
-                <Text style={styles.fortuneFitSubtitle}>
-                  Tap a fortune to load it into the previews.
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => {
-                  setFortuneFitSeed(Date.now() >>> 0);
-                  setFortuneFitLineCounts({});
-                }}
-                style={styles.fortuneFitRefreshButton}
-              >
-                <Text style={styles.fortuneFitRefreshButtonText}>Sample 10</Text>
-              </Pressable>
-            </View>
-            <View style={styles.fortuneFitLegendRow}>
-              <Text style={[styles.fortuneFitHeaderCell, styles.fortuneFitBucketColumn]}>Bucket</Text>
-              <Text style={[styles.fortuneFitHeaderCell, styles.fortuneFitCharsColumn]}>Chars</Text>
-              <Text style={[styles.fortuneFitHeaderCell, styles.fortuneFitTextColumn]}>Fortune</Text>
-            </View>
+        {sceneGroups.map((group) => (
+          <View key={group.key} style={styles.sceneGroup}>
             <ScrollView
-              style={styles.fortuneFitList}
-              contentContainerStyle={styles.fortuneFitListContent}
-              showsVerticalScrollIndicator
+              horizontal
+              contentContainerStyle={styles.sceneFramesScrollerContent}
+              showsHorizontalScrollIndicator
+              style={styles.sceneFramesScroller}
             >
-              {sampledFortunes.map((fortune) => {
-                const isSelected = fortune.sampleId === selectedSampleId;
-
-                return (
-                  <View
-                    key={fortune.sampleId}
-                    style={[
-                      styles.fortuneFitRow,
-                      isSelected ? styles.fortuneFitRowSelected : null,
-                    ]}
-                  >
-                    <Text style={[styles.fortuneFitCell, styles.fortuneFitBucketColumn]}>{formatLabel(fortune.primaryBucket)}</Text>
-                    <Text style={[styles.fortuneFitCell, styles.fortuneFitCharsColumn]}>{fortune.text.length}</Text>
-                    <Pressable
-                      onPress={() => setSelectedSampleId(fortune.sampleId)}
-                      style={styles.fortuneFitTextPressable}
-                    >
-                      <Text style={[styles.fortuneFitCell, styles.fortuneFitTextColumn, styles.fortuneFitTextLink]}>
-                        {fortune.text}
-                      </Text>
-                    </Pressable>
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {sceneGroups.map((group) => (
-            <View key={group.key} style={styles.sceneGroup}>
               <View style={styles.sceneFramesWrap}>
                 {PREVIEW_DEVICES.map((device) => (
                   <PreviewFrame
@@ -637,9 +701,9 @@ export default function ScreenLab() {
                   </PreviewFrame>
                 ))}
               </View>
-            </View>
-          ))}
-        </View>
+            </ScrollView>
+          </View>
+        ))}
       </View>
 
       <View pointerEvents="none" style={styles.measurementStage}>
@@ -720,15 +784,66 @@ const styles = StyleSheet.create({
     color: '#2d241d',
   },
   sceneBlock: {
-    gap: 2,
-    minWidth: 440,
+    gap: 8,
+    minWidth: 540,
     marginLeft: 'auto',
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
+    flex: 1,
   },
   sceneControlsRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+  },
+  paperFitToggle: {
+    minWidth: 132,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#f7ecdd',
+    borderWidth: 1,
+    borderColor: 'rgba(164, 122, 82, 0.22)',
+    gap: 2,
+  },
+  paperFitTogglePressed: {
+    opacity: 0.88,
+  },
+  paperFitToggleEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: '#8a735f',
+  },
+  paperFitToggleTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#433326',
+  },
+  paperFitToggleMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  paperFitToggleMeta: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7a6655',
+  },
+  paperFitToggleDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+  },
+  paperFitToggleDotGood: {
+    backgroundColor: '#6ca36b',
+  },
+  paperFitToggleDotBad: {
+    backgroundColor: '#c3755f',
+  },
+  paperFitToggleDotNeutral: {
+    backgroundColor: '#b6a694',
   },
   sceneRows: {
     gap: 3,
@@ -775,7 +890,6 @@ const styles = StyleSheet.create({
   },
   sceneLegendCard: {
     width: '100%',
-    maxWidth: 520,
     borderRadius: 14,
     backgroundColor: 'rgba(255, 250, 244, 0.98)',
     borderWidth: 1,
@@ -907,15 +1021,8 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 24,
   },
-  paperFitSplit: {
+  paperFitInlineCard: {
     width: '100%',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 16,
-  },
-  fortuneFitCard: {
-    width: 420,
-    flexShrink: 0,
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -970,8 +1077,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(104, 80, 58, 0.12)',
     paddingBottom: 6,
   },
-  fortuneFitList: {
-    maxHeight: 420,
+  fortuneFitInlineList: {
+    maxHeight: 240,
   },
   fortuneFitListContent: {
     paddingBottom: 4,
@@ -1021,6 +1128,12 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     gap: 10,
+  },
+  sceneFramesScroller: {
+    width: '100%',
+  },
+  sceneFramesScrollerContent: {
+    paddingRight: 24,
   },
   sceneFramesWrap: {
     flexDirection: 'row',

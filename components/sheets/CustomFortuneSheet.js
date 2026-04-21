@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -192,24 +193,31 @@ export default function CustomFortuneSheet({
                 },
                 isVeryCompactSheet ? styles.sheetCompact : null,
               ]}
-            >
-              <View style={styles.header}>
-                <View>
-                  <Text style={[styles.title, isVeryCompactSheet ? styles.titleCompact : null]}>
-                    {isEditing ? 'Edit your fortune' : 'Create your own fortune'}
-                  </Text>
-                  {!isEditing ? (
-                    <Text style={[styles.subtitle, isVeryCompactSheet ? styles.subtitleCompact : null]}>
-                      I&apos;m feeling...
+              >
+                <View style={styles.header}>
+                  <View style={styles.headerCopy}>
+                    <Text
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.82}
+                      numberOfLines={1}
+                      style={[styles.title, isVeryCompactSheet ? styles.titleCompact : null]}
+                    >
+                      {isEditing ? 'Edit your fortune' : 'Create your own fortune'}
                     </Text>
-                  ) : null}
+                    {!isEditing ? (
+                      <Text style={[styles.subtitle, isVeryCompactSheet ? styles.subtitleCompact : null]}>
+                        I&apos;m feeling...
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Pressable hitSlop={8} onPress={handleClose} style={styles.closeButton}>
+                    <Ionicons
+                      color="#8d6748"
+                      name="close"
+                      size={isVeryCompactSheet ? 18 : 20}
+                    />
+                  </Pressable>
                 </View>
-                <Pressable hitSlop={8} onPress={handleClose}>
-                  <Text style={[styles.closeText, isVeryCompactSheet ? styles.closeTextCompact : null]}>
-                    Close
-                  </Text>
-                </Pressable>
-              </View>
 
               <ScrollView
                 contentContainerStyle={styles.scrollContent}
@@ -392,11 +400,18 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 6,
   },
+  headerCopy: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 4,
+  },
   title: {
     fontSize: 20,
     fontWeight: '700',
     color: '#4f3828',
     letterSpacing: -0.2,
+    flexShrink: 1,
+    lineHeight: 24,
   },
   titleCompact: {
     fontSize: 17,
@@ -414,13 +429,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 14,
   },
-  closeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#8d6748',
-  },
-  closeTextCompact: {
-    fontSize: 12.5,
+  closeButton: {
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -2,
   },
   scrollContent: {
     paddingBottom: 0,

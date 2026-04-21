@@ -167,6 +167,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   const menuGap = isVeryCompact ? 3 : 4;
   const streakScale = isVeryCompact ? 0.9 : isCompact ? 0.94 : isRoomy ? 1.04 : 1;
   const streakRightNudge = isVeryCompact ? 8 : 0;
+  const streakAvailableWidth = width - horizontalPadding * 2 - menuButtonSize - 12;
+  const streakCollapsedWidth = clamp(Math.round(streakAvailableWidth * 0.56), 146, 188);
+  const streakExpandedWidth = clamp(Math.round(streakAvailableWidth), 246, 304);
   const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
   const cookieScale = isVeryCompact ? 0.84 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
   const cookieFrameHeight = Math.round(COOKIE_SHELL_FRAME.height * cookieScale);
@@ -305,6 +308,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     paperLift: isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 28,
     promptSectionOffset: isVeryCompact ? -16 : 0,
     scene,
+    streakCollapsedWidth,
+    streakExpandedWidth,
     streakScale,
     streakRightNudge,
   };
@@ -945,7 +950,9 @@ export default function FortuneCard({
           <View style={{ transform: [{ translateX: metrics.streakRightNudge }, { scale: metrics.streakScale }] }}>
             <StreakStatus
               celebrationToken={streakCelebrationToken}
+              collapsedWidth={metrics.streakCollapsedWidth}
               daysToNextTier={streakDaysToNextTier}
+              expandedWidth={metrics.streakExpandedWidth}
               nextTierTitle={streakNextTierTitle}
               streakCount={streakCount}
               forcedExpanded={streakForcedExpanded}

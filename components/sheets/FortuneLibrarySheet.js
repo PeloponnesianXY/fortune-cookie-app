@@ -139,9 +139,16 @@ export default function FortuneLibrarySheet({
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.sheet}>
             <View style={styles.topRow}>
-              <Text style={styles.title}>Your fortunes - click to share</Text>
-              <Pressable hitSlop={8} onPress={onClose}>
-                <Text style={styles.closeText}>Close</Text>
+              <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.78}
+                numberOfLines={1}
+                style={styles.title}
+              >
+                Your fortunes - click to share
+              </Text>
+              <Pressable hitSlop={8} onPress={onClose} style={styles.closeButton}>
+                <Ionicons color="#9a673d" name="close" size={20} />
               </Pressable>
             </View>
 
@@ -248,19 +255,27 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: 14,
+    gap: 12,
   },
   title: {
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
     fontSize: 20,
     fontWeight: '700',
     color: '#5b412d',
+    lineHeight: 24,
   },
-  closeText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#9a673d',
+  closeButton: {
+    flexShrink: 0,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -2,
   },
   switcher: {
     flexDirection: 'row',

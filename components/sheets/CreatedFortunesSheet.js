@@ -55,15 +55,22 @@ export default function CreatedFortunesSheet({
           <View style={styles.sheet}>
             <View style={styles.header}>
               <View style={styles.headerTopRow}>
-                <Text style={styles.title}>Your created fortunes</Text>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.82}
+                  numberOfLines={1}
+                  style={styles.title}
+                >
+                  Your created fortunes
+                </Text>
                 <View style={styles.headerActions}>
                   {hasContent ? (
                     <Pressable hitSlop={8} onPress={onClearAll}>
                       <Text style={styles.headerActionText}>Clear all</Text>
                     </Pressable>
                   ) : null}
-                  <Pressable hitSlop={8} onPress={onClose}>
-                    <Text style={styles.headerActionText}>Close</Text>
+                  <Pressable hitSlop={8} onPress={onClose} style={styles.closeButton}>
+                    <Ionicons color="#8d6748" name="close" size={20} />
                   </Pressable>
                 </View>
               </View>
@@ -123,19 +130,31 @@ const styles = StyleSheet.create({
   headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'baseline',
+    alignItems: 'flex-start',
     gap: 12,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 10,
+    flexShrink: 0,
   },
   title: {
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
     fontSize: 22,
     fontWeight: '700',
     color: '#4f3828',
     letterSpacing: -0.2,
+    lineHeight: 26,
+  },
+  closeButton: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -2,
   },
   headerActionText: {
     fontSize: 15,
