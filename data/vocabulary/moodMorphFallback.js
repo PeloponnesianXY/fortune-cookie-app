@@ -239,7 +239,7 @@ const MOOD_MORPH_FALLBACK = {
   assertiveness: 'assertive',
   boldly: 'bold',
   boldness: 'bold',
-  bravery: 'brave',
+  bravery: 'confident',
   capability: 'capable',
   certainty: 'certain',
   competence: 'competent',

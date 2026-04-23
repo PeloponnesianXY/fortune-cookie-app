@@ -32,8 +32,10 @@ import {
   updateCustomFortune,
 } from '../../utils/customFortunes';
 import { MOOD_BUCKET_KEYS } from '../../utils/fortuneLogic';
+import appConfig from '../../app.json';
 
 const CONTENT_FRAME_PADDING_BOTTOM = 20;
+const APP_VERSION = appConfig?.expo?.version || '1.0.2';
 // Master prompt sits in a flex column with a tall cookieSection minHeight; overflow can ignore
 // contentFrame padding. Pin the prompt above the gesture area on Android instead of flex-end.
 const ANDROID_MASTER_PROMPT_BOTTOM_GAP = 12;
@@ -57,6 +59,10 @@ const MAX_ACTION_TRAY_ROOMINESS_GAP = 30;
 const COOKIE_ROOMINESS_DROP_FACTOR = 0.16;
 const COOKIE_ROOMINESS_CURVE_FACTOR = 0.0003;
 const MAX_COOKIE_ROOMINESS_DROP = 110;
+const TALL_ANDROID_ACTION_TRAY_DROP = 8;
+const TALL_ANDROID_PAPER_LIFT = 18;
+const TALL_ANDROID_CUSTOM_NOTICE_LIFT = 40;
+const GLOBAL_CUSTOM_NOTICE_LIFT = 14;
 const CREATE_FORTUNE_TOP_GAP_FACTOR = 0.014;
 const MIN_CREATE_FORTUNE_TOP_GAP = 10;
 const MAX_CREATE_FORTUNE_TOP_GAP = 18;
@@ -157,11 +163,13 @@ function getLayoutMode(width, height) {
   return 'standard';
 }
 
-function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
+function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, platform = Platform.OS) {
   const layoutMode = getLayoutMode(width, height);
   const isVeryCompact = layoutMode === 'veryCompact';
   const isCompact = layoutMode === 'compact' || isVeryCompact;
   const isRoomy = layoutMode === 'roomy';
+  const isAndroid = platform === 'android';
+  const isTallAndroidPhone = isAndroid && isRoomy && width >= 390;
   const usableHeight = height - (insets.top || 0) - (insets.bottom || 0);
   const extraUsableHeight = Math.max(0, usableHeight - SE_BASELINE_USABLE_HEIGHT);
   const horizontalPadding = clamp(Math.round(width * 0.055), 14, 24);
@@ -177,7 +185,15 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   const streakCollapsedWidth = clamp(Math.round(streakAvailableWidth * 0.64), 160, 204);
   const streakExpandedWidth = clamp(Math.round(streakAvailableWidth), 246, 304);
   const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
-  const cookieScale = isVeryCompact ? 0.84 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
+  const cookieScale = isVeryCompact
+    ? 0.84
+    : isCompact
+      ? 0.8
+      : isTallAndroidPhone
+        ? 0.92
+        : isRoomy
+          ? 0.98
+          : 0.88;
   const cookieFrameHeight = Math.round(COOKIE_SHELL_FRAME.height * cookieScale);
   const cookieStageMinHeight = isVeryCompact
     ? cookieFrameHeight + 10
@@ -207,7 +223,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     Math.round(extraUsableHeight * ACTION_TRAY_ROOMINESS_GAP_FACTOR),
     0,
     MAX_ACTION_TRAY_ROOMINESS_GAP
-  );
+  ) - (isTallAndroidPhone ? 8 : 0);
   const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
   const actionTrayEstimatedHeight = isVeryCompact ? 88 : isCompact ? 92 : isRoomy ? 100 : 96;
   const actionTrayVisualLift = clamp(
@@ -217,9 +233,25 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   );
   const actionTrayTop = Math.round(
     cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
-  );
-  const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
-  const dailyWisdomBottom = isVeryCompact ? 66 : isCompact ? 52 : isRoomy ? 86 : 92;
+  ) + (isTallAndroidPhone ? TALL_ANDROID_ACTION_TRAY_DROP : 0);
+  const dailyWisdomSlotHeight = isVeryCompact
+    ? 80
+    : isCompact
+      ? 88
+      : isTallAndroidPhone
+        ? 104
+        : isRoomy
+          ? 124
+          : 104;
+  const dailyWisdomBottom = isVeryCompact
+    ? 66
+    : isCompact
+      ? 52
+      : isTallAndroidPhone
+        ? 72
+        : isRoomy
+          ? 86
+          : 92;
   const cookieRoominessDrop = clamp(
     Math.round(
       extraUsableHeight * COOKIE_ROOMINESS_DROP_FACTOR
@@ -228,7 +260,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     0,
     MAX_COOKIE_ROOMINESS_DROP
   );
-  const desiredCookieCenterY = Math.round(height * 0.62) + cookieRoominessDrop;
+  const desiredCookieCenterY = Math.round(height * (isTallAndroidPhone ? 0.515 : 0.62))
+    + Math.round(cookieRoominessDrop * (isTallAndroidPhone ? 0.18 : 1));
   const maxCookieTopSpacing = 172 + clamp(Math.round(extraUsableHeight * 0.3), 0, 72);
   const cookieTopSpacing = clamp(
     Math.round(desiredCookieCenterY - dailyWisdomSlotHeight - cookieFrameHeight / 2),
@@ -249,7 +282,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MAX_CUSTOM_NOTICE_GAP
   );
   const customNoticeTop = createFortuneTopAnchor + ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT + customNoticeGap
+    - GLOBAL_CUSTOM_NOTICE_LIFT
     - (isVeryCompact ? SE_CUSTOM_NOTICE_LIFT : 0)
+    - (isTallAndroidPhone ? TALL_ANDROID_CUSTOM_NOTICE_LIFT : 0)
     + (isVeryCompact ? 12 : isCompact ? 10 : isRoomy ? 16 : 14);
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
@@ -311,7 +346,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     promptFloatClearance,
     promptBottomInset,
     promptGap,
-    paperLift: isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 28,
+    paperLift: isTallAndroidPhone ? TALL_ANDROID_PAPER_LIFT : isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 28,
     promptSectionOffset: isVeryCompact ? -16 : 0,
     scene,
     streakCollapsedWidth,
@@ -377,14 +412,18 @@ const CookieStage = memo(function CookieStage({
       },
     ],
   };
+  const isCookieTapEnabled = Boolean(isPaperVisible && onPress);
 
   return (
-    <Pressable
-      accessibilityRole={isPaperVisible ? 'button' : undefined}
-      onPress={isPaperVisible ? onPress : undefined}
-      style={styles.cookieTapArea}
-    >
-      <View style={[styles.cookieStage, { minHeight: stageMinHeight }]}>
+    <View style={[styles.cookieStage, { minHeight: stageMinHeight }]}>
+      <View
+        accessible={isCookieTapEnabled}
+        accessibilityRole={isCookieTapEnabled ? 'button' : undefined}
+        focusable={false}
+        onResponderRelease={isCookieTapEnabled ? onPress : undefined}
+        onStartShouldSetResponder={() => isCookieTapEnabled}
+        style={styles.cookieTapArea}
+      >
         <Animated.View style={[styles.cookieImageFrame, cookieLiftStyle]}>
           <CookieShell
             fortuneText={fortuneText}
@@ -399,7 +438,7 @@ const CookieStage = memo(function CookieStage({
           />
         </Animated.View>
       </View>
-    </Pressable>
+    </View>
   );
 });
 
@@ -472,8 +511,8 @@ export default function FortuneCard({
   const promptLiftProgress = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
   const metrics = useMemo(
-    () => createLayoutMetrics(viewportWidth, viewportHeight, previewLayout.insets),
-    [previewLayout.insets, viewportHeight, viewportWidth]
+    () => createLayoutMetrics(viewportWidth, viewportHeight, previewLayout.insets, previewLayout.platform),
+    [previewLayout.insets, previewLayout.platform, viewportHeight, viewportWidth]
   );
   const simulatedKeyboardPlatform = previewLayout.platform || Platform.OS;
   const simulatedKeyboardHeight = simulatedKeyboardPlatform === 'ios'
@@ -1323,6 +1362,11 @@ export default function FortuneCard({
             </DrawerSection>
 
             <View style={styles.drawerCalmSpace} />
+            <View style={styles.drawerFooter}>
+              <Text style={[styles.drawerVersionText, { color: drawerPalette.title }]}>
+                Version {APP_VERSION}
+              </Text>
+            </View>
             <View style={styles.drawerMotif} pointerEvents="none">
               <View style={[styles.drawerMotifLine, { backgroundColor: drawerPalette.motif }]} />
               <View style={[styles.drawerMotifDot, { backgroundColor: drawerPalette.motif }]} />
@@ -1760,10 +1804,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   cookieTapArea: {
-    width: '100%',
-    alignSelf: 'center',
     alignItems: 'center',
-    marginTop: 0,
+    justifyContent: 'center',
   },
   cookieStage: {
     width: '100%',
@@ -1866,6 +1908,16 @@ const styles = StyleSheet.create({
   drawerCalmSpace: {
     flex: 1,
     minHeight: 28,
+  },
+  drawerFooter: {
+    paddingHorizontal: 4,
+    paddingBottom: 10,
+  },
+  drawerVersionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    opacity: 0.72,
+    letterSpacing: 0.2,
   },
   drawerMotif: {
     alignItems: 'flex-start',

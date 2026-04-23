@@ -263,7 +263,7 @@ function ToggleRow({ label, onValueChange, value }) {
 export default function ScreenLab() {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [selectedSceneKey, setSelectedSceneKey] = useState('sunlitAir');
-  const [selectedPreviewDeviceKey, setSelectedPreviewDeviceKey] = useState('galaxyA56');
+  const [selectedPreviewDeviceKeys, setSelectedPreviewDeviceKeys] = useState(['galaxyA56']);
   const [isSceneLegendOpen, setIsSceneLegendOpen] = useState(false);
   const [isPaperFitOpen, setIsPaperFitOpen] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
@@ -304,20 +304,46 @@ export default function ScreenLab() {
   const selectedSampleLineCounts = selectedSampleId ? (fortuneFitLineCounts[selectedSampleId] || {}) : {};
   const selectedSampleFitVerdict = getFitVerdict(selectedSampleLineCounts);
   const selectedSampleFitTone = getFitVerdictTone(selectedSampleLineCounts);
-  const selectedPreviewDevice = PREVIEW_DEVICES.find((device) => device.key === selectedPreviewDeviceKey) || PREVIEW_DEVICES[0];
+  const selectedPreviewDevices = PREVIEW_DEVICES.filter((device) => selectedPreviewDeviceKeys.includes(device.key));
+  const resolvedPreviewDevices = selectedPreviewDevices.length ? selectedPreviewDevices : [PREVIEW_DEVICES[0]];
   const isDesktopLayout = windowWidth >= 1120;
   const selectedSceneLabel = SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene';
   const stageHeaderHeight = isDesktopLayout ? 112 : 92;
   const estimatedShellPadding = isDesktopLayout ? 40 : 28;
-  const stageWidthEstimate = isDesktopLayout ? Math.max(420, windowWidth - 430) : Math.max(320, windowWidth - 28);
+  const stageWidthEstimate = isDesktopLayout ? Math.max(520, windowWidth - 348) : Math.max(320, windowWidth - 28);
   const previewHeightBudget = Math.max(360, windowHeight - stageHeaderHeight - estimatedShellPadding);
-  const previewWidthBudget = Math.max(280, stageWidthEstimate - 48);
-  const fittedPreviewScale = Math.min(
-    getDisplayPreviewScale(selectedPreviewDevice),
-    previewHeightBudget / (selectedPreviewDevice.height + 18),
-    previewWidthBudget / (selectedPreviewDevice.width + 18)
+  const previewColumns = isDesktopLayout
+    ? Math.min(resolvedPreviewDevices.length, resolvedPreviewDevices.length > 2 ? 3 : 2)
+    : 1;
+  const previewWidthBudget = Math.max(
+    280,
+    Math.floor((stageWidthEstimate - 48 - ((previewColumns - 1) * 20)) / previewColumns)
   );
-  const previewScale = Math.max(isDesktopLayout ? 0.54 : 0.5, Math.round(fittedPreviewScale * 1000) / 1000);
+  const previewScale = resolvedPreviewDevices.reduce((smallestScale, device) => {
+    const fittedPreviewScale = Math.min(
+      getDisplayPreviewScale(device),
+      previewHeightBudget / (device.height + 18),
+      previewWidthBudget / (device.width + 18)
+    );
+
+    return Math.min(smallestScale, fittedPreviewScale);
+  }, Number.POSITIVE_INFINITY);
+  const resolvedPreviewScale = Math.max(
+    isDesktopLayout ? 0.44 : 0.5,
+    Math.round(previewScale * 1000) / 1000
+  );
+
+  const togglePreviewDevice = (deviceKey) => {
+    setSelectedPreviewDeviceKeys((current) => {
+      if (current.includes(deviceKey)) {
+        return current.length === 1
+          ? current
+          : current.filter((key) => key !== deviceKey);
+      }
+
+      return [...current, deviceKey];
+    });
+  };
 
   const handlePaperTextLayout = (sampleId, deviceKey) => (event) => {
     const nextLineCount = event?.nativeEvent?.lines?.length || 0;
@@ -493,31 +519,38 @@ export default function ScreenLab() {
               <View style={styles.sidebarSection}>
                 <View style={styles.sidebarSectionHeader}>
                   <Text style={styles.sidebarSectionEyebrow}>Device</Text>
-                  <Text style={styles.sidebarSectionTitle}>Preview target</Text>
+                  <Text style={styles.sidebarSectionTitle}>Preview targets</Text>
                 </View>
                 <View style={styles.devicePickerGrid}>
                   {PREVIEW_DEVICES.map((device) => {
-                    const isActive = device.key === selectedPreviewDevice.key;
+                    const isActive = resolvedPreviewDevices.some((candidate) => candidate.key === device.key);
 
                     return (
                       <Pressable
                         key={device.key}
-                        onPress={() => setSelectedPreviewDeviceKey(device.key)}
+                        onPress={() => togglePreviewDevice(device.key)}
                         style={({ pressed }) => [
                           styles.devicePickerCard,
                           isActive ? styles.devicePickerCardActive : null,
                           pressed ? styles.devicePickerCardPressed : null,
                         ]}
                       >
-                        <Text style={[styles.devicePickerCode, isActive ? styles.devicePickerCodeActive : null]}>
-                          {getPreviewDeviceShortLabel(device)}
-                        </Text>
-                        <Text style={[styles.devicePickerLabel, isActive ? styles.devicePickerLabelActive : null]}>
-                          {device.label.replace('6.7-inch Class, such as ', '').replace('6.1-inch Class, such as ', '').replace('4.7-inch Class, such as ', '')}
-                        </Text>
-                        <Text style={[styles.devicePickerMeta, isActive ? styles.devicePickerMetaActive : null]}>
-                          {device.width} x {device.height} pt
-                        </Text>
+                        <View style={styles.devicePickerRow}>
+                          <View style={[styles.devicePickerCheckbox, isActive ? styles.devicePickerCheckboxActive : null]}>
+                            {isActive ? <View style={styles.devicePickerCheckboxDot} /> : null}
+                          </View>
+                          <View style={styles.devicePickerCopy}>
+                            <Text style={[styles.devicePickerCode, isActive ? styles.devicePickerCodeActive : null]}>
+                              {getPreviewDeviceShortLabel(device)}
+                            </Text>
+                            <Text style={[styles.devicePickerLabel, isActive ? styles.devicePickerLabelActive : null]}>
+                              {device.label.replace('6.7-inch Class, such as ', '').replace('6.1-inch Class, such as ', '').replace('4.7-inch Class, such as ', '')}
+                            </Text>
+                            <Text style={[styles.devicePickerMeta, isActive ? styles.devicePickerMetaActive : null]}>
+                              {device.width} x {device.height} pt
+                            </Text>
+                          </View>
+                        </View>
                       </Pressable>
                     );
                   })}
@@ -756,29 +789,46 @@ export default function ScreenLab() {
               <View style={styles.previewStageHeader}>
                 <View style={styles.previewStageHeaderCopy}>
                   <Text style={styles.previewStageEyebrow}>Live Preview</Text>
-                  <Text style={styles.previewStageTitle}>{selectedPreviewDevice.label}</Text>
+                  <Text style={styles.previewStageTitle}>
+                    {resolvedPreviewDevices.length === 1 ? resolvedPreviewDevices[0].label : `${resolvedPreviewDevices.length} selected screens`}
+                  </Text>
                   <Text style={styles.previewStageMeta}>
-                    {selectedPreviewDevice.width} x {selectedPreviewDevice.height} pt
-                    {'  '}•{'  '}
+                    {resolvedPreviewDevices.map((device) => getPreviewDeviceShortLabel(device)).join(', ')}
+                    {'  '}|{'  '}
                     {selectedSceneLabel}
                   </Text>
                 </View>
               </View>
 
               <View style={styles.previewStageSurface}>
-                <PreviewFrame
-                  key={selectedPreviewDevice.key}
-                  height={selectedPreviewDevice.height}
-                  insets={isSafeAreaSimulated ? selectedPreviewDevice.insets : { top: 0, right: 0, bottom: 0, left: 0 }}
-                  keyboardVisible={isKeyboardSimulated}
-                  label={selectedPreviewDevice.label}
-                  previewPlatform={selectedPreviewDevice.platform}
-                  showHeader={false}
-                  visualScale={previewScale}
-                  width={selectedPreviewDevice.width}
-                >
-                  <FortuneHomeContent {...previewProps} />
-                </PreviewFrame>
+                <View style={styles.previewGrid}>
+                  {resolvedPreviewDevices.map((device) => (
+                    <View
+                      key={device.key}
+                      style={[
+                        styles.previewDeviceCard,
+                        isDesktopLayout ? styles.previewDeviceCardDesktop : null,
+                      ]}
+                    >
+                      <View style={styles.previewDeviceCardHeader}>
+                        <Text style={styles.previewDeviceCardTitle}>{device.label}</Text>
+                        <Text style={styles.previewDeviceCardMeta}>{device.width} x {device.height} pt</Text>
+                      </View>
+                      <PreviewFrame
+                        height={device.height}
+                        insets={isSafeAreaSimulated ? device.insets : { top: 0, right: 0, bottom: 0, left: 0 }}
+                        keyboardVisible={isKeyboardSimulated}
+                        label={device.label}
+                        previewPlatform={device.platform}
+                        showHeader={false}
+                        visualScale={resolvedPreviewScale}
+                        width={device.width}
+                      >
+                        <FortuneHomeContent {...previewProps} />
+                      </PreviewFrame>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
           </View>
@@ -851,16 +901,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   controlColumnDesktop: {
-    width: 372,
+    width: 290,
   },
   controlColumnContent: {
-    padding: 16,
-    gap: 12,
+    padding: 12,
+    gap: 10,
   },
   sidebarSection: {
     borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     backgroundColor: '#fffaf4',
     borderWidth: 1,
     borderColor: 'rgba(110, 82, 58, 0.09)',
@@ -884,6 +934,36 @@ const styles = StyleSheet.create({
   },
   devicePickerGrid: {
     gap: 6,
+  },
+  devicePickerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  devicePickerCheckbox: {
+    width: 18,
+    height: 18,
+    marginTop: 1,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(122, 90, 64, 0.22)',
+    backgroundColor: 'rgba(255, 252, 247, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  devicePickerCheckboxActive: {
+    borderColor: 'rgba(255, 247, 239, 0.68)',
+    backgroundColor: 'rgba(255, 247, 239, 0.14)',
+  },
+  devicePickerCheckboxDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: '#fff7ef',
+  },
+  devicePickerCopy: {
+    flex: 1,
+    minWidth: 0,
   },
   devicePickerCard: {
     borderRadius: 12,
@@ -1189,6 +1269,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 18,
     paddingVertical: 14,
+  },
+  previewStageSurfaceContent: {
+    flexGrow: 1,
+  },
+  previewGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    gap: 20,
+  },
+  previewDeviceCard: {
+    alignItems: 'center',
+    gap: 10,
+  },
+  previewDeviceCardDesktop: {
+    minWidth: 280,
+  },
+  previewDeviceCardHeader: {
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 8,
+  },
+  previewDeviceCardTitle: {
+    color: '#3d2c1e',
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
+  },
+  previewDeviceCardMeta: {
+    color: '#7d6654',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   framesWrap: {
     width: '100%',
