@@ -59,14 +59,20 @@ const MAX_ACTION_TRAY_ROOMINESS_GAP = 30;
 const COOKIE_ROOMINESS_DROP_FACTOR = 0.16;
 const COOKIE_ROOMINESS_CURVE_FACTOR = 0.0003;
 const MAX_COOKIE_ROOMINESS_DROP = 110;
-const TALL_ANDROID_ACTION_TRAY_DROP = 8;
-const TALL_ANDROID_PAPER_LIFT = 18;
+const TALL_ANDROID_ACTION_TRAY_DROP = 36;
+const TALL_ANDROID_PAPER_LIFT = 30;
 const TALL_ANDROID_CUSTOM_NOTICE_LIFT = 40;
 const GLOBAL_CUSTOM_NOTICE_LIFT = 14;
 const LOCK_ALERT_NOTICE_CLEARANCE = 54;
 const TALL_ANDROID_LOCK_ALERT_NOTICE_CLEARANCE = 76;
 const SAVED_NOTICE_SUN_GAP = 36;
-const IOS_SIX_ONE_PAPER_LIFT = 40;
+const IOS_SIX_ONE_PAPER_LIFT = 52;
+const IOS_PHONE_PAPER_LIFT = 52;
+const IOS_PHONE_COOKIE_LIFT = 12;
+const IOS_PHONE_COOKIE_IMAGE_LIFT = 18;
+const IOS_PHONE_COOKIE_STAGE_LIFT = 10;
+const IOS_SIX_ONE_COOKIE_STAGE_LIFT = 28;
+const IOS_PLUS_ACTION_TRAY_DROP = 10;
 const CREATE_FORTUNE_TOP_GAP_FACTOR = 0.014;
 const MIN_CREATE_FORTUNE_TOP_GAP = 10;
 const MAX_CREATE_FORTUNE_TOP_GAP = 18;
@@ -174,6 +180,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     && width <= 393
     && rawUsableHeight >= 758
     && rawUsableHeight <= 764;
+  const isIosPhonePreview = platform === 'ios' && width <= 430;
+  const isIosPlusClass = platform === 'ios' && width >= 428 && width <= 430;
+  const isLargeIosPhonePreview = isIosPhonePreview && width >= 390;
   const metricWidth = isIosSixOneClass ? 390 : width;
   const usableHeight = isIosSixOneClass ? 763 : rawUsableHeight;
   const layoutMode = getLayoutMode(metricWidth, usableHeight);
@@ -223,7 +232,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     Math.round(extraUsableHeight * COOKIE_DROP_FACTOR),
     0,
     MAX_COOKIE_DROP
-  ) - (isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 20);
+  ) - (isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 20)
+    - (isIosPhonePreview ? IOS_PHONE_COOKIE_IMAGE_LIFT : 0);
   const cookieImageBottom = getOpenedCookieImageBottom(cookieScale, cookieImageOffset);
   const actionTrayImageGap = clamp(
     Math.round(usableHeight * ACTION_TRAY_IMAGE_GAP_FACTOR),
@@ -244,7 +254,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
   );
   const actionTrayTop = Math.round(
     cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
-  ) + (isTallAndroidPhone ? TALL_ANDROID_ACTION_TRAY_DROP : 0);
+  ) + (isTallAndroidPhone ? TALL_ANDROID_ACTION_TRAY_DROP : 0)
+    + (isIosPlusClass ? IOS_PLUS_ACTION_TRAY_DROP : 0);
   const dailyWisdomSlotHeight = isVeryCompact
     ? 80
     : isCompact
@@ -273,7 +284,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
   );
   const cookieCenterHeightBasis = isIosSixOneClass ? usableHeight : height;
   const desiredCookieCenterY = Math.round(cookieCenterHeightBasis * (isTallAndroidPhone ? 0.515 : 0.62))
-    + Math.round(cookieRoominessDrop * (isTallAndroidPhone ? 0.18 : 1));
+    + Math.round(cookieRoominessDrop * (isTallAndroidPhone ? 0.18 : 1))
+    - (isLargeIosPhonePreview ? IOS_PHONE_COOKIE_LIFT : 0);
   const maxCookieTopSpacing = 172 + clamp(Math.round(extraUsableHeight * 0.3), 0, 72);
   const cookieTopSpacing = clamp(
     Math.round(desiredCookieCenterY - dailyWisdomSlotHeight - cookieFrameHeight / 2),
@@ -344,6 +356,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     cookieScale,
     cookieStageMinHeight,
     cookieTopSpacing,
+    cookieVisualLift: isIosPhonePreview
+      ? (isIosSixOneClass ? IOS_SIX_ONE_COOKIE_STAGE_LIFT : IOS_PHONE_COOKIE_STAGE_LIFT)
+      : 0,
     dailyWisdomBottom,
     dailyWisdomSlotHeight,
     headerTop,
@@ -358,8 +373,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     promptFloatClearance,
     promptBottomInset,
     promptGap,
-    paperLift: isIosSixOneClass
-      ? IOS_SIX_ONE_PAPER_LIFT
+    paperLift: isIosPhonePreview
+      ? (isIosSixOneClass ? IOS_SIX_ONE_PAPER_LIFT : IOS_PHONE_PAPER_LIFT)
       : isTallAndroidPhone
         ? TALL_ANDROID_PAPER_LIFT
         : isVeryCompact
@@ -417,9 +432,11 @@ const CookieStage = memo(function CookieStage({
   shellProgress,
   shellScale,
   stageMinHeight,
+  visualLift = 0,
 }) {
   const cookieLiftStyle = {
     transform: [
+      { translateY: -visualLift },
       {
         translateY: shellProgress.interpolate({
           inputRange: [0, 1],
@@ -1108,6 +1125,7 @@ export default function FortuneCard({
             shellProgress={shellProgress}
             shellScale={metrics.cookieScale}
             stageMinHeight={metrics.cookieStageMinHeight}
+            visualLift={metrics.cookieVisualLift}
           />
 
           {isFortuneRevealed ? (

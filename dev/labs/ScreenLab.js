@@ -124,6 +124,7 @@ function getDisplayWidthInches({ displayDiagonalInches, height, width }) {
 const DISPLAY_REFERENCE_DEVICE = PREVIEW_DEVICES.find((device) => device.key === DISPLAY_REFERENCE_KEY);
 const DISPLAY_REFERENCE_WIDTH_RATIO = getDisplayWidthInches(DISPLAY_REFERENCE_DEVICE) / DISPLAY_REFERENCE_DEVICE.width;
 const FORTUNE_FIT_SAMPLE_SIZE = 10;
+const PREVIEW_STAGE_GAP_DESKTOP = 8;
 const SCENE_OPTIONS = Object.keys(SCENE_LIBRARY).map((key) => ({
   key,
   label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
@@ -326,28 +327,29 @@ export default function ScreenLab() {
   const selectedSceneLabel = SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene';
   const stageHeaderHeight = isDesktopLayout ? 112 : 92;
   const estimatedShellPadding = isDesktopLayout ? 40 : 28;
-  const stageWidthEstimate = isDesktopLayout ? Math.max(720, windowWidth - 230) : Math.max(320, windowWidth - 28);
+  const stageWidthEstimate = isDesktopLayout ? Math.max(860, windowWidth - 220) : Math.max(320, windowWidth - 28);
   const previewHeightBudget = Math.max(360, windowHeight - stageHeaderHeight - estimatedShellPadding);
-  const previewColumns = isDesktopLayout
-    ? Math.min(resolvedPreviewDevices.length, 4)
-    : 1;
-  const previewWidthBudget = Math.max(
-    280,
-    Math.floor((stageWidthEstimate - 48 - ((previewColumns - 1) * 20)) / previewColumns)
+  const previewBaseRowWidth = resolvedPreviewDevices.reduce(
+    (total, device) => total + (device.width + 18),
+    0
   );
-  const previewScale = resolvedPreviewDevices.reduce((smallestScale, device) => {
+  const previewRowGap = isDesktopLayout ? PREVIEW_STAGE_GAP_DESKTOP : 8;
+  const previewRowGapTotal = Math.max(0, resolvedPreviewDevices.length - 1) * previewRowGap;
+  const previewMaxScaleByHeight = resolvedPreviewDevices.reduce((smallestScale, device) => {
     const fittedPreviewScale = Math.min(
       getDisplayPreviewScale(device),
-      previewHeightBudget / (device.height + 18),
-      previewWidthBudget / (device.width + 18)
+      previewHeightBudget / (device.height + 18)
     );
 
     return Math.min(smallestScale, fittedPreviewScale);
   }, Number.POSITIVE_INFINITY);
+  const previewMaxScaleByWidth = (stageWidthEstimate - 16 - previewRowGapTotal) / Math.max(1, previewBaseRowWidth);
+  const previewScale = Math.min(previewMaxScaleByHeight, previewMaxScaleByWidth);
   const resolvedPreviewScale = Math.max(
-    isDesktopLayout ? 0.3 : 0.5,
+    isDesktopLayout ? 0.16 : 0.5,
     Math.round(previewScale * 1000) / 1000
   );
+  const previewRowWidth = Math.round((previewBaseRowWidth * resolvedPreviewScale) + previewRowGapTotal);
 
   const togglePreviewDevice = (deviceKey) => {
     setSelectedPreviewDeviceKeys((current) => {
@@ -804,7 +806,14 @@ export default function ScreenLab() {
           <View style={styles.previewColumn}>
             <View style={styles.previewStageCard}>
               <View style={styles.previewStageSurface}>
-                <View style={styles.previewGrid}>
+                <View
+                  style={[
+                    styles.previewGrid,
+                    isDesktopLayout
+                      ? { width: previewRowWidth, flexWrap: 'nowrap' }
+                      : null,
+                  ]}
+                >
                   {resolvedPreviewDevices.map((device) => (
                     <View
                       key={device.key}
@@ -1228,7 +1237,7 @@ const styles = StyleSheet.create({
   previewStageCard: {
     flex: 1,
     borderRadius: 32,
-    paddingHorizontal: 18,
+    paddingHorizontal: 10,
     paddingTop: 12,
     paddingBottom: 14,
     backgroundColor: 'rgba(250, 244, 235, 0.88)',
@@ -1247,10 +1256,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 229, 214, 0.88)',
     borderWidth: 1,
     borderColor: 'rgba(132, 99, 72, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 10,
   },
   previewStageSurfaceContent: {
     flexGrow: 1,
@@ -1260,8 +1269,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
-    justifyContent: 'center',
-    gap: 20,
+    justifyContent: 'flex-start',
+    gap: 8,
   },
   previewDeviceCard: {
     alignItems: 'center',
