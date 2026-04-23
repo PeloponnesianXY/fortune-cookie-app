@@ -63,6 +63,10 @@ const TALL_ANDROID_ACTION_TRAY_DROP = 8;
 const TALL_ANDROID_PAPER_LIFT = 18;
 const TALL_ANDROID_CUSTOM_NOTICE_LIFT = 40;
 const GLOBAL_CUSTOM_NOTICE_LIFT = 14;
+const LOCK_ALERT_NOTICE_CLEARANCE = 54;
+const TALL_ANDROID_LOCK_ALERT_NOTICE_CLEARANCE = 76;
+const SAVED_NOTICE_SUN_GAP = 36;
+const IOS_SIX_ONE_PAPER_LIFT = 40;
 const CREATE_FORTUNE_TOP_GAP_FACTOR = 0.014;
 const MIN_CREATE_FORTUNE_TOP_GAP = 10;
 const MAX_CREATE_FORTUNE_TOP_GAP = 18;
@@ -147,16 +151,16 @@ function createCustomFavoriteRecord(moodKey, fortuneText) {
   };
 }
 
-function getLayoutMode(width, height) {
-  if (height < 670) {
+function getLayoutMode(width, usableHeight) {
+  if (usableHeight < 670) {
     return 'veryCompact';
   }
 
-  if (height < 720 || width < 375) {
+  if (usableHeight < 720 || width < 375) {
     return 'compact';
   }
 
-  if (height > 850) {
+  if (usableHeight > 810) {
     return 'roomy';
   }
 
@@ -164,16 +168,23 @@ function getLayoutMode(width, height) {
 }
 
 function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, platform = Platform.OS) {
-  const layoutMode = getLayoutMode(width, height);
+  const rawUsableHeight = height - (insets.top || 0) - (insets.bottom || 0);
+  const isIosSixOneClass = platform === 'ios'
+    && width >= 390
+    && width <= 393
+    && rawUsableHeight >= 758
+    && rawUsableHeight <= 764;
+  const metricWidth = isIosSixOneClass ? 390 : width;
+  const usableHeight = isIosSixOneClass ? 763 : rawUsableHeight;
+  const layoutMode = getLayoutMode(metricWidth, usableHeight);
   const isVeryCompact = layoutMode === 'veryCompact';
   const isCompact = layoutMode === 'compact' || isVeryCompact;
   const isRoomy = layoutMode === 'roomy';
   const isAndroid = platform === 'android';
-  const isTallAndroidPhone = isAndroid && isRoomy && width >= 390;
-  const usableHeight = height - (insets.top || 0) - (insets.bottom || 0);
+  const isTallAndroidPhone = isAndroid && isRoomy && metricWidth >= 390;
   const extraUsableHeight = Math.max(0, usableHeight - SE_BASELINE_USABLE_HEIGHT);
-  const horizontalPadding = clamp(Math.round(width * 0.055), 14, 24);
-  const contentMaxWidth = Math.min(BASE_CONTENT_MAX_WIDTH, width - horizontalPadding * 2);
+  const horizontalPadding = clamp(Math.round(metricWidth * 0.055), 14, 24);
+  const contentMaxWidth = Math.min(BASE_CONTENT_MAX_WIDTH, metricWidth - horizontalPadding * 2);
   const menuButtonSize = isVeryCompact ? 34 : isCompact ? 36 : isRoomy ? 42 : 38;
   const menuButtonRadius = Math.round(menuButtonSize * 0.37);
   const menuLineWidth = Math.round(menuButtonSize * 0.42);
@@ -181,7 +192,7 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
   const menuGap = isVeryCompact ? 3 : 4;
   const streakScale = isVeryCompact ? 0.9 : isCompact ? 0.94 : isRoomy ? 1.04 : 1;
   const streakRightNudge = isVeryCompact ? 8 : 0;
-  const streakAvailableWidth = width - horizontalPadding * 2 - menuButtonSize - 12;
+  const streakAvailableWidth = metricWidth - horizontalPadding * 2 - menuButtonSize - 12;
   const streakCollapsedWidth = clamp(Math.round(streakAvailableWidth * 0.64), 160, 204);
   const streakExpandedWidth = clamp(Math.round(streakAvailableWidth), 246, 304);
   const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
@@ -346,7 +357,17 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     promptFloatClearance,
     promptBottomInset,
     promptGap,
-    paperLift: isTallAndroidPhone ? TALL_ANDROID_PAPER_LIFT : isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 28,
+    paperLift: isIosSixOneClass
+      ? IOS_SIX_ONE_PAPER_LIFT
+      : isTallAndroidPhone
+        ? TALL_ANDROID_PAPER_LIFT
+        : isVeryCompact
+          ? 0
+          : isCompact
+            ? 0
+            : isRoomy
+              ? 0
+              : 28,
     promptSectionOffset: isVeryCompact ? -16 : 0,
     scene,
     streakCollapsedWidth,
@@ -536,7 +557,7 @@ export default function FortuneCard({
   const shouldShowSimulatedKeyboard = Boolean(previewLayout.isPreview && effectiveKeyboardVisible);
   const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
   const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
-  const customFortuneNoticeTop = metrics.customNoticeTop;
+  const customFortuneNoticeTop = metrics.scene.sunDisc.top - SAVED_NOTICE_SUN_GAP;
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const drawerPalette = {
     panel: '#fff8f1',

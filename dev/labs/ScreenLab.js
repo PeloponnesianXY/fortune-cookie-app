@@ -901,16 +901,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   controlColumnDesktop: {
-    width: 290,
+    width: 248,
   },
   controlColumnContent: {
-    padding: 12,
-    gap: 10,
+    padding: 10,
+    gap: 8,
   },
   sidebarSection: {
     borderRadius: 22,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
     backgroundColor: '#fffaf4',
     borderWidth: 1,
     borderColor: 'rgba(110, 82, 58, 0.09)',

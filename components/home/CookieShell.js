@@ -48,17 +48,17 @@ function getPaperTextMetrics(text, scale) {
   const characterCount = normalizedText.length;
 
   let baseFontSize = 13;
-  let baseLineHeight = 16;
+  let baseLineHeight = 17;
 
   if (characterCount <= 42) {
     baseFontSize = 17;
-    baseLineHeight = 21;
+    baseLineHeight = 22;
   } else if (characterCount <= 56) {
     baseFontSize = 15.5;
-    baseLineHeight = 19;
+    baseLineHeight = 20;
   } else if (characterCount <= 72) {
     baseFontSize = 14;
-    baseLineHeight = 17;
+    baseLineHeight = 18;
   }
 
   return {
