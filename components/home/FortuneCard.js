@@ -33,6 +33,12 @@ import {
 } from '../../utils/customFortunes';
 import { MOOD_BUCKET_KEYS } from '../../utils/fortuneLogic';
 
+const CONTENT_FRAME_PADDING_BOTTOM = 20;
+// Master prompt sits in a flex column with a tall cookieSection minHeight; overflow can ignore
+// contentFrame padding. Pin the prompt above the gesture area on Android instead of flex-end.
+const ANDROID_MASTER_PROMPT_BOTTOM_GAP = 12;
+const ANDROID_MASTER_PROMPT_BOTTOM_INSET_MIN = 28;
+
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 const BASE_CONTENT_MAX_WIDTH = 540;
 const SE_BASELINE_USABLE_HEIGHT = 647;
@@ -902,6 +908,11 @@ export default function FortuneCard({
     || isPaperVisible
   );
 
+  const androidMasterPromptBottom = (
+    ANDROID_MASTER_PROMPT_BOTTOM_GAP
+    + Math.max(previewLayout.insets?.bottom ?? 0, ANDROID_MASTER_PROMPT_BOTTOM_INSET_MIN)
+  );
+
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop metrics={metrics} scene={scene} />
@@ -1062,11 +1073,109 @@ export default function FortuneCard({
           ) : null}
         </View>
 
+        {Platform.OS !== 'android' ? (
+          <Animated.View
+            style={[
+              styles.promptDock,
+              promptDockAnimatedStyle,
+              {
+                paddingTop: metrics.promptGap,
+                paddingBottom: shouldLiftMasterPrompt ? 0 : metrics.promptBottomInset,
+                justifyContent: shouldLiftMasterPrompt ? 'flex-start' : 'flex-end',
+              },
+            ]}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'position' : undefined}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? metrics.keyboardOffset : 0}
+              style={styles.promptSection}
+            >
+              <View
+                style={[
+                  styles.inputCard,
+                  styles.inputCardNeutral,
+                  {
+                    maxWidth: metrics.contentMaxWidth,
+                    marginTop: metrics.promptSectionOffset,
+                  },
+                ]}
+              >
+                <Text style={[
+                  styles.inputLabel,
+                  styles.inputLabelNeutral,
+                  isPromptTemporarilyLocked ? styles.inputLabelLocked : null,
+                ]}>
+                  Describe your mood in one word
+                </Text>
+                <View
+                  style={[
+                    styles.inputRow,
+                    {
+                      backgroundColor: scene.input,
+                      borderColor: isInputFocused ? scene.accent : scene.inputBorder,
+                    },
+                    isPromptTemporarilyLocked ? styles.inputRowLocked : null,
+                    isInputFocused ? styles.inputRowFocused : null,
+                  ]}
+                >
+                  <TextInput
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    blurOnSubmit={false}
+                    editable={!isHydratingSelection && !isPromptTemporarilyLocked}
+                    ref={inputRef}
+                    onBlur={() => {
+                      setIsInputFocused(false);
+                      clearIdleKeyboardTimer();
+                    }}
+                    onChangeText={(nextValue) => {
+                      onMoodChange(nextValue);
+                      scheduleIdleKeyboardDismiss(nextValue);
+                    }}
+                    onFocus={() => {
+                      if (isPromptTemporarilyLocked) {
+                        inputRef.current?.blur();
+                        return;
+                      }
+
+                      setIsInputFocused(true);
+                      if (shouldPrepareFreshEntry) {
+                        onBeginMoodEntry?.();
+                      }
+                      scheduleIdleKeyboardDismiss('');
+                    }}
+                    onSubmitEditing={() => {
+                      inputRef.current?.blur();
+                      onSubmitMoodInput();
+                    }}
+                    placeholder="tired, excited, restless..."
+                    placeholderTextColor={scene.accentSoft}
+                    returnKeyType="done"
+                    selectionColor={scene.accent}
+                    style={[
+                      styles.input,
+                      { color: scene.textPrimary },
+                      isPromptTemporarilyLocked ? styles.inputLocked : null,
+                    ]}
+                    value={moodInput}
+                  />
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </Animated.View>
+        ) : null}
+        </View>
+      </View>
+
+      {Platform.OS === 'android' ? (
         <Animated.View
+          pointerEvents="box-none"
           style={[
-            styles.promptDock,
+            styles.androidMasterPromptOverlay,
             promptDockAnimatedStyle,
             {
+              paddingHorizontal: metrics.horizontalPadding,
+              bottom: androidMasterPromptBottom,
               paddingTop: metrics.promptGap,
               paddingBottom: shouldLiftMasterPrompt ? 0 : metrics.promptBottomInset,
               justifyContent: shouldLiftMasterPrompt ? 'flex-start' : 'flex-end',
@@ -1074,8 +1183,7 @@ export default function FortuneCard({
           ]}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'position' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? metrics.keyboardOffset : 0}
+            behavior={undefined}
             style={styles.promptSection}
           >
             <View
@@ -1151,8 +1259,7 @@ export default function FortuneCard({
             </View>
           </KeyboardAvoidingView>
         </Animated.View>
-        </View>
-      </View>
+      ) : null}
 
       {isDrawerShown ? (
         <View pointerEvents="box-none" style={styles.drawerLayer}>
@@ -1509,7 +1616,7 @@ const styles = StyleSheet.create({
   contentFrame: {
     flexGrow: 1,
     paddingTop: 12,
-    paddingBottom: 20,
+    paddingBottom: CONTENT_FRAME_PADDING_BOTTOM,
   },
   headerChrome: {
     position: 'absolute',
@@ -1700,6 +1807,13 @@ const styles = StyleSheet.create({
   promptDock: {
     flexGrow: 1,
     width: '100%',
+  },
+  androidMasterPromptOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 18,
+    elevation: 18,
   },
   dailyWisdomText: {
     fontSize: 12.5,

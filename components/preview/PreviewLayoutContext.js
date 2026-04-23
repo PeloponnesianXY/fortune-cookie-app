@@ -41,7 +41,16 @@ export function PreviewSafeAreaView({ children, style }) {
   const previewLayout = useContext(PreviewLayoutContext);
 
   if (!previewLayout) {
-    return <SafeAreaView style={style}>{children}</SafeAreaView>;
+    // Android 15+ edge-to-edge: padding all edges here can under-clear the gesture bar for
+    // flex-bottom UI. Reserve bottom inset for the screen chrome (FortuneCard contentFrame).
+    return (
+      <SafeAreaView
+        style={style}
+        edges={Platform.OS === 'android' ? ['top', 'left', 'right'] : undefined}
+      >
+        {children}
+      </SafeAreaView>
+    );
   }
 
   return (
