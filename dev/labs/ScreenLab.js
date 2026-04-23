@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Animated, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View, useWindowDimensions } from 'react-native';
 
 import CookieShell, { getOpenedCookieImageBottom } from '../../components/home/CookieShell';
 import FortuneHomeContent from '../../components/home/FortuneHomeContent';
@@ -68,6 +68,7 @@ const PREVIEW_DEVICES = [
   {
     key: 'se',
     label: '4.7-inch Class, such as iPhone SE (2022)',
+    platform: 'ios',
     width: 375,
     height: 667,
     displayDiagonalInches: 4.7,
@@ -76,6 +77,7 @@ const PREVIEW_DEVICES = [
   {
     key: 'iphone14',
     label: '6.1-inch Class, such as iPhone 14',
+    platform: 'ios',
     width: 390,
     height: 844,
     displayDiagonalInches: 6.1,
@@ -84,6 +86,7 @@ const PREVIEW_DEVICES = [
   {
     key: 'iphone16',
     label: '6.1-inch Class, such as iPhone 16',
+    platform: 'ios',
     width: 393,
     height: 852,
     displayDiagonalInches: 6.12,
@@ -92,10 +95,20 @@ const PREVIEW_DEVICES = [
   {
     key: 'iphone16Plus',
     label: '6.7-inch Class, such as iPhone 16 Plus',
+    platform: 'ios',
     width: 430,
     height: 932,
     displayDiagonalInches: 6.69,
     insets: { top: 59, right: 0, bottom: 34, left: 0 },
+  },
+  {
+    key: 'galaxyA56',
+    label: '6.7-inch Class, such as Galaxy A56 5G',
+    platform: 'android',
+    width: 412,
+    height: 892,
+    displayDiagonalInches: 6.7,
+    insets: { top: 32, right: 0, bottom: 16, left: 0 },
   },
 ];
 
@@ -131,6 +144,10 @@ function getPreviewDeviceShortLabel(device) {
 
   if (device.key === 'iphone16Plus') {
     return '16 Plus';
+  }
+
+  if (device.key === 'galaxyA56') {
+    return 'A56';
   }
 
   return device.label;
@@ -244,7 +261,9 @@ function ToggleRow({ label, onValueChange, value }) {
 }
 
 export default function ScreenLab() {
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [selectedSceneKey, setSelectedSceneKey] = useState('sunlitAir');
+  const [selectedPreviewDeviceKey, setSelectedPreviewDeviceKey] = useState('galaxyA56');
   const [isSceneLegendOpen, setIsSceneLegendOpen] = useState(false);
   const [isPaperFitOpen, setIsPaperFitOpen] = useState(false);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
@@ -285,6 +304,20 @@ export default function ScreenLab() {
   const selectedSampleLineCounts = selectedSampleId ? (fortuneFitLineCounts[selectedSampleId] || {}) : {};
   const selectedSampleFitVerdict = getFitVerdict(selectedSampleLineCounts);
   const selectedSampleFitTone = getFitVerdictTone(selectedSampleLineCounts);
+  const selectedPreviewDevice = PREVIEW_DEVICES.find((device) => device.key === selectedPreviewDeviceKey) || PREVIEW_DEVICES[0];
+  const isDesktopLayout = windowWidth >= 1120;
+  const selectedSceneLabel = SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene';
+  const stageHeaderHeight = isDesktopLayout ? 112 : 92;
+  const estimatedShellPadding = isDesktopLayout ? 40 : 28;
+  const stageWidthEstimate = isDesktopLayout ? Math.max(420, windowWidth - 430) : Math.max(320, windowWidth - 28);
+  const previewHeightBudget = Math.max(360, windowHeight - stageHeaderHeight - estimatedShellPadding);
+  const previewWidthBudget = Math.max(280, stageWidthEstimate - 48);
+  const fittedPreviewScale = Math.min(
+    getDisplayPreviewScale(selectedPreviewDevice),
+    previewHeightBudget / (selectedPreviewDevice.height + 18),
+    previewWidthBudget / (selectedPreviewDevice.width + 18)
+  );
+  const previewScale = Math.max(isDesktopLayout ? 0.54 : 0.5, Math.round(fittedPreviewScale * 1000) / 1000);
 
   const handlePaperTextLayout = (sampleId, deviceKey) => (event) => {
     const nextLineCount = event?.nativeEvent?.lines?.length || 0;
@@ -332,6 +365,7 @@ export default function ScreenLab() {
   };
 
   const previewFortuneText = selectedSample?.text || sampledFortunes[0]?.text || '';
+  const shouldRevealFortuneForPreview = isCookieOpened || isActionTrayExpanded;
 
   const previewProps = useMemo(() => ({
     canReplaceCurrentFortune: true,
@@ -350,9 +384,9 @@ export default function ScreenLab() {
     forcedLibraryOpen: isHistorySheetOpen ? 'history' : null,
     historyFortunes: LAB_HISTORY_FORTUNES,
     isAnimating: false,
-    isCookieOpened,
+    isCookieOpened: shouldRevealFortuneForPreview,
     isHydratingSelection: false,
-    isPaperVisible: isCookieOpened,
+    isPaperVisible: shouldRevealFortuneForPreview,
     isPreparingNextFortune: false,
     moodInput: 'curious',
     onBeginMoodEntry: () => {},
@@ -376,7 +410,6 @@ export default function ScreenLab() {
     streakTierTitle: 'Fortune Chaser',
   }), [
     isActionTrayExpanded,
-    isCookieOpened,
     isCreateFortuneSheetOpen,
     isDrawerExpanded,
     isHistorySheetOpen,
@@ -385,13 +418,8 @@ export default function ScreenLab() {
     isStreakBarExpanded,
     previewFortuneText,
     selectedSceneKey,
+    shouldRevealFortuneForPreview,
   ]);
-
-  const sceneGroups = [{
-    key: selectedSceneKey,
-    label: SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene',
-    previewProps,
-  }];
 
   const sceneLegendRows = useMemo(
     () => {
@@ -454,83 +482,156 @@ export default function ScreenLab() {
   );
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.pageContent}
-      style={styles.page}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.controlsWrap}>
-        <View style={styles.controlsCard}>
-          <View style={styles.controlsBar}>
-            <View style={styles.brandBlock}>
-              <Text style={styles.eyebrow}>Screen Lab</Text>
-            </View>
-            <View style={styles.togglesGrid}>
-              <ToggleRow label="Action tray" onValueChange={setIsActionTrayExpanded} value={isActionTrayExpanded} />
-              <ToggleRow label="Create sheet" onValueChange={setIsCreateFortuneSheetOpen} value={isCreateFortuneSheetOpen} />
-              <ToggleRow label="Drawer" onValueChange={setIsDrawerExpanded} value={isDrawerExpanded} />
-              <ToggleRow label="History" onValueChange={setIsHistorySheetOpen} value={isHistorySheetOpen} />
-              <ToggleRow label="Keyboard" onValueChange={setIsKeyboardSimulated} value={isKeyboardSimulated} />
-              <ToggleRow label="Lock warning" onValueChange={setIsLockWarningVisible} value={isLockWarningVisible} />
-              <ToggleRow label="Open cookie" onValueChange={setIsCookieOpened} value={isCookieOpened} />
-              <ToggleRow
-                label="Saved notice"
-                onValueChange={setIsSavedToFavoritesNoticeVisible}
-                value={isSavedToFavoritesNoticeVisible}
-              />
-              <ToggleRow label="Safe area" onValueChange={setIsSafeAreaSimulated} value={isSafeAreaSimulated} />
-              <ToggleRow label="Streak bar" onValueChange={setIsStreakBarExpanded} value={isStreakBarExpanded} />
-            </View>
+    <View style={[styles.page, { height: windowHeight }]}>
+      <View style={[styles.pageContent, isDesktopLayout ? styles.pageContentDesktop : styles.pageContentCompact]}>
+        <View style={[styles.layoutShell, isDesktopLayout ? styles.layoutShellDesktop : styles.layoutShellCompact]}>
+          <View style={[styles.controlColumn, isDesktopLayout ? styles.controlColumnDesktop : null]}>
+            <ScrollView
+              contentContainerStyle={styles.controlColumnContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.sidebarSection}>
+                <View style={styles.sidebarSectionHeader}>
+                  <Text style={styles.sidebarSectionEyebrow}>Device</Text>
+                  <Text style={styles.sidebarSectionTitle}>Preview target</Text>
+                </View>
+                <View style={styles.devicePickerGrid}>
+                  {PREVIEW_DEVICES.map((device) => {
+                    const isActive = device.key === selectedPreviewDevice.key;
 
-            <View style={styles.sceneBlock}>
-              <View style={styles.sceneControlsRow}>
-                <Pressable
-                  onPress={() => setIsPaperFitOpen((current) => !current)}
-                  style={({ pressed }) => [
-                    styles.paperFitToggle,
-                    pressed ? styles.paperFitTogglePressed : null,
-                  ]}
-                >
-                  <Text style={styles.paperFitToggleEyebrow}>Paper Fit</Text>
-                  <Text style={styles.paperFitToggleTitle}>
-                    {isPaperFitOpen ? 'Hide sampler' : 'Show sampler'}
-                  </Text>
-                  <View style={styles.paperFitToggleMetaRow}>
-                    <Text style={styles.paperFitToggleMeta}>{selectedSampleFitVerdict}</Text>
-                    <View
-                      style={[
-                        styles.paperFitToggleDot,
-                        selectedSampleFitTone === 'good'
-                          ? styles.paperFitToggleDotGood
-                          : selectedSampleFitTone === 'bad'
-                            ? styles.paperFitToggleDotBad
-                            : styles.paperFitToggleDotNeutral,
-                      ]}
-                    />
-                  </View>
-                </Pressable>
-                <Pressable
-                  onPress={() => setIsSceneLegendOpen((current) => !current)}
-                  style={({ pressed }) => [
-                    styles.sceneLegendButton,
-                    pressed ? styles.sceneLegendButtonPressed : null,
-                  ]}
-                >
-                  <Text style={styles.sceneLegendButtonText}>
-                    Color Scheme
-                  </Text>
-                </Pressable>
-
-                <View style={styles.sceneRows}>
-                  <View style={styles.sceneTopGroupsRow}>
-                    {topSceneGroups.map((group) => (
-                      <View
-                        key={group.key}
-                        style={[
-                          styles.sceneTopGroup,
-                          group.key === 'unknown' ? styles.sceneTopGroupUnknown : null,
+                    return (
+                      <Pressable
+                        key={device.key}
+                        onPress={() => setSelectedPreviewDeviceKey(device.key)}
+                        style={({ pressed }) => [
+                          styles.devicePickerCard,
+                          isActive ? styles.devicePickerCardActive : null,
+                          pressed ? styles.devicePickerCardPressed : null,
                         ]}
                       >
+                        <Text style={[styles.devicePickerCode, isActive ? styles.devicePickerCodeActive : null]}>
+                          {getPreviewDeviceShortLabel(device)}
+                        </Text>
+                        <Text style={[styles.devicePickerLabel, isActive ? styles.devicePickerLabelActive : null]}>
+                          {device.label.replace('6.7-inch Class, such as ', '').replace('6.1-inch Class, such as ', '').replace('4.7-inch Class, such as ', '')}
+                        </Text>
+                        <Text style={[styles.devicePickerMeta, isActive ? styles.devicePickerMetaActive : null]}>
+                          {device.width} x {device.height} pt
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={styles.sidebarSection}>
+                <View style={styles.sidebarSectionHeader}>
+                  <Text style={styles.sidebarSectionEyebrow}>State</Text>
+                  <Text style={styles.sidebarSectionTitle}>UI switches</Text>
+                </View>
+                <View style={styles.togglesGrid}>
+                  <ToggleRow label="Action tray" onValueChange={setIsActionTrayExpanded} value={isActionTrayExpanded} />
+                  <ToggleRow label="Create sheet" onValueChange={setIsCreateFortuneSheetOpen} value={isCreateFortuneSheetOpen} />
+                  <ToggleRow label="Drawer" onValueChange={setIsDrawerExpanded} value={isDrawerExpanded} />
+                  <ToggleRow label="History" onValueChange={setIsHistorySheetOpen} value={isHistorySheetOpen} />
+                  <ToggleRow label="Keyboard" onValueChange={setIsKeyboardSimulated} value={isKeyboardSimulated} />
+                  <ToggleRow label="Lock warning" onValueChange={setIsLockWarningVisible} value={isLockWarningVisible} />
+                  <ToggleRow label="Open cookie" onValueChange={setIsCookieOpened} value={isCookieOpened} />
+                  <ToggleRow
+                    label="Saved notice"
+                    onValueChange={setIsSavedToFavoritesNoticeVisible}
+                    value={isSavedToFavoritesNoticeVisible}
+                  />
+                  <ToggleRow label="Safe area" onValueChange={setIsSafeAreaSimulated} value={isSafeAreaSimulated} />
+                  <ToggleRow label="Streak bar" onValueChange={setIsStreakBarExpanded} value={isStreakBarExpanded} />
+                </View>
+              </View>
+
+              <View style={styles.sidebarSection}>
+                <View style={styles.sidebarSectionHeader}>
+                  <Text style={styles.sidebarSectionEyebrow}>Scene</Text>
+                  <Text style={styles.sidebarSectionTitle}>Color direction</Text>
+                </View>
+                <View style={styles.utilityButtonRow}>
+                  <Pressable
+                    onPress={() => setIsPaperFitOpen((current) => !current)}
+                    style={({ pressed }) => [
+                      styles.utilityCard,
+                      pressed ? styles.utilityCardPressed : null,
+                    ]}
+                  >
+                    <Text style={styles.utilityCardEyebrow}>Paper Fit</Text>
+                    <Text style={styles.utilityCardTitle}>
+                      {isPaperFitOpen ? 'Hide sampler' : 'Show sampler'}
+                    </Text>
+                    <View style={styles.paperFitToggleMetaRow}>
+                      <Text style={styles.utilityCardMeta}>{selectedSampleFitVerdict}</Text>
+                      <View
+                        style={[
+                          styles.paperFitToggleDot,
+                          selectedSampleFitTone === 'good'
+                            ? styles.paperFitToggleDotGood
+                            : selectedSampleFitTone === 'bad'
+                              ? styles.paperFitToggleDotBad
+                              : styles.paperFitToggleDotNeutral,
+                        ]}
+                      />
+                    </View>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setIsSceneLegendOpen((current) => !current)}
+                    style={({ pressed }) => [
+                      styles.utilityCard,
+                      styles.utilityCardSecondary,
+                      pressed ? styles.utilityCardPressed : null,
+                    ]}
+                  >
+                    <Text style={styles.utilityCardEyebrow}>Palette</Text>
+                    <Text style={styles.utilityCardTitle}>
+                      {isSceneLegendOpen ? 'Hide legend' : 'Show legend'}
+                    </Text>
+                    <Text style={styles.utilityCardMeta}>Scene mapping</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.sceneSectionBody}>
+                  <View style={styles.sceneRows}>
+                    <View style={styles.sceneTopGroupsRow}>
+                      {topSceneGroups.map((group) => (
+                        <View
+                          key={group.key}
+                          style={[
+                            styles.sceneTopGroup,
+                            group.key === 'unknown' ? styles.sceneTopGroupUnknown : null,
+                          ]}
+                        >
+                          <Text style={styles.sceneOptionGroupLabel}>{group.label}</Text>
+                          <View style={styles.sceneOptions}>
+                            {group.sceneKeys.map((sceneKey) => {
+                              const option = SCENE_OPTIONS.find((candidate) => candidate.key === sceneKey);
+
+                              if (!option) {
+                                return null;
+                              }
+
+                              const isActive = selectedSceneKey === option.key;
+
+                              return (
+                                <Text
+                                  key={option.key}
+                                  onPress={() => setSelectedSceneKey(option.key)}
+                                  style={[styles.sceneOption, isActive ? styles.sceneOptionActive : null]}
+                                >
+                                  {option.label}
+                                </Text>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+
+                    {remainingSceneGroups.map((group) => (
+                      <View key={group.key} style={styles.sceneOptionGroupRow}>
                         <Text style={styles.sceneOptionGroupLabel}>{group.label}</Text>
                         <View style={styles.sceneOptions}>
                           {group.sceneKeys.map((sceneKey) => {
@@ -557,63 +658,38 @@ export default function ScreenLab() {
                     ))}
                   </View>
 
-                  {remainingSceneGroups.map((group) => (
-                    <View key={group.key} style={styles.sceneOptionGroupRow}>
-                      <Text style={styles.sceneOptionGroupLabel}>{group.label}</Text>
-                      <View style={styles.sceneOptions}>
-                        {group.sceneKeys.map((sceneKey) => {
-                          const option = SCENE_OPTIONS.find((candidate) => candidate.key === sceneKey);
-
-                          if (!option) {
-                            return null;
-                          }
-
-                          const isActive = selectedSceneKey === option.key;
-
-                          return (
-                            <Text
-                              key={option.key}
-                              onPress={() => setSelectedSceneKey(option.key)}
-                              style={[styles.sceneOption, isActive ? styles.sceneOptionActive : null]}
-                            >
-                              {option.label}
-                            </Text>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-              {isSceneLegendOpen ? (
-                <View style={styles.sceneLegendCard}>
-                  {sceneLegendRows.map((group) => (
-                    <View key={group.key} style={styles.sceneLegendGroup}>
-                      <Text style={styles.sceneLegendGroupTitle}>{group.label}</Text>
-                      {group.scenes.map((sceneGroup) => (
-                        <View key={`${group.key}-${sceneGroup.sceneKey}`} style={styles.sceneLegendSceneGroup}>
-                          <View style={styles.sceneLegendSceneHeader}>
-                            <View style={styles.sceneLegendPalette}>
-                              {sceneGroup.palette.map((color, index) => (
-                                <View
-                                  key={`${sceneGroup.sceneKey}-${index}`}
-                                  style={[styles.sceneLegendSwatch, { backgroundColor: color }]}
-                                />
+                  {isSceneLegendOpen ? (
+                    <View style={styles.sceneLegendCard}>
+                      {sceneLegendRows.map((group) => (
+                        <View key={group.key} style={styles.sceneLegendGroup}>
+                          <Text style={styles.sceneLegendGroupTitle}>{group.label}</Text>
+                          {group.scenes.map((sceneGroup) => (
+                            <View key={`${group.key}-${sceneGroup.sceneKey}`} style={styles.sceneLegendSceneGroup}>
+                              <View style={styles.sceneLegendSceneHeader}>
+                                <View style={styles.sceneLegendPalette}>
+                                  {sceneGroup.palette.map((color, index) => (
+                                    <View
+                                      key={`${sceneGroup.sceneKey}-${index}`}
+                                      style={[styles.sceneLegendSwatch, { backgroundColor: color }]}
+                                    />
+                                  ))}
+                                </View>
+                                <Text style={styles.sceneLegendScene}>{sceneGroup.sceneLabel}</Text>
+                              </View>
+                              {sceneGroup.rows.map((row) => (
+                                <View key={row.bucketKey} style={styles.sceneLegendRow}>
+                                  <Text style={styles.sceneLegendBucket}>{row.bucketLabel}</Text>
+                                </View>
                               ))}
-                            </View>
-                            <Text style={styles.sceneLegendScene}>{sceneGroup.sceneLabel}</Text>
-                          </View>
-                          {sceneGroup.rows.map((row) => (
-                            <View key={row.bucketKey} style={styles.sceneLegendRow}>
-                              <Text style={styles.sceneLegendBucket}>{row.bucketLabel}</Text>
                             </View>
                           ))}
                         </View>
                       ))}
                     </View>
-                  ))}
+                  ) : null}
                 </View>
-              ) : null}
+              </View>
+
               {isPaperFitOpen ? (
                 <View style={styles.paperFitInlineCard}>
                   <View style={styles.fortuneFitHeader}>
@@ -621,7 +697,7 @@ export default function ScreenLab() {
                       <Text style={styles.fortuneFitEyebrow}>Paper Fit</Text>
                       <Text style={styles.fortuneFitTitle}>10 live fortunes</Text>
                       <Text style={styles.fortuneFitSubtitle}>
-                        Tap a fortune to load it into the previews.
+                        Tap a fortune to load it into the preview.
                       </Text>
                     </View>
                     <Pressable
@@ -672,153 +748,222 @@ export default function ScreenLab() {
                   </ScrollView>
                 </View>
               ) : null}
+            </ScrollView>
+          </View>
+
+          <View style={styles.previewColumn}>
+            <View style={styles.previewStageCard}>
+              <View style={styles.previewStageHeader}>
+                <View style={styles.previewStageHeaderCopy}>
+                  <Text style={styles.previewStageEyebrow}>Live Preview</Text>
+                  <Text style={styles.previewStageTitle}>{selectedPreviewDevice.label}</Text>
+                  <Text style={styles.previewStageMeta}>
+                    {selectedPreviewDevice.width} x {selectedPreviewDevice.height} pt
+                    {'  '}•{'  '}
+                    {selectedSceneLabel}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.previewStageSurface}>
+                <PreviewFrame
+                  key={selectedPreviewDevice.key}
+                  height={selectedPreviewDevice.height}
+                  insets={isSafeAreaSimulated ? selectedPreviewDevice.insets : { top: 0, right: 0, bottom: 0, left: 0 }}
+                  keyboardVisible={isKeyboardSimulated}
+                  label={selectedPreviewDevice.label}
+                  previewPlatform={selectedPreviewDevice.platform}
+                  showHeader={false}
+                  visualScale={previewScale}
+                  width={selectedPreviewDevice.width}
+                >
+                  <FortuneHomeContent {...previewProps} />
+                </PreviewFrame>
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.framesWrap}>
-        {sceneGroups.map((group) => (
-          <View key={group.key} style={styles.sceneGroup}>
-            <ScrollView
-              horizontal
-              contentContainerStyle={styles.sceneFramesScrollerContent}
-              showsHorizontalScrollIndicator
-              style={styles.sceneFramesScroller}
-            >
-              <View style={styles.sceneFramesWrap}>
-                {PREVIEW_DEVICES.map((device) => (
-                  <PreviewFrame
-                    key={`${group.key}-${device.key}`}
-                    height={device.height}
-                    insets={isSafeAreaSimulated ? device.insets : { top: 0, right: 0, bottom: 0, left: 0 }}
-                    keyboardVisible={isKeyboardSimulated}
-                    label={device.label}
-                    visualScale={getDisplayPreviewScale(device)}
-                    width={device.width}
-                  >
-                    <FortuneHomeContent {...group.previewProps} />
-                  </PreviewFrame>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-        ))}
+        <View pointerEvents="none" style={styles.measurementStage}>
+          {sampledFortunes.map((fortune) => (
+            <View key={`measure-${fortune.sampleId}`} style={styles.measurementSample}>
+              {FORTUNE_FIT_DEVICES.map((device) => (
+                <View key={`${fortune.sampleId}-${device.key}`} style={styles.measurementDeviceWrap}>
+                  <CookieShell
+                    fortuneText={fortune.text}
+                    imageVerticalOffset={0}
+                    isOpened
+                    isPaperVisible
+                    onPaperTextMeasure={handlePaperTextMeasure(fortune.sampleId, device.key)}
+                    onPaperTextLayout={handlePaperTextLayout(fortune.sampleId, device.key)}
+                    paperProgress={new Animated.Value(1)}
+                    shellProgress={new Animated.Value(1)}
+                    scale={device.scale}
+                  />
+                  <View style={{ height: getOpenedCookieImageBottom(device.scale) }} />
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
       </View>
-
-      <View pointerEvents="none" style={styles.measurementStage}>
-        {sampledFortunes.map((fortune) => (
-          <View key={`measure-${fortune.sampleId}`} style={styles.measurementSample}>
-            {FORTUNE_FIT_DEVICES.map((device) => (
-              <View key={`${fortune.sampleId}-${device.key}`} style={styles.measurementDeviceWrap}>
-                <CookieShell
-                  fortuneText={fortune.text}
-                  imageVerticalOffset={0}
-                  isOpened
-                  isPaperVisible
-                  onPaperTextMeasure={handlePaperTextMeasure(fortune.sampleId, device.key)}
-                  onPaperTextLayout={handlePaperTextLayout(fortune.sampleId, device.key)}
-                  paperProgress={new Animated.Value(1)}
-                  shellProgress={new Animated.Value(1)}
-                  scale={device.scale}
-                />
-                <View style={{ height: getOpenedCookieImageBottom(device.scale) }} />
-              </View>
-            ))}
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#efe5d6',
+    backgroundColor: '#eadfce',
   },
   pageContent: {
-    paddingHorizontal: 24,
-    paddingTop: 10,
-    paddingBottom: 32,
-    gap: 10,
-  },
-  controlsWrap: {
-    zIndex: 10,
-  },
-  controlsCard: {
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(255, 250, 244, 0.95)',
-    borderWidth: 1,
-    borderColor: 'rgba(104, 80, 58, 0.14)',
-    shadowColor: '#5e4631',
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
-    ...(Platform.OS === 'web'
-      ? {
-          position: 'sticky',
-          top: 10,
-          backdropFilter: 'blur(12px)',
-        }
-      : null),
-  },
-  controlsBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 20,
-    flexWrap: 'wrap',
-  },
-  brandBlock: {
-    justifyContent: 'flex-start',
-    alignSelf: 'flex-start',
-    paddingTop: 2,
-  },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 0.4,
-    color: '#2d241d',
-  },
-  sceneBlock: {
-    gap: 8,
-    minWidth: 540,
-    marginLeft: 'auto',
-    alignItems: 'stretch',
     flex: 1,
   },
-  sceneControlsRow: {
+  pageContentDesktop: {
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
+  pageContentCompact: {
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  layoutShell: {
+    flex: 1,
+    gap: 18,
+  },
+  layoutShellDesktop: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
+  },
+  layoutShellCompact: {
+    flexDirection: 'column',
+  },
+  controlColumn: {
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 250, 244, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(110, 82, 58, 0.1)',
+    shadowColor: '#5e4631',
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  controlColumnDesktop: {
+    width: 372,
+  },
+  controlColumnContent: {
+    padding: 16,
     gap: 12,
   },
-  paperFitToggle: {
-    minWidth: 132,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#f7ecdd',
+  sidebarSection: {
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#fffaf4',
     borderWidth: 1,
-    borderColor: 'rgba(164, 122, 82, 0.22)',
+    borderColor: 'rgba(110, 82, 58, 0.09)',
+    gap: 12,
+  },
+  sidebarSectionHeader: {
     gap: 2,
   },
-  paperFitTogglePressed: {
-    opacity: 0.88,
-  },
-  paperFitToggleEyebrow: {
+  sidebarSectionEyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.7,
+    letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#8a735f',
+    color: '#98745b',
   },
-  paperFitToggleTitle: {
+  sidebarSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#342821',
+    ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
+  },
+  devicePickerGrid: {
+    gap: 6,
+  },
+  devicePickerCard: {
+    borderRadius: 12,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+    backgroundColor: '#f7efe5',
+    borderWidth: 1,
+    borderColor: 'rgba(122, 90, 64, 0.1)',
+    gap: 0,
+  },
+  devicePickerCardActive: {
+    backgroundColor: '#2f241d',
+    borderColor: '#2f241d',
+  },
+  devicePickerCardPressed: {
+    opacity: 0.88,
+  },
+  devicePickerCode: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#433326',
+    color: '#2f241d',
+  },
+  devicePickerCodeActive: {
+    color: '#fff7ef',
+  },
+  devicePickerLabel: {
+    fontSize: 10,
+    lineHeight: 12,
+    color: '#6f5948',
+    fontWeight: '600',
+  },
+  devicePickerLabelActive: {
+    color: 'rgba(255, 247, 239, 0.88)',
+  },
+  devicePickerMeta: {
+    fontSize: 9.5,
+    color: '#957a67',
+    fontWeight: '600',
+  },
+  devicePickerMetaActive: {
+    color: 'rgba(255, 247, 239, 0.68)',
+  },
+  utilityButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  utilityCard: {
+    flex: 1,
+    minHeight: 82,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#f5ebdb',
+    borderWidth: 1,
+    borderColor: 'rgba(155, 116, 81, 0.14)',
+    gap: 4,
+  },
+  utilityCardSecondary: {
+    backgroundColor: '#f8f1e6',
+  },
+  utilityCardPressed: {
+    opacity: 0.88,
+  },
+  utilityCardEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: '#94735b',
+  },
+  utilityCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#3d2f26',
+    ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
+  },
+  utilityCardMeta: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#705a48',
   },
   paperFitToggleMetaRow: {
     flexDirection: 'row',
@@ -830,6 +975,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#7a6655',
+  },
+  sceneSectionBody: {
+    gap: 12,
   },
   paperFitToggleDot: {
     width: 7,
@@ -846,57 +994,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#b6a694',
   },
   sceneRows: {
-    gap: 3,
+    gap: 8,
     minWidth: 0,
-    flex: 1,
   },
   sceneTopGroupsRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    gap: 18,
+    gap: 8,
     alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: 'column',
   },
   sceneTopGroup: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 6,
+    gap: 10,
   },
   sceneTopGroupUnknown: {
-    marginLeft: 'auto',
-  },
-  sceneLegendButton: {
-    alignSelf: 'flex-start',
-    marginTop: 2,
-    minWidth: 132,
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: '#f3e5d3',
-    borderWidth: 1,
-    borderColor: 'rgba(164, 122, 82, 0.22)',
-  },
-  sceneLegendButtonPressed: {
-    opacity: 0.85,
-  },
-  sceneLegendButtonText: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: '#7a6655',
+    marginLeft: 0,
   },
   sceneLegendCard: {
     width: '100%',
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 250, 244, 0.98)',
+    borderRadius: 18,
+    backgroundColor: '#f9f3ea',
     borderWidth: 1,
     borderColor: 'rgba(104, 80, 58, 0.12)',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 10,
   },
   sceneLegendRow: {
     flexDirection: 'row',
@@ -953,73 +1075,177 @@ const styles = StyleSheet.create({
   sceneOptionGroupRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 6,
+    gap: 10,
     justifyContent: 'flex-start',
   },
   sceneOptionGroupLabel: {
-    fontSize: 9.5,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: '#8a735f',
-    width: 138,
-    paddingTop: 3,
+    color: '#92725a',
+    width: 116,
+    paddingTop: 6,
     textAlign: 'left',
   },
   sceneOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 3,
-    maxWidth: 720,
+    gap: 6,
     flex: 1,
     justifyContent: 'flex-start',
   },
   sceneOption: {
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: '#f5ecdf',
+    backgroundColor: '#f6ecdf',
     borderWidth: 1,
     borderColor: 'rgba(136, 102, 72, 0.16)',
-    color: '#5b4534',
-    fontSize: 10,
+    color: '#5a4535',
+    fontSize: 11,
     fontWeight: '700',
   },
   sceneOptionActive: {
-    backgroundColor: '#f0d4ad',
-    borderColor: '#d8a66b',
-    color: '#3d2c1e',
+    backgroundColor: '#2f241d',
+    borderColor: '#2f241d',
+    color: '#fff7ef',
   },
   togglesGrid: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    rowGap: 2,
-    minWidth: 320,
-    maxWidth: 720,
-    marginLeft: 0,
-    justifyContent: 'flex-start',
-    alignSelf: 'flex-start',
+    gap: 8,
   },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 4,
-    minWidth: 150,
-    flexBasis: '31%',
-    flexGrow: 0,
+    justifyContent: 'space-between',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#f8f1e7',
+    borderWidth: 1,
+    borderColor: 'rgba(110, 82, 58, 0.08)',
   },
   toggleLabel: {
-    fontSize: 12,
+    flex: 1,
+    marginRight: 10,
+    fontSize: 13,
     color: '#3d3025',
     fontWeight: '600',
     textAlign: 'left',
   },
+  previewColumn: {
+    flex: 1,
+    minWidth: 0,
+  },
+  previewStageCard: {
+    flex: 1,
+    borderRadius: 32,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 14,
+    backgroundColor: 'rgba(250, 244, 235, 0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(110, 82, 58, 0.1)',
+    shadowColor: '#5e4631',
+    shadowOpacity: 0.08,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 5,
+    gap: 10,
+  },
+  previewStageHeader: {
+    paddingHorizontal: 6,
+    gap: 2,
+  },
+  previewStageHeaderCopy: {
+    gap: 4,
+  },
+  previewStageEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: '#8d6e58',
+  },
+  previewStageTitle: {
+    fontSize: 30,
+    lineHeight: 34,
+    fontWeight: '700',
+    color: '#3d2c1e',
+    ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
+  },
+  previewStageMeta: {
+    fontSize: 13,
+    color: '#7d6654',
+    fontWeight: '600',
+  },
+  previewStageSurface: {
+    flex: 1,
+    borderRadius: 28,
+    backgroundColor: 'rgba(239, 229, 214, 0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(132, 99, 72, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
   framesWrap: {
     width: '100%',
     gap: 24,
+  },
+  sceneFramesDock: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  deviceRail: {
+    width: 112,
+    borderRadius: 16,
+    padding: 10,
+    gap: 8,
+    backgroundColor: 'rgba(255, 248, 240, 0.94)',
+    borderWidth: 1,
+    borderColor: 'rgba(104, 80, 58, 0.12)',
+    alignSelf: 'stretch',
+  },
+  deviceRailEyebrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: '#7b6351',
+  },
+  deviceRailButton: {
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: '#f7eee3',
+    borderWidth: 1,
+    borderColor: 'rgba(104, 80, 58, 0.1)',
+    gap: 2,
+  },
+  deviceRailButtonActive: {
+    backgroundColor: '#2f241c',
+    borderColor: '#2f241c',
+  },
+  deviceRailButtonPressed: {
+    opacity: 0.85,
+  },
+  deviceRailButtonTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#2f241c',
+  },
+  deviceRailButtonTitleActive: {
+    color: '#fff8ef',
+  },
+  deviceRailButtonMeta: {
+    fontSize: 11,
+    color: '#7d6756',
+  },
+  deviceRailButtonMetaActive: {
+    color: 'rgba(255, 248, 239, 0.72)',
   },
   paperFitInlineCard: {
     width: '100%',

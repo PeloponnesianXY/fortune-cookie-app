@@ -469,6 +469,10 @@ export default function FortuneCard({
     () => createLayoutMetrics(viewportWidth, viewportHeight, previewLayout.insets),
     [previewLayout.insets, viewportHeight, viewportWidth]
   );
+  const simulatedKeyboardPlatform = previewLayout.platform || Platform.OS;
+  const simulatedKeyboardHeight = simulatedKeyboardPlatform === 'ios'
+    ? clamp(Math.round(viewportHeight * 0.215), 168, 208)
+    : clamp(Math.round(viewportHeight * 0.31), 180, 286);
   const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isDrawerForced = typeof forcedDrawerOpen === 'boolean';
@@ -484,6 +488,7 @@ export default function FortuneCard({
     : isCustomFortuneSheetVisible;
   const resolvedCustomFortuneNotice = forcedCustomFortuneNotice ?? customFortuneNotice;
   const shouldLiftMasterPrompt = effectiveKeyboardVisible && !customFortuneSheetVisible;
+  const shouldShowSimulatedKeyboard = Boolean(previewLayout.isPreview && effectiveKeyboardVisible);
   const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
   const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
   const customFortuneNoticeTop = metrics.customNoticeTop;
@@ -1337,6 +1342,162 @@ export default function FortuneCard({
         sections={createdFortuneSections}
         visible={isCreatedFortunesSheetVisible}
       />
+      {shouldShowSimulatedKeyboard ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.simulatedKeyboardLayer,
+            simulatedKeyboardPlatform === 'android' ? styles.simulatedAndroidKeyboardLayer : styles.simulatedIosKeyboardLayer,
+            { height: simulatedKeyboardHeight },
+          ]}
+        >
+          {simulatedKeyboardPlatform === 'android' ? (
+            <>
+              <View style={styles.simulatedKeyboardToolbar}>
+                <View style={styles.simulatedKeyboardToolbarChip}>
+                  <Text style={styles.simulatedKeyboardToolbarText}>smart</Text>
+                </View>
+                <View style={styles.simulatedKeyboardToolbarIcons}>
+                  {['😊', '⋯', '⚙', '🎤'].map((item) => (
+                    <View key={item} style={styles.simulatedKeyboardToolbarIcon}>
+                      <Text style={styles.simulatedKeyboardToolbarIconText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <View style={styles.simulatedKeyboardSuggestionRow}>
+                {['curious', 'curious.', 'curiously'].map((item, index) => (
+                  <View
+                    key={item}
+                    style={[
+                      styles.simulatedKeyboardSuggestion,
+                      index === 1 ? styles.simulatedKeyboardSuggestionActive : null,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.simulatedKeyboardSuggestionText,
+                        index === 1 ? styles.simulatedKeyboardSuggestionTextActive : null,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.simulatedKeyboardRow}>
+                {['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'].map((key) => (
+                  <View key={key} style={styles.simulatedKeyboardKey}>
+                    <Text style={styles.simulatedKeyboardKeyText}>{key}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={[styles.simulatedKeyboardRow, styles.simulatedKeyboardRowInset]}>
+                {['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].map((key) => (
+                  <View key={key} style={styles.simulatedKeyboardKey}>
+                    <Text style={styles.simulatedKeyboardKeyText}>{key}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.simulatedKeyboardRow}>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardWideKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>⇧</Text>
+                </View>
+                {['z', 'x', 'c', 'v', 'b', 'n', 'm'].map((key) => (
+                  <View key={key} style={styles.simulatedKeyboardKey}>
+                    <Text style={styles.simulatedKeyboardKeyText}>{key}</Text>
+                  </View>
+                ))}
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardWideKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>⌫</Text>
+                </View>
+              </View>
+              <View style={styles.simulatedKeyboardBottomRow}>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardActionKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>123</Text>
+                </View>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardEmojiKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>😊</Text>
+                </View>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpaceKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>space</Text>
+                </View>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardActionKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>↵</Text>
+                </View>
+              </View>
+              <View style={styles.simulatedKeyboardNavRow}>
+                <Text style={styles.simulatedKeyboardNavText}>▵</Text>
+                <View style={styles.simulatedKeyboardHomeIndicator} />
+                <Text style={styles.simulatedKeyboardNavText}>◯</Text>
+              </View>
+            </>
+          ) : (
+            <View style={styles.simulatedIosKeyboardWrap}>
+              <View style={styles.simulatedIosPredictionBar}>
+                {['curious', 'for', 'the'].map((item, index) => (
+                  <View key={item} style={styles.simulatedIosPredictionSegment}>
+                    <Text
+                      style={[
+                        styles.simulatedIosPredictionText,
+                        index === 0 ? styles.simulatedIosPredictionTextStrong : null,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.simulatedIosRowsWrap}>
+                <View style={styles.simulatedIosKeyboardRow}>
+                  {['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'].map((key) => (
+                    <View key={key} style={styles.simulatedIosLetterKey}>
+                      <Text style={styles.simulatedIosLetterKeyText}>{key}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={[styles.simulatedIosKeyboardRow, styles.simulatedIosKeyboardRowMedium]}>
+                  {['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].map((key) => (
+                    <View key={key} style={styles.simulatedIosLetterKey}>
+                      <Text style={styles.simulatedIosLetterKeyText}>{key}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={[styles.simulatedIosKeyboardRow, styles.simulatedIosKeyboardRowTight]}>
+                  <View style={styles.simulatedIosUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>shift</Text>
+                  </View>
+                  {['z', 'x', 'c', 'v', 'b', 'n', 'm'].map((key) => (
+                    <View key={key} style={styles.simulatedIosLetterKey}>
+                      <Text style={styles.simulatedIosLetterKeyText}>{key}</Text>
+                    </View>
+                  ))}
+                  <View style={styles.simulatedIosUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>delete</Text>
+                  </View>
+                </View>
+                <View style={styles.simulatedIosBottomRow}>
+                  <View style={styles.simulatedIosBottomUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>123</Text>
+                  </View>
+                  <View style={styles.simulatedIosBottomUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>emoji</Text>
+                  </View>
+                  <View style={styles.simulatedIosSpaceKey}>
+                    <Text style={styles.simulatedIosSpaceText}>space</Text>
+                  </View>
+                  <View style={styles.simulatedIosBottomUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>return</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.simulatedIosHomeIndicatorWrap}>
+                <View style={styles.simulatedKeyboardHomeIndicator} />
+              </View>
+            </View>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -1615,5 +1776,275 @@ const styles = StyleSheet.create({
     height: 1.5,
     borderRadius: 999,
     marginLeft: 18,
+  },
+  simulatedKeyboardLayer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 18,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: '#d6d0c9',
+    borderTopWidth: 1,
+    borderColor: 'rgba(73, 56, 43, 0.1)',
+    paddingHorizontal: 7,
+    paddingTop: 6,
+    paddingBottom: 8,
+    gap: 5,
+    justifyContent: 'flex-start',
+  },
+  simulatedAndroidKeyboardLayer: {
+    backgroundColor: '#d6d0c9',
+  },
+  simulatedIosKeyboardLayer: {
+    backgroundColor: '#d9dde3',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 6,
+    paddingTop: 4,
+    paddingBottom: 6,
+    gap: 3,
+  },
+  simulatedKeyboardToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+  },
+  simulatedKeyboardToolbarChip: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.36)',
+  },
+  simulatedKeyboardToolbarText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#5a5048',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  simulatedKeyboardToolbarIcons: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  simulatedKeyboardToolbarIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.32)',
+  },
+  simulatedKeyboardToolbarIconText: {
+    fontSize: 10,
+    color: '#5a5048',
+  },
+  simulatedKeyboardSuggestionRow: {
+    flexDirection: 'row',
+    gap: 5,
+    paddingHorizontal: 2,
+  },
+  simulatedKeyboardSuggestion: {
+    flex: 1,
+    borderRadius: 9,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+  },
+  simulatedKeyboardSuggestionActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+  },
+  simulatedKeyboardSuggestionText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#5a5048',
+  },
+  simulatedKeyboardSuggestionTextActive: {
+    color: '#2f2924',
+  },
+  simulatedKeyboardRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  simulatedKeyboardRowInset: {
+    paddingHorizontal: 10,
+  },
+  simulatedKeyboardBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 1,
+  },
+  simulatedKeyboardKey: {
+    minWidth: 24,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: '#f8f5f1',
+    borderWidth: 1,
+    borderColor: 'rgba(67, 52, 40, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+    shadowColor: '#6a5647',
+    shadowOpacity: 0.08,
+    shadowRadius: 1.5,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  simulatedKeyboardSpecialKey: {
+    backgroundColor: '#c7c0b8',
+  },
+  simulatedKeyboardWideKey: {
+    minWidth: 38,
+  },
+  simulatedKeyboardActionKey: {
+    minWidth: 40,
+  },
+  simulatedKeyboardEmojiKey: {
+    minWidth: 46,
+  },
+  simulatedKeyboardSpaceKey: {
+    minWidth: 128,
+  },
+  simulatedKeyboardKeyText: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#3c3027',
+  },
+  simulatedIosKeyboardWrap: {
+    gap: 4,
+  },
+  simulatedIosPredictionBar: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    paddingHorizontal: 6,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(82, 88, 97, 0.14)',
+  },
+  simulatedIosPredictionSegment: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+  },
+  simulatedIosPredictionText: {
+    fontSize: 10,
+    color: '#69707a',
+    fontWeight: '500',
+  },
+  simulatedIosPredictionTextStrong: {
+    color: '#2e343b',
+    fontWeight: '600',
+  },
+  simulatedIosRowsWrap: {
+    gap: 6,
+  },
+  simulatedIosKeyboardRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  simulatedIosKeyboardRowMedium: {
+    paddingHorizontal: 12,
+  },
+  simulatedIosKeyboardRowTight: {
+    gap: 4,
+  },
+  simulatedIosLetterKey: {
+    minWidth: 28,
+    height: 31,
+    borderRadius: 7,
+    backgroundColor: '#ffffff',
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#6c737c',
+    shadowOpacity: 0.14,
+    shadowRadius: 1,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  simulatedIosLetterKeyText: {
+    fontSize: 12,
+    color: '#2e343b',
+    fontWeight: '500',
+  },
+  simulatedIosUtilityKey: {
+    backgroundColor: '#b8bec8',
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    borderWidth: 1,
+    minWidth: 44,
+    height: 31,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  simulatedIosBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 0,
+  },
+  simulatedIosBottomUtilityKey: {
+    minWidth: 48,
+    height: 30,
+    borderRadius: 7,
+    backgroundColor: '#b8bec8',
+    borderWidth: 1,
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  simulatedIosSpaceKey: {
+    minWidth: 152,
+    backgroundColor: '#ffffff',
+    height: 30,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simulatedIosUtilityKeyText: {
+    fontSize: 8.5,
+    fontWeight: '600',
+    color: '#40464f',
+    textTransform: 'lowercase',
+    letterSpacing: 0.1,
+  },
+  simulatedIosSpaceText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#2f343b',
+  },
+  simulatedIosHomeIndicatorWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  simulatedKeyboardNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 22,
+    marginTop: 1,
+  },
+  simulatedKeyboardNavText: {
+    fontSize: 11,
+    color: 'rgba(44, 34, 27, 0.5)',
+  },
+  simulatedKeyboardHomeIndicator: {
+    width: 94,
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(44, 34, 27, 0.34)',
   },
 });

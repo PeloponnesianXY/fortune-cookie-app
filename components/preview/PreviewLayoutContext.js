@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { Platform, useWindowDimensions, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -32,6 +32,7 @@ export function usePreviewLayout() {
     width: previewLayout?.width ?? windowDimensions.width,
     insets: previewLayout?.insets ?? liveInsets ?? ZERO_INSETS,
     keyboardVisible: previewLayout?.keyboardVisible ?? null,
+    platform: previewLayout?.platform ?? Platform.OS,
     isPreview: Boolean(previewLayout),
   };
 }
