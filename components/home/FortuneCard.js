@@ -271,7 +271,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     0,
     MAX_COOKIE_ROOMINESS_DROP
   );
-  const desiredCookieCenterY = Math.round(height * (isTallAndroidPhone ? 0.515 : 0.62))
+  const cookieCenterHeightBasis = isIosSixOneClass ? usableHeight : height;
+  const desiredCookieCenterY = Math.round(cookieCenterHeightBasis * (isTallAndroidPhone ? 0.515 : 0.62))
     + Math.round(cookieRoominessDrop * (isTallAndroidPhone ? 0.18 : 1));
   const maxCookieTopSpacing = 172 + clamp(Math.round(extraUsableHeight * 0.3), 0, 72);
   const cookieTopSpacing = clamp(
@@ -1820,6 +1821,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     fontSize: 15,
     paddingVertical: 1,
+    ...(Platform.OS === 'web'
+      ? {
+          outlineStyle: 'none',
+        }
+      : null),
   },
   inputLocked: {
     opacity: 0.5,

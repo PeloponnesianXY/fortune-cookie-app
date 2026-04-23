@@ -153,6 +153,17 @@ function getPreviewDeviceShortLabel(device) {
   return device.label;
 }
 
+function getPreviewDeviceDisplayName(device) {
+  return device.label
+    .replace('4.7-inch Class, such as ', '')
+    .replace('6.1-inch Class, such as ', '')
+    .replace('6.7-inch Class, such as ', '');
+}
+
+function formatPreviewDeviceInches(device) {
+  return device.displayDiagonalInches.toFixed(1);
+}
+
 const FORTUNE_FIT_DEVICES = PREVIEW_DEVICES.map((device) => ({
   key: device.key,
   label: getPreviewDeviceShortLabel(device),
@@ -247,6 +258,10 @@ function getDisplayPreviewScale(device) {
   return Math.round((DISPLAY_REFERENCE_SCALE * (widthRatio / DISPLAY_REFERENCE_WIDTH_RATIO)) * 1000) / 1000;
 }
 
+function getScaledPreviewFrameWidth(device, visualScale) {
+  return Math.round((device.width + 18) * visualScale);
+}
+
 function ToggleRow({ label, onValueChange, value }) {
   return (
     <View style={styles.toggleRow}>
@@ -276,6 +291,7 @@ export default function ScreenLab() {
   const [isCookieOpened, setIsCookieOpened] = useState(false);
   const [isLockWarningVisible, setIsLockWarningVisible] = useState(false);
   const [isSavedToFavoritesNoticeVisible, setIsSavedToFavoritesNoticeVisible] = useState(false);
+  const [previewMoodInput, setPreviewMoodInput] = useState('');
   const initialFortuneFitSeed = useRef(Date.now() >>> 0).current;
   const [fortuneFitSeed, setFortuneFitSeed] = useState(initialFortuneFitSeed);
   const [fortuneFitLineCounts, setFortuneFitLineCounts] = useState({});
@@ -310,10 +326,10 @@ export default function ScreenLab() {
   const selectedSceneLabel = SCENE_OPTIONS.find((option) => option.key === selectedSceneKey)?.label || 'Scene';
   const stageHeaderHeight = isDesktopLayout ? 112 : 92;
   const estimatedShellPadding = isDesktopLayout ? 40 : 28;
-  const stageWidthEstimate = isDesktopLayout ? Math.max(520, windowWidth - 348) : Math.max(320, windowWidth - 28);
+  const stageWidthEstimate = isDesktopLayout ? Math.max(720, windowWidth - 230) : Math.max(320, windowWidth - 28);
   const previewHeightBudget = Math.max(360, windowHeight - stageHeaderHeight - estimatedShellPadding);
   const previewColumns = isDesktopLayout
-    ? Math.min(resolvedPreviewDevices.length, resolvedPreviewDevices.length > 2 ? 3 : 2)
+    ? Math.min(resolvedPreviewDevices.length, 4)
     : 1;
   const previewWidthBudget = Math.max(
     280,
@@ -329,7 +345,7 @@ export default function ScreenLab() {
     return Math.min(smallestScale, fittedPreviewScale);
   }, Number.POSITIVE_INFINITY);
   const resolvedPreviewScale = Math.max(
-    isDesktopLayout ? 0.44 : 0.5,
+    isDesktopLayout ? 0.3 : 0.5,
     Math.round(previewScale * 1000) / 1000
   );
 
@@ -414,9 +430,9 @@ export default function ScreenLab() {
     isHydratingSelection: false,
     isPaperVisible: shouldRevealFortuneForPreview,
     isPreparingNextFortune: false,
-    moodInput: 'curious',
+    moodInput: previewMoodInput,
     onBeginMoodEntry: () => {},
-    onMoodChange: () => {},
+    onMoodChange: setPreviewMoodInput,
     onRemoveFavorite: () => {},
     onRequestReplace: () => {},
     onSaveCreatedFortuneFavorite: () => {},
@@ -443,6 +459,7 @@ export default function ScreenLab() {
     isSavedToFavoritesNoticeVisible,
     isStreakBarExpanded,
     previewFortuneText,
+    previewMoodInput,
     selectedSceneKey,
     shouldRevealFortuneForPreview,
   ]);
@@ -786,20 +803,6 @@ export default function ScreenLab() {
 
           <View style={styles.previewColumn}>
             <View style={styles.previewStageCard}>
-              <View style={styles.previewStageHeader}>
-                <View style={styles.previewStageHeaderCopy}>
-                  <Text style={styles.previewStageEyebrow}>Live Preview</Text>
-                  <Text style={styles.previewStageTitle}>
-                    {resolvedPreviewDevices.length === 1 ? resolvedPreviewDevices[0].label : `${resolvedPreviewDevices.length} selected screens`}
-                  </Text>
-                  <Text style={styles.previewStageMeta}>
-                    {resolvedPreviewDevices.map((device) => getPreviewDeviceShortLabel(device)).join(', ')}
-                    {'  '}|{'  '}
-                    {selectedSceneLabel}
-                  </Text>
-                </View>
-              </View>
-
               <View style={styles.previewStageSurface}>
                 <View style={styles.previewGrid}>
                   {resolvedPreviewDevices.map((device) => (
@@ -807,12 +810,17 @@ export default function ScreenLab() {
                       key={device.key}
                       style={[
                         styles.previewDeviceCard,
+                        { width: getScaledPreviewFrameWidth(device, resolvedPreviewScale) },
                         isDesktopLayout ? styles.previewDeviceCardDesktop : null,
                       ]}
                     >
                       <View style={styles.previewDeviceCardHeader}>
-                        <Text style={styles.previewDeviceCardTitle}>{device.label}</Text>
-                        <Text style={styles.previewDeviceCardMeta}>{device.width} x {device.height} pt</Text>
+                        <Text style={styles.previewDeviceCardTitle}>
+                          {getPreviewDeviceDisplayName(device)}{' '}
+                          <Text style={styles.previewDeviceCardMetaInline}>
+                            {formatPreviewDeviceInches(device)}", {device.width} x {device.height} pt
+                          </Text>
+                        </Text>
                       </View>
                       <PreviewFrame
                         height={device.height}
@@ -901,16 +909,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   controlColumnDesktop: {
-    width: 248,
+    width: 210,
   },
   controlColumnContent: {
-    padding: 10,
-    gap: 8,
+    padding: 8,
+    gap: 6,
   },
   sidebarSection: {
     borderRadius: 22,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     backgroundColor: '#fffaf4',
     borderWidth: 1,
     borderColor: 'rgba(110, 82, 58, 0.09)',
@@ -967,8 +975,8 @@ const styles = StyleSheet.create({
   },
   devicePickerCard: {
     borderRadius: 12,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     backgroundColor: '#f7efe5',
     borderWidth: 1,
     borderColor: 'rgba(122, 90, 64, 0.1)',
@@ -1199,8 +1207,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     backgroundColor: '#f8f1e7',
     borderWidth: 1,
     borderColor: 'rgba(110, 82, 58, 0.08)',
@@ -1221,7 +1229,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 32,
     paddingHorizontal: 18,
-    paddingTop: 18,
+    paddingTop: 12,
     paddingBottom: 14,
     backgroundColor: 'rgba(250, 244, 235, 0.88)',
     borderWidth: 1,
@@ -1232,32 +1240,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 5,
     gap: 10,
-  },
-  previewStageHeader: {
-    paddingHorizontal: 6,
-    gap: 2,
-  },
-  previewStageHeaderCopy: {
-    gap: 4,
-  },
-  previewStageEyebrow: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: '#8d6e58',
-  },
-  previewStageTitle: {
-    fontSize: 30,
-    lineHeight: 34,
-    fontWeight: '700',
-    color: '#3d2c1e',
-    ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
-  },
-  previewStageMeta: {
-    fontSize: 13,
-    color: '#7d6654',
-    fontWeight: '600',
   },
   previewStageSurface: {
     flex: 1,
@@ -1284,25 +1266,32 @@ const styles = StyleSheet.create({
   previewDeviceCard: {
     alignItems: 'center',
     gap: 10,
+    flexShrink: 0,
   },
   previewDeviceCardDesktop: {
-    minWidth: 280,
+    minWidth: 0,
   },
   previewDeviceCardHeader: {
+    width: '100%',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 8,
+    gap: 2,
+    paddingHorizontal: 6,
   },
   previewDeviceCardTitle: {
     color: '#3d2c1e',
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: '700',
     textAlign: 'center',
     ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
   },
+  previewDeviceCardMetaInline: {
+    color: '#7d6654',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   previewDeviceCardMeta: {
     color: '#7d6654',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
   },
