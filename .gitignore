@@ -4,6 +4,7 @@ node_modules/
 dist/
 .runtime/
 .vscode/
+.idea/
 .claude/
 .edge-headless/
 classic-lab-shot.png

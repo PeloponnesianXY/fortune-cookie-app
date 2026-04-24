@@ -38,6 +38,7 @@ const PAPER_SIZE = {
   width: 364,
   minHeight: 68,
 };
+const SE_PAPER_IMAGE_DROP = 10;
 
 function scaleValue(value, scale) {
   return Math.round(value * scale * 10) / 10;
@@ -48,17 +49,17 @@ function getPaperTextMetrics(text, scale) {
   const characterCount = normalizedText.length;
 
   let baseFontSize = 13;
-  let baseLineHeight = 16;
+  let baseLineHeight = 17;
 
   if (characterCount <= 42) {
     baseFontSize = 17;
-    baseLineHeight = 21;
+    baseLineHeight = 22;
   } else if (characterCount <= 56) {
     baseFontSize = 15.5;
-    baseLineHeight = 19;
+    baseLineHeight = 20;
   } else if (characterCount <= 72) {
     baseFontSize = 14;
-    baseLineHeight = 17;
+    baseLineHeight = 18;
   }
 
   return {
@@ -163,7 +164,7 @@ function CookieShell({
     paperMaxWidth || Number.POSITIVE_INFINITY
   );
   const paperMinHeight = scaleValue(PAPER_SIZE.minHeight, scale);
-  const sePaperLift = scale < 0.86 ? scaleValue(14, scale) : 0;
+  const sePaperLift = scale < 0.86 ? scaleValue(14 - SE_PAPER_IMAGE_DROP, scale) : 0;
   const resolvedPaperLift = sePaperLift + scaleValue(paperLift, scale);
   const paperTop = scaleValue(-28, scale) - resolvedPaperLift;
   const paperShadowTop = scaleValue(-6, scale) - resolvedPaperLift;

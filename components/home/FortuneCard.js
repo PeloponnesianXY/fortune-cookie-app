@@ -32,6 +32,14 @@ import {
   updateCustomFortune,
 } from '../../utils/customFortunes';
 import { MOOD_BUCKET_KEYS } from '../../utils/fortuneLogic';
+import appConfig from '../../app.json';
+
+const CONTENT_FRAME_PADDING_BOTTOM = 20;
+const APP_VERSION = appConfig?.expo?.version || '1.0.2';
+// Master prompt sits in a flex column with a tall cookieSection minHeight; overflow can ignore
+// contentFrame padding. Pin the prompt above the gesture area on Android instead of flex-end.
+const ANDROID_MASTER_PROMPT_BOTTOM_GAP = 12;
+const ANDROID_MASTER_PROMPT_BOTTOM_INSET_MIN = 28;
 
 const SUPPORT_URL = 'https://fortunecookieappsupport.netlify.app/';
 const BASE_CONTENT_MAX_WIDTH = 540;
@@ -51,6 +59,21 @@ const MAX_ACTION_TRAY_ROOMINESS_GAP = 30;
 const COOKIE_ROOMINESS_DROP_FACTOR = 0.16;
 const COOKIE_ROOMINESS_CURVE_FACTOR = 0.0003;
 const MAX_COOKIE_ROOMINESS_DROP = 110;
+const TALL_ANDROID_ACTION_TRAY_DROP = 36;
+const TALL_ANDROID_PAPER_LIFT = 30;
+const TALL_ANDROID_CUSTOM_NOTICE_LIFT = 40;
+const ANDROID_PROMPT_FLOAT_CLEARANCE_BOOST = 36;
+const GLOBAL_CUSTOM_NOTICE_LIFT = 14;
+const LOCK_ALERT_NOTICE_CLEARANCE = 54;
+const TALL_ANDROID_LOCK_ALERT_NOTICE_CLEARANCE = 76;
+const SAVED_NOTICE_SUN_GAP = 36;
+const IOS_SIX_ONE_PAPER_LIFT = 52;
+const IOS_PHONE_PAPER_LIFT = 52;
+const IOS_PHONE_COOKIE_LIFT = 12;
+const IOS_PHONE_COOKIE_IMAGE_LIFT = 18;
+const IOS_PHONE_COOKIE_STAGE_LIFT = 10;
+const IOS_SIX_ONE_COOKIE_STAGE_LIFT = 28;
+const IOS_PLUS_ACTION_TRAY_DROP = 10;
 const CREATE_FORTUNE_TOP_GAP_FACTOR = 0.014;
 const MIN_CREATE_FORTUNE_TOP_GAP = 10;
 const MAX_CREATE_FORTUNE_TOP_GAP = 18;
@@ -135,31 +158,43 @@ function createCustomFavoriteRecord(moodKey, fortuneText) {
   };
 }
 
-function getLayoutMode(width, height) {
-  if (height < 670) {
+function getLayoutMode(width, usableHeight) {
+  if (usableHeight < 670) {
     return 'veryCompact';
   }
 
-  if (height < 720 || width < 375) {
+  if (usableHeight < 720 || width < 375) {
     return 'compact';
   }
 
-  if (height > 850) {
+  if (usableHeight > 810) {
     return 'roomy';
   }
 
   return 'standard';
 }
 
-function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
-  const layoutMode = getLayoutMode(width, height);
+function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, platform = Platform.OS) {
+  const rawUsableHeight = height - (insets.top || 0) - (insets.bottom || 0);
+  const isIosSixOneClass = platform === 'ios'
+    && width >= 390
+    && width <= 393
+    && rawUsableHeight >= 758
+    && rawUsableHeight <= 764;
+  const isIosPhonePreview = platform === 'ios' && width <= 430;
+  const isIosPlusClass = platform === 'ios' && width >= 428 && width <= 430;
+  const isLargeIosPhonePreview = isIosPhonePreview && width >= 390;
+  const metricWidth = isIosSixOneClass ? 390 : width;
+  const usableHeight = isIosSixOneClass ? 763 : rawUsableHeight;
+  const layoutMode = getLayoutMode(metricWidth, usableHeight);
   const isVeryCompact = layoutMode === 'veryCompact';
   const isCompact = layoutMode === 'compact' || isVeryCompact;
   const isRoomy = layoutMode === 'roomy';
-  const usableHeight = height - (insets.top || 0) - (insets.bottom || 0);
+  const isAndroid = platform === 'android';
+  const isTallAndroidPhone = isAndroid && isRoomy && metricWidth >= 390;
   const extraUsableHeight = Math.max(0, usableHeight - SE_BASELINE_USABLE_HEIGHT);
-  const horizontalPadding = clamp(Math.round(width * 0.055), 14, 24);
-  const contentMaxWidth = Math.min(BASE_CONTENT_MAX_WIDTH, width - horizontalPadding * 2);
+  const horizontalPadding = clamp(Math.round(metricWidth * 0.055), 14, 24);
+  const contentMaxWidth = Math.min(BASE_CONTENT_MAX_WIDTH, metricWidth - horizontalPadding * 2);
   const menuButtonSize = isVeryCompact ? 34 : isCompact ? 36 : isRoomy ? 42 : 38;
   const menuButtonRadius = Math.round(menuButtonSize * 0.37);
   const menuLineWidth = Math.round(menuButtonSize * 0.42);
@@ -167,11 +202,19 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   const menuGap = isVeryCompact ? 3 : 4;
   const streakScale = isVeryCompact ? 0.9 : isCompact ? 0.94 : isRoomy ? 1.04 : 1;
   const streakRightNudge = isVeryCompact ? 8 : 0;
-  const streakAvailableWidth = width - horizontalPadding * 2 - menuButtonSize - 12;
+  const streakAvailableWidth = metricWidth - horizontalPadding * 2 - menuButtonSize - 12;
   const streakCollapsedWidth = clamp(Math.round(streakAvailableWidth * 0.64), 160, 204);
   const streakExpandedWidth = clamp(Math.round(streakAvailableWidth), 246, 304);
   const headerTop = isVeryCompact ? 10 : isCompact ? 12 : isRoomy ? 22 : 18;
-  const cookieScale = isVeryCompact ? 0.84 : isCompact ? 0.8 : isRoomy ? 0.98 : 0.88;
+  const cookieScale = isVeryCompact
+    ? 0.84
+    : isCompact
+      ? 0.8
+      : isTallAndroidPhone
+        ? 0.92
+        : isRoomy
+          ? 0.98
+          : 0.88;
   const cookieFrameHeight = Math.round(COOKIE_SHELL_FRAME.height * cookieScale);
   const cookieStageMinHeight = isVeryCompact
     ? cookieFrameHeight + 10
@@ -190,7 +233,8 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     Math.round(extraUsableHeight * COOKIE_DROP_FACTOR),
     0,
     MAX_COOKIE_DROP
-  ) - (isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 20);
+  ) - (isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 20)
+    - (isIosPhonePreview ? IOS_PHONE_COOKIE_IMAGE_LIFT : 0);
   const cookieImageBottom = getOpenedCookieImageBottom(cookieScale, cookieImageOffset);
   const actionTrayImageGap = clamp(
     Math.round(usableHeight * ACTION_TRAY_IMAGE_GAP_FACTOR),
@@ -201,8 +245,10 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     Math.round(extraUsableHeight * ACTION_TRAY_ROOMINESS_GAP_FACTOR),
     0,
     MAX_ACTION_TRAY_ROOMINESS_GAP
-  );
-  const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
+  ) - (isTallAndroidPhone ? 8 : 0);
+  const promptFloatClearance = (
+    isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68
+  ) + (isAndroid ? ANDROID_PROMPT_FLOAT_CLEARANCE_BOOST : 0);
   const actionTrayEstimatedHeight = isVeryCompact ? 88 : isCompact ? 92 : isRoomy ? 100 : 96;
   const actionTrayVisualLift = clamp(
     Math.round(actionTrayEstimatedHeight * ACTION_TRAY_VISUAL_LIFT_FACTOR),
@@ -211,9 +257,26 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
   );
   const actionTrayTop = Math.round(
     cookieImageBottom + actionTrayImageGap + actionTrayRoominessGap - actionTrayVisualLift
-  );
-  const dailyWisdomSlotHeight = isVeryCompact ? 80 : isCompact ? 88 : isRoomy ? 124 : 104;
-  const dailyWisdomBottom = isVeryCompact ? 66 : isCompact ? 52 : isRoomy ? 86 : 92;
+  ) + (isTallAndroidPhone ? TALL_ANDROID_ACTION_TRAY_DROP : 0)
+    + (isIosPlusClass ? IOS_PLUS_ACTION_TRAY_DROP : 0);
+  const dailyWisdomSlotHeight = isVeryCompact
+    ? 80
+    : isCompact
+      ? 88
+      : isTallAndroidPhone
+        ? 104
+        : isRoomy
+          ? 124
+          : 104;
+  const dailyWisdomBottom = isVeryCompact
+    ? 66
+    : isCompact
+      ? 52
+      : isTallAndroidPhone
+        ? 72
+        : isRoomy
+          ? 86
+          : 92;
   const cookieRoominessDrop = clamp(
     Math.round(
       extraUsableHeight * COOKIE_ROOMINESS_DROP_FACTOR
@@ -222,7 +285,10 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     0,
     MAX_COOKIE_ROOMINESS_DROP
   );
-  const desiredCookieCenterY = Math.round(height * 0.62) + cookieRoominessDrop;
+  const cookieCenterHeightBasis = isIosSixOneClass ? usableHeight : height;
+  const desiredCookieCenterY = Math.round(cookieCenterHeightBasis * (isTallAndroidPhone ? 0.515 : 0.62))
+    + Math.round(cookieRoominessDrop * (isTallAndroidPhone ? 0.18 : 1))
+    - (isLargeIosPhonePreview ? IOS_PHONE_COOKIE_LIFT : 0);
   const maxCookieTopSpacing = 172 + clamp(Math.round(extraUsableHeight * 0.3), 0, 72);
   const cookieTopSpacing = clamp(
     Math.round(desiredCookieCenterY - dailyWisdomSlotHeight - cookieFrameHeight / 2),
@@ -243,7 +309,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     MAX_CUSTOM_NOTICE_GAP
   );
   const customNoticeTop = createFortuneTopAnchor + ESTIMATED_CREATE_FORTUNE_COLLAPSED_HEIGHT + customNoticeGap
+    - GLOBAL_CUSTOM_NOTICE_LIFT
     - (isVeryCompact ? SE_CUSTOM_NOTICE_LIFT : 0)
+    - (isTallAndroidPhone ? TALL_ANDROID_CUSTOM_NOTICE_LIFT : 0)
     + (isVeryCompact ? 12 : isCompact ? 10 : isRoomy ? 16 : 14);
   const keyboardOffset = isVeryCompact ? 108 : isCompact ? 118 : 132;
   const topGlowHeight = isVeryCompact ? 226 : isCompact ? 252 : isRoomy ? 356 : 304;
@@ -291,6 +359,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     cookieScale,
     cookieStageMinHeight,
     cookieTopSpacing,
+    cookieVisualLift: isIosPhonePreview
+      ? (isIosSixOneClass ? IOS_SIX_ONE_COOKIE_STAGE_LIFT : IOS_PHONE_COOKIE_STAGE_LIFT)
+      : 0,
     dailyWisdomBottom,
     dailyWisdomSlotHeight,
     headerTop,
@@ -305,7 +376,17 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }) {
     promptFloatClearance,
     promptBottomInset,
     promptGap,
-    paperLift: isVeryCompact ? 0 : isCompact ? 0 : isRoomy ? 0 : 28,
+    paperLift: isIosPhonePreview
+      ? (isIosSixOneClass ? IOS_SIX_ONE_PAPER_LIFT : IOS_PHONE_PAPER_LIFT)
+      : isTallAndroidPhone
+        ? TALL_ANDROID_PAPER_LIFT
+        : isVeryCompact
+          ? 0
+          : isCompact
+            ? 0
+            : isRoomy
+              ? 0
+              : 28,
     promptSectionOffset: isVeryCompact ? -16 : 0,
     scene,
     streakCollapsedWidth,
@@ -354,9 +435,11 @@ const CookieStage = memo(function CookieStage({
   shellProgress,
   shellScale,
   stageMinHeight,
+  visualLift = 0,
 }) {
   const cookieLiftStyle = {
     transform: [
+      { translateY: -visualLift },
       {
         translateY: shellProgress.interpolate({
           inputRange: [0, 1],
@@ -371,14 +454,18 @@ const CookieStage = memo(function CookieStage({
       },
     ],
   };
+  const isCookieTapEnabled = Boolean(isPaperVisible && onPress);
 
   return (
-    <Pressable
-      accessibilityRole={isPaperVisible ? 'button' : undefined}
-      onPress={isPaperVisible ? onPress : undefined}
-      style={styles.cookieTapArea}
-    >
-      <View style={[styles.cookieStage, { minHeight: stageMinHeight }]}>
+    <View style={[styles.cookieStage, { minHeight: stageMinHeight }]}>
+      <View
+        accessible={isCookieTapEnabled}
+        accessibilityRole={isCookieTapEnabled ? 'button' : undefined}
+        focusable={false}
+        onResponderRelease={isCookieTapEnabled ? onPress : undefined}
+        onStartShouldSetResponder={() => isCookieTapEnabled}
+        style={styles.cookieTapArea}
+      >
         <Animated.View style={[styles.cookieImageFrame, cookieLiftStyle]}>
           <CookieShell
             fortuneText={fortuneText}
@@ -393,7 +480,7 @@ const CookieStage = memo(function CookieStage({
           />
         </Animated.View>
       </View>
-    </Pressable>
+    </View>
   );
 });
 
@@ -466,9 +553,13 @@ export default function FortuneCard({
   const promptLiftProgress = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
   const metrics = useMemo(
-    () => createLayoutMetrics(viewportWidth, viewportHeight, previewLayout.insets),
-    [previewLayout.insets, viewportHeight, viewportWidth]
+    () => createLayoutMetrics(viewportWidth, viewportHeight, previewLayout.insets, previewLayout.platform),
+    [previewLayout.insets, previewLayout.platform, viewportHeight, viewportWidth]
   );
+  const simulatedKeyboardPlatform = previewLayout.platform || Platform.OS;
+  const simulatedKeyboardHeight = simulatedKeyboardPlatform === 'ios'
+    ? clamp(Math.round(viewportHeight * 0.215), 168, 208)
+    : clamp(Math.round(viewportHeight * 0.31), 180, 286);
   const drawerWidth = Math.min(Math.round(viewportWidth * 0.68), 276);
   const isFortuneRevealed = Boolean(isPaperVisible && fortuneText);
   const isDrawerForced = typeof forcedDrawerOpen === 'boolean';
@@ -484,9 +575,10 @@ export default function FortuneCard({
     : isCustomFortuneSheetVisible;
   const resolvedCustomFortuneNotice = forcedCustomFortuneNotice ?? customFortuneNotice;
   const shouldLiftMasterPrompt = effectiveKeyboardVisible && !customFortuneSheetVisible;
+  const shouldShowSimulatedKeyboard = Boolean(previewLayout.isPreview && effectiveKeyboardVisible);
   const resolvedActionTrayHeight = actionTrayHeight || metrics.actionTrayEstimatedHeight;
   const cookieSectionMinHeight = metrics.actionTrayTop + resolvedActionTrayHeight;
-  const customFortuneNoticeTop = metrics.customNoticeTop;
+  const customFortuneNoticeTop = metrics.scene.sunDisc.top - SAVED_NOTICE_SUN_GAP;
   const isPromptTemporarilyLocked = isDailyWisdomLockActive;
   const drawerPalette = {
     panel: '#fff8f1',
@@ -897,6 +989,11 @@ export default function FortuneCard({
     || isPaperVisible
   );
 
+  const androidMasterPromptBottom = (
+    ANDROID_MASTER_PROMPT_BOTTOM_GAP
+    + Math.max(previewLayout.insets?.bottom ?? 0, ANDROID_MASTER_PROMPT_BOTTOM_INSET_MIN)
+  );
+
   return (
     <View style={[styles.screen, { backgroundColor: scene.sky }]}>
       <SceneBackdrop metrics={metrics} scene={scene} />
@@ -1031,6 +1128,7 @@ export default function FortuneCard({
             shellProgress={shellProgress}
             shellScale={metrics.cookieScale}
             stageMinHeight={metrics.cookieStageMinHeight}
+            visualLift={metrics.cookieVisualLift}
           />
 
           {isFortuneRevealed ? (
@@ -1057,11 +1155,109 @@ export default function FortuneCard({
           ) : null}
         </View>
 
+        {Platform.OS !== 'android' ? (
+          <Animated.View
+            style={[
+              styles.promptDock,
+              promptDockAnimatedStyle,
+              {
+                paddingTop: metrics.promptGap,
+                paddingBottom: shouldLiftMasterPrompt ? 0 : metrics.promptBottomInset,
+                justifyContent: shouldLiftMasterPrompt ? 'flex-start' : 'flex-end',
+              },
+            ]}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'position' : undefined}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? metrics.keyboardOffset : 0}
+              style={styles.promptSection}
+            >
+              <View
+                style={[
+                  styles.inputCard,
+                  styles.inputCardNeutral,
+                  {
+                    maxWidth: metrics.contentMaxWidth,
+                    marginTop: metrics.promptSectionOffset,
+                  },
+                ]}
+              >
+                <Text style={[
+                  styles.inputLabel,
+                  styles.inputLabelNeutral,
+                  isPromptTemporarilyLocked ? styles.inputLabelLocked : null,
+                ]}>
+                  Describe your mood in one word
+                </Text>
+                <View
+                  style={[
+                    styles.inputRow,
+                    {
+                      backgroundColor: scene.input,
+                      borderColor: isInputFocused ? scene.accent : scene.inputBorder,
+                    },
+                    isPromptTemporarilyLocked ? styles.inputRowLocked : null,
+                    isInputFocused ? styles.inputRowFocused : null,
+                  ]}
+                >
+                  <TextInput
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    blurOnSubmit={false}
+                    editable={!isHydratingSelection && !isPromptTemporarilyLocked}
+                    ref={inputRef}
+                    onBlur={() => {
+                      setIsInputFocused(false);
+                      clearIdleKeyboardTimer();
+                    }}
+                    onChangeText={(nextValue) => {
+                      onMoodChange(nextValue);
+                      scheduleIdleKeyboardDismiss(nextValue);
+                    }}
+                    onFocus={() => {
+                      if (isPromptTemporarilyLocked) {
+                        inputRef.current?.blur();
+                        return;
+                      }
+
+                      setIsInputFocused(true);
+                      if (shouldPrepareFreshEntry) {
+                        onBeginMoodEntry?.();
+                      }
+                      scheduleIdleKeyboardDismiss('');
+                    }}
+                    onSubmitEditing={() => {
+                      inputRef.current?.blur();
+                      onSubmitMoodInput();
+                    }}
+                    placeholder="tired, excited, restless..."
+                    placeholderTextColor={scene.accentSoft}
+                    returnKeyType="done"
+                    selectionColor={scene.accent}
+                    style={[
+                      styles.input,
+                      { color: scene.textPrimary },
+                      isPromptTemporarilyLocked ? styles.inputLocked : null,
+                    ]}
+                    value={moodInput}
+                  />
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </Animated.View>
+        ) : null}
+        </View>
+      </View>
+
+      {Platform.OS === 'android' ? (
         <Animated.View
+          pointerEvents="box-none"
           style={[
-            styles.promptDock,
+            styles.androidMasterPromptOverlay,
             promptDockAnimatedStyle,
             {
+              paddingHorizontal: metrics.horizontalPadding,
+              bottom: androidMasterPromptBottom,
               paddingTop: metrics.promptGap,
               paddingBottom: shouldLiftMasterPrompt ? 0 : metrics.promptBottomInset,
               justifyContent: shouldLiftMasterPrompt ? 'flex-start' : 'flex-end',
@@ -1069,8 +1265,7 @@ export default function FortuneCard({
           ]}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'position' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? metrics.keyboardOffset : 0}
+            behavior={undefined}
             style={styles.promptSection}
           >
             <View
@@ -1146,8 +1341,7 @@ export default function FortuneCard({
             </View>
           </KeyboardAvoidingView>
         </Animated.View>
-        </View>
-      </View>
+      ) : null}
 
       {isDrawerShown ? (
         <View pointerEvents="box-none" style={styles.drawerLayer}>
@@ -1211,6 +1405,11 @@ export default function FortuneCard({
             </DrawerSection>
 
             <View style={styles.drawerCalmSpace} />
+            <View style={styles.drawerFooter}>
+              <Text style={[styles.drawerVersionText, { color: drawerPalette.title }]}>
+                Version {APP_VERSION}
+              </Text>
+            </View>
             <View style={styles.drawerMotif} pointerEvents="none">
               <View style={[styles.drawerMotifLine, { backgroundColor: drawerPalette.motif }]} />
               <View style={[styles.drawerMotifDot, { backgroundColor: drawerPalette.motif }]} />
@@ -1337,6 +1536,162 @@ export default function FortuneCard({
         sections={createdFortuneSections}
         visible={isCreatedFortunesSheetVisible}
       />
+      {shouldShowSimulatedKeyboard ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.simulatedKeyboardLayer,
+            simulatedKeyboardPlatform === 'android' ? styles.simulatedAndroidKeyboardLayer : styles.simulatedIosKeyboardLayer,
+            { height: simulatedKeyboardHeight },
+          ]}
+        >
+          {simulatedKeyboardPlatform === 'android' ? (
+            <>
+              <View style={styles.simulatedKeyboardToolbar}>
+                <View style={styles.simulatedKeyboardToolbarChip}>
+                  <Text style={styles.simulatedKeyboardToolbarText}>smart</Text>
+                </View>
+                <View style={styles.simulatedKeyboardToolbarIcons}>
+                  {['😊', '⋯', '⚙', '🎤'].map((item) => (
+                    <View key={item} style={styles.simulatedKeyboardToolbarIcon}>
+                      <Text style={styles.simulatedKeyboardToolbarIconText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <View style={styles.simulatedKeyboardSuggestionRow}>
+                {['curious', 'curious.', 'curiously'].map((item, index) => (
+                  <View
+                    key={item}
+                    style={[
+                      styles.simulatedKeyboardSuggestion,
+                      index === 1 ? styles.simulatedKeyboardSuggestionActive : null,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.simulatedKeyboardSuggestionText,
+                        index === 1 ? styles.simulatedKeyboardSuggestionTextActive : null,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.simulatedKeyboardRow}>
+                {['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'].map((key) => (
+                  <View key={key} style={styles.simulatedKeyboardKey}>
+                    <Text style={styles.simulatedKeyboardKeyText}>{key}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={[styles.simulatedKeyboardRow, styles.simulatedKeyboardRowInset]}>
+                {['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].map((key) => (
+                  <View key={key} style={styles.simulatedKeyboardKey}>
+                    <Text style={styles.simulatedKeyboardKeyText}>{key}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.simulatedKeyboardRow}>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardWideKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>⇧</Text>
+                </View>
+                {['z', 'x', 'c', 'v', 'b', 'n', 'm'].map((key) => (
+                  <View key={key} style={styles.simulatedKeyboardKey}>
+                    <Text style={styles.simulatedKeyboardKeyText}>{key}</Text>
+                  </View>
+                ))}
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardWideKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>⌫</Text>
+                </View>
+              </View>
+              <View style={styles.simulatedKeyboardBottomRow}>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardActionKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>123</Text>
+                </View>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardEmojiKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>😊</Text>
+                </View>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpaceKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>space</Text>
+                </View>
+                <View style={[styles.simulatedKeyboardKey, styles.simulatedKeyboardSpecialKey, styles.simulatedKeyboardActionKey]}>
+                  <Text style={styles.simulatedKeyboardKeyText}>↵</Text>
+                </View>
+              </View>
+              <View style={styles.simulatedKeyboardNavRow}>
+                <Text style={styles.simulatedKeyboardNavText}>▵</Text>
+                <View style={styles.simulatedKeyboardHomeIndicator} />
+                <Text style={styles.simulatedKeyboardNavText}>◯</Text>
+              </View>
+            </>
+          ) : (
+            <View style={styles.simulatedIosKeyboardWrap}>
+              <View style={styles.simulatedIosPredictionBar}>
+                {['curious', 'for', 'the'].map((item, index) => (
+                  <View key={item} style={styles.simulatedIosPredictionSegment}>
+                    <Text
+                      style={[
+                        styles.simulatedIosPredictionText,
+                        index === 0 ? styles.simulatedIosPredictionTextStrong : null,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.simulatedIosRowsWrap}>
+                <View style={styles.simulatedIosKeyboardRow}>
+                  {['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'].map((key) => (
+                    <View key={key} style={styles.simulatedIosLetterKey}>
+                      <Text style={styles.simulatedIosLetterKeyText}>{key}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={[styles.simulatedIosKeyboardRow, styles.simulatedIosKeyboardRowMedium]}>
+                  {['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].map((key) => (
+                    <View key={key} style={styles.simulatedIosLetterKey}>
+                      <Text style={styles.simulatedIosLetterKeyText}>{key}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={[styles.simulatedIosKeyboardRow, styles.simulatedIosKeyboardRowTight]}>
+                  <View style={styles.simulatedIosUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>shift</Text>
+                  </View>
+                  {['z', 'x', 'c', 'v', 'b', 'n', 'm'].map((key) => (
+                    <View key={key} style={styles.simulatedIosLetterKey}>
+                      <Text style={styles.simulatedIosLetterKeyText}>{key}</Text>
+                    </View>
+                  ))}
+                  <View style={styles.simulatedIosUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>delete</Text>
+                  </View>
+                </View>
+                <View style={styles.simulatedIosBottomRow}>
+                  <View style={styles.simulatedIosBottomUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>123</Text>
+                  </View>
+                  <View style={styles.simulatedIosBottomUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>emoji</Text>
+                  </View>
+                  <View style={styles.simulatedIosSpaceKey}>
+                    <Text style={styles.simulatedIosSpaceText}>space</Text>
+                  </View>
+                  <View style={styles.simulatedIosBottomUtilityKey}>
+                    <Text style={styles.simulatedIosUtilityKeyText}>return</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.simulatedIosHomeIndicatorWrap}>
+                <View style={styles.simulatedKeyboardHomeIndicator} />
+              </View>
+            </View>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -1348,7 +1703,7 @@ const styles = StyleSheet.create({
   contentFrame: {
     flexGrow: 1,
     paddingTop: 12,
-    paddingBottom: 20,
+    paddingBottom: CONTENT_FRAME_PADDING_BOTTOM,
   },
   headerChrome: {
     position: 'absolute',
@@ -1487,15 +1842,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     fontSize: 15,
     paddingVertical: 1,
+    ...(Platform.OS === 'web'
+      ? {
+          outlineStyle: 'none',
+        }
+      : null),
   },
   inputLocked: {
     opacity: 0.5,
   },
   cookieTapArea: {
-    width: '100%',
-    alignSelf: 'center',
     alignItems: 'center',
-    marginTop: 0,
+    justifyContent: 'center',
   },
   cookieStage: {
     width: '100%',
@@ -1539,6 +1897,13 @@ const styles = StyleSheet.create({
   promptDock: {
     flexGrow: 1,
     width: '100%',
+  },
+  androidMasterPromptOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 18,
+    elevation: 18,
   },
   dailyWisdomText: {
     fontSize: 12.5,
@@ -1592,6 +1957,16 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 28,
   },
+  drawerFooter: {
+    paddingHorizontal: 4,
+    paddingBottom: 10,
+  },
+  drawerVersionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    opacity: 0.72,
+    letterSpacing: 0.2,
+  },
   drawerMotif: {
     alignItems: 'flex-start',
     paddingHorizontal: 4,
@@ -1615,5 +1990,275 @@ const styles = StyleSheet.create({
     height: 1.5,
     borderRadius: 999,
     marginLeft: 18,
+  },
+  simulatedKeyboardLayer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 18,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: '#d6d0c9',
+    borderTopWidth: 1,
+    borderColor: 'rgba(73, 56, 43, 0.1)',
+    paddingHorizontal: 7,
+    paddingTop: 6,
+    paddingBottom: 8,
+    gap: 5,
+    justifyContent: 'flex-start',
+  },
+  simulatedAndroidKeyboardLayer: {
+    backgroundColor: '#d6d0c9',
+  },
+  simulatedIosKeyboardLayer: {
+    backgroundColor: '#d9dde3',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 6,
+    paddingTop: 4,
+    paddingBottom: 6,
+    gap: 3,
+  },
+  simulatedKeyboardToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+  },
+  simulatedKeyboardToolbarChip: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.36)',
+  },
+  simulatedKeyboardToolbarText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#5a5048',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  simulatedKeyboardToolbarIcons: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  simulatedKeyboardToolbarIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.32)',
+  },
+  simulatedKeyboardToolbarIconText: {
+    fontSize: 10,
+    color: '#5a5048',
+  },
+  simulatedKeyboardSuggestionRow: {
+    flexDirection: 'row',
+    gap: 5,
+    paddingHorizontal: 2,
+  },
+  simulatedKeyboardSuggestion: {
+    flex: 1,
+    borderRadius: 9,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+  },
+  simulatedKeyboardSuggestionActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+  },
+  simulatedKeyboardSuggestionText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#5a5048',
+  },
+  simulatedKeyboardSuggestionTextActive: {
+    color: '#2f2924',
+  },
+  simulatedKeyboardRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  simulatedKeyboardRowInset: {
+    paddingHorizontal: 10,
+  },
+  simulatedKeyboardBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 1,
+  },
+  simulatedKeyboardKey: {
+    minWidth: 24,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: '#f8f5f1',
+    borderWidth: 1,
+    borderColor: 'rgba(67, 52, 40, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+    shadowColor: '#6a5647',
+    shadowOpacity: 0.08,
+    shadowRadius: 1.5,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  simulatedKeyboardSpecialKey: {
+    backgroundColor: '#c7c0b8',
+  },
+  simulatedKeyboardWideKey: {
+    minWidth: 38,
+  },
+  simulatedKeyboardActionKey: {
+    minWidth: 40,
+  },
+  simulatedKeyboardEmojiKey: {
+    minWidth: 46,
+  },
+  simulatedKeyboardSpaceKey: {
+    minWidth: 128,
+  },
+  simulatedKeyboardKeyText: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#3c3027',
+  },
+  simulatedIosKeyboardWrap: {
+    gap: 4,
+  },
+  simulatedIosPredictionBar: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    paddingHorizontal: 6,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(82, 88, 97, 0.14)',
+  },
+  simulatedIosPredictionSegment: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+  },
+  simulatedIosPredictionText: {
+    fontSize: 10,
+    color: '#69707a',
+    fontWeight: '500',
+  },
+  simulatedIosPredictionTextStrong: {
+    color: '#2e343b',
+    fontWeight: '600',
+  },
+  simulatedIosRowsWrap: {
+    gap: 6,
+  },
+  simulatedIosKeyboardRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  simulatedIosKeyboardRowMedium: {
+    paddingHorizontal: 12,
+  },
+  simulatedIosKeyboardRowTight: {
+    gap: 4,
+  },
+  simulatedIosLetterKey: {
+    minWidth: 28,
+    height: 31,
+    borderRadius: 7,
+    backgroundColor: '#ffffff',
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#6c737c',
+    shadowOpacity: 0.14,
+    shadowRadius: 1,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  simulatedIosLetterKeyText: {
+    fontSize: 12,
+    color: '#2e343b',
+    fontWeight: '500',
+  },
+  simulatedIosUtilityKey: {
+    backgroundColor: '#b8bec8',
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    borderWidth: 1,
+    minWidth: 44,
+    height: 31,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  simulatedIosBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 0,
+  },
+  simulatedIosBottomUtilityKey: {
+    minWidth: 48,
+    height: 30,
+    borderRadius: 7,
+    backgroundColor: '#b8bec8',
+    borderWidth: 1,
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  simulatedIosSpaceKey: {
+    minWidth: 152,
+    backgroundColor: '#ffffff',
+    height: 30,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(67, 52, 40, 0.02)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simulatedIosUtilityKeyText: {
+    fontSize: 8.5,
+    fontWeight: '600',
+    color: '#40464f',
+    textTransform: 'lowercase',
+    letterSpacing: 0.1,
+  },
+  simulatedIosSpaceText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#2f343b',
+  },
+  simulatedIosHomeIndicatorWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  simulatedKeyboardNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 22,
+    marginTop: 1,
+  },
+  simulatedKeyboardNavText: {
+    fontSize: 11,
+    color: 'rgba(44, 34, 27, 0.5)',
+  },
+  simulatedKeyboardHomeIndicator: {
+    width: 94,
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(44, 34, 27, 0.34)',
   },
 });

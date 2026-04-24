@@ -9,6 +9,8 @@ export default function PreviewFrame({
   insets,
   keyboardVisible,
   label,
+  previewPlatform,
+  showHeader = true,
   visualScale = 1,
   width,
 }) {
@@ -17,10 +19,12 @@ export default function PreviewFrame({
 
   return (
     <View style={styles.shell}>
-      <View style={styles.header}>
-        <Text style={styles.label}>{label}</Text>
-        <Text style={styles.metrics}>{width} x {height} pt</Text>
-      </View>
+      {showHeader ? (
+        <View style={styles.header}>
+          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.metrics}>{width} x {height} pt</Text>
+        </View>
+      ) : null}
 
       <View style={{ width: scaledFrameWidth, height: scaledFrameHeight }}>
         <View
@@ -41,6 +45,7 @@ export default function PreviewFrame({
               width,
               insets,
               keyboardVisible,
+              platform: previewPlatform,
             }}
           >
             <View style={[styles.viewport, { width, height }]}>
@@ -57,22 +62,25 @@ export default function PreviewFrame({
 
 const styles = StyleSheet.create({
   shell: {
-    gap: 6,
+    gap: 10,
+    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
   },
   label: {
-    color: '#2d241d',
-    fontSize: 15,
+    color: '#31251d',
+    fontSize: 18,
     fontWeight: '700',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
+    ...(Platform.OS === 'web' ? { fontFamily: 'Georgia' } : null),
   },
   metrics: {
-    color: '#7a6758',
-    fontSize: 12,
+    color: '#7a6656',
+    fontSize: 12.5,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   deviceFrame: {
     borderRadius: 36,

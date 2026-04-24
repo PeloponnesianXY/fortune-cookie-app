@@ -515,13 +515,6 @@ const FORTUNES = [
     scope: "specific"
   },
   {
-    id: "f_0134",
-    text: "Exhaustion often means something in you kept going too far.",
-    primaryBucket: "tired",
-    alsoFits: [],
-    scope: "specific"
-  },
-  {
     id: "f_0135",
     text: "Your weariness may be proof that you gave a lot.",
     primaryBucket: "tired",

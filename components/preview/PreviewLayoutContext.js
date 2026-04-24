@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { Platform, useWindowDimensions, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -32,6 +32,7 @@ export function usePreviewLayout() {
     width: previewLayout?.width ?? windowDimensions.width,
     insets: previewLayout?.insets ?? liveInsets ?? ZERO_INSETS,
     keyboardVisible: previewLayout?.keyboardVisible ?? null,
+    platform: previewLayout?.platform ?? Platform.OS,
     isPreview: Boolean(previewLayout),
   };
 }
@@ -40,7 +41,16 @@ export function PreviewSafeAreaView({ children, style }) {
   const previewLayout = useContext(PreviewLayoutContext);
 
   if (!previewLayout) {
-    return <SafeAreaView style={style}>{children}</SafeAreaView>;
+    // Android 15+ edge-to-edge: padding all edges here can under-clear the gesture bar for
+    // flex-bottom UI. Reserve bottom inset for the screen chrome (FortuneCard contentFrame).
+    return (
+      <SafeAreaView
+        style={style}
+        edges={Platform.OS === 'android' ? ['top', 'left', 'right'] : undefined}
+      >
+        {children}
+      </SafeAreaView>
+    );
   }
 
   return (
