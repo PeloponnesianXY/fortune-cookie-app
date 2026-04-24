@@ -62,6 +62,7 @@ const MAX_COOKIE_ROOMINESS_DROP = 110;
 const TALL_ANDROID_ACTION_TRAY_DROP = 36;
 const TALL_ANDROID_PAPER_LIFT = 30;
 const TALL_ANDROID_CUSTOM_NOTICE_LIFT = 40;
+const ANDROID_PROMPT_FLOAT_CLEARANCE_BOOST = 36;
 const GLOBAL_CUSTOM_NOTICE_LIFT = 14;
 const LOCK_ALERT_NOTICE_CLEARANCE = 54;
 const TALL_ANDROID_LOCK_ALERT_NOTICE_CLEARANCE = 76;
@@ -245,7 +246,9 @@ function createLayoutMetrics(width, height, insets = { top: 0, bottom: 0 }, plat
     0,
     MAX_ACTION_TRAY_ROOMINESS_GAP
   ) - (isTallAndroidPhone ? 8 : 0);
-  const promptFloatClearance = isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68;
+  const promptFloatClearance = (
+    isVeryCompact ? 76 : isCompact ? 62 : isRoomy ? 74 : 68
+  ) + (isAndroid ? ANDROID_PROMPT_FLOAT_CLEARANCE_BOOST : 0);
   const actionTrayEstimatedHeight = isVeryCompact ? 88 : isCompact ? 92 : isRoomy ? 100 : 96;
   const actionTrayVisualLift = clamp(
     Math.round(actionTrayEstimatedHeight * ACTION_TRAY_VISUAL_LIFT_FACTOR),
