@@ -18,7 +18,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.peloponnesianxy.fortunecookiedaily"
+      "package": "com.canisminorventures.fortunecookieforyourmood"
     },
     "plugins": [
       "expo-asset",
